@@ -1,22 +1,26 @@
-
 <template>
   <input
     v-if="visible"
     ref="inputRef"
+
     :type="type"
     :value="modelValue"
     :name="name"
     :placeholder="placeholder"
+
     :disabled="!enabled"
     :readonly="readOnly"
+
     :maxlength="maxlength"
     :minlength="minlength"
     :required="required"
     :autocomplete="autocomplete"
     :inputmode="inputMode"
+
     :min="min"
     :max="max"
     :pattern="pattern"
+
     :class="[
       'textbox',
       {
@@ -25,19 +29,30 @@
         'textbox-readonly': readOnly
       }
     ]"
+
     :style="textboxStyle"
+
     @input="onInput"
     @change="onChange"
+
     @focus="onFocus"
     @blur="onBlur"
+
     @keydown="onKeydown"
     @keyup="onKeyup"
+
     @click="onClick"
+
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   />
 </template>
 
+
 <script setup>
+
 import { computed, ref } from 'vue'
+
 
 /* =========================================================
    PROPS
@@ -45,9 +60,9 @@ import { computed, ref } from 'vue'
 
 const props = defineProps({
 
-  // =======================================================
-  // VALUE
-  // =======================================================
+  /* =======================================================
+     VALUE
+     ======================================================= */
 
   modelValue: {
     type: [String, Number],
@@ -59,50 +74,58 @@ const props = defineProps({
     default: ''
   },
 
-  // =======================================================
-  // SIZE
-  // =======================================================
+
+  /* =======================================================
+     SIZE
+     ======================================================= */
 
   size: {
     type: Object,
+
     default: () => ({
       width: '200px',
       height: '32px'
     })
   },
 
-  // =======================================================
-  // FONT
-  // =======================================================
+
+  /* =======================================================
+     FONT
+     ======================================================= */
 
   font: {
     type: Object,
+
     default: () => ({
       family: 'Arial, sans-serif',
-      size: '14px',
+      size: '12px',
       weight: 400,
       style: 'normal',
-      color: '#222'
+      color: '#222222'
     })
   },
 
-  // =======================================================
-  // BACKGROUND
-  // =======================================================
+
+  /* =======================================================
+     BACKGROUND
+     ======================================================= */
 
   background: {
     type: Object,
+
     default: () => ({
       color: '#ffffff'
     })
   },
 
-  // =======================================================
-  // BORDER
-  // =======================================================
+
+  /* =======================================================
+     BORDER
+     ======================================================= */
 
   border: {
     type: Object,
+
     default: () => ({
       color: '#999999',
       width: '1px',
@@ -111,12 +134,29 @@ const props = defineProps({
     })
   },
 
-  // =======================================================
-  // FOCUS
-  // =======================================================
+
+  /* =======================================================
+     HOVER
+     ======================================================= */
+
+  hover: {
+    type: Object,
+
+    default: () => ({
+      borderColor: '#777777',
+      backgroundColor: '#000000',
+      color: '#FF0000'
+    })
+  },
+
+
+  /* =======================================================
+     FOCUS
+     ======================================================= */
 
   focus: {
     type: Object,
+
     default: () => ({
       borderColor: '#4285F4',
       backgroundColor: null,
@@ -124,21 +164,24 @@ const props = defineProps({
     })
   },
 
-  // =======================================================
-  // TEXT
-  // =======================================================
+
+  /* =======================================================
+     TEXT
+     ======================================================= */
 
   text: {
     type: Object,
+
     default: () => ({
       align: 'left',
       padding: '5px 8px'
     })
   },
 
-  // =======================================================
-  // STATE
-  // =======================================================
+
+  /* =======================================================
+     STATE
+     ======================================================= */
 
   enabled: {
     type: Boolean,
@@ -155,9 +198,10 @@ const props = defineProps({
     default: true
   },
 
-  // =======================================================
-  // INPUT
-  // =======================================================
+
+  /* =======================================================
+     INPUT
+     ======================================================= */
 
   type: {
     type: String,
@@ -204,9 +248,10 @@ const props = defineProps({
     default: null
   },
 
-  // =======================================================
-  // VALIDATION
-  // =======================================================
+
+  /* =======================================================
+     VALIDATION
+     ======================================================= */
 
   required: {
     type: Boolean,
@@ -223,14 +268,16 @@ const props = defineProps({
     default: ''
   },
 
-  // =======================================================
-  // CURSOR
-  // =======================================================
+
+  /* =======================================================
+     CURSOR
+     ======================================================= */
 
   cursor: {
     type: String,
     default: 'text'
   }
+
 })
 
 
@@ -239,6 +286,7 @@ const props = defineProps({
    ========================================================= */
 
 const emit = defineEmits([
+
   'update:modelValue',
 
   'input',
@@ -251,6 +299,7 @@ const emit = defineEmits([
   'keyup',
 
   'click'
+
 ])
 
 
@@ -262,24 +311,131 @@ const inputRef = ref(null)
 
 
 /* =========================================================
-   FOCUS STATE
+   STATE
    ========================================================= */
 
 const isFocused = ref(false)
 
+const isHovered = ref(false)
+
 
 /* =========================================================
-   STYLE
+   COMPUTED STYLE
    ========================================================= */
 
 const textboxStyle = computed(() => {
 
   const size = props.size || {}
+
   const font = props.font || {}
+
   const background = props.background || {}
+
   const border = props.border || {}
-  const text = props.text || {}
+
+  const hover = props.hover || {}
+
   const focus = props.focus || {}
+
+  const text = props.text || {}
+
+
+  /* =======================================================
+     DETERMINE CURRENT STATE
+     ======================================================= */
+
+  let currentColor =
+    font.color || '#222222'
+
+
+  let currentBackground =
+    background.color || '#ffffff'
+
+
+  let currentBorderColor =
+    border.color || '#999999'
+
+
+  /* =======================================================
+     HOVER
+     ======================================================= */
+
+  if (
+    isHovered.value &&
+    props.enabled &&
+    !props.error
+  ) {
+
+    if (hover.color) {
+      currentColor = hover.color
+    }
+
+    if (hover.backgroundColor) {
+      currentBackground =
+        hover.backgroundColor
+    }
+
+    if (hover.borderColor) {
+      currentBorderColor =
+        hover.borderColor
+    }
+
+  }
+
+
+  /* =======================================================
+     FOCUS
+     ======================================================= */
+
+  if (
+    isFocused.value &&
+    props.enabled
+  ) {
+
+    if (focus.color) {
+      currentColor = focus.color
+    }
+
+    if (focus.backgroundColor) {
+      currentBackground =
+        focus.backgroundColor
+    }
+
+    if (focus.borderColor) {
+      currentBorderColor =
+        focus.borderColor
+    }
+
+  }
+
+
+  /* =======================================================
+     ERROR
+     ======================================================= */
+
+  if (props.error) {
+
+    currentBorderColor =
+      '#dc3545'
+
+  }
+
+
+  /* =======================================================
+     DISABLED
+     ======================================================= */
+
+  if (!props.enabled) {
+
+    currentBackground =
+      '#eeeeee'
+
+  }
+
+
+  /* =======================================================
+     RETURN STYLE
+     ======================================================= */
 
   return {
 
@@ -287,78 +443,101 @@ const textboxStyle = computed(() => {
        SIZE
     ----------------------------------------- */
 
-    width: size.width || '200px',
-    height: size.height || '32px',
+    width:
+      size.width || '200px',
+
+    height:
+      size.height || '32px',
+
 
     /* -----------------------------------------
        FONT
     ----------------------------------------- */
 
-    fontFamily: font.family || 'Arial, sans-serif',
-    fontSize: font.size || '14px',
-    fontWeight: font.weight ?? 400,
-    fontStyle: font.style || 'normal',
+    fontFamily:
+      font.family || 'Arial, sans-serif',
+
+    fontSize:
+      font.size || '14px',
+
+    fontWeight:
+      font.weight ?? 400,
+
+    fontStyle:
+      font.style || 'normal',
+
     color:
-      isFocused.value && focus.color
-        ? focus.color
-        : font.color || '#222',
+      currentColor,
+
 
     /* -----------------------------------------
        BACKGROUND
     ----------------------------------------- */
 
     backgroundColor:
-      isFocused.value && focus.backgroundColor
-        ? focus.backgroundColor
-        : background.color || '#ffffff',
+      currentBackground,
+
 
     /* -----------------------------------------
        BORDER
     ----------------------------------------- */
 
     borderColor:
-      props.error
-        ? '#dc3545'
-        : isFocused.value
-          ? (focus.borderColor || border.color || '#999')
-          : (border.color || '#999'),
+      currentBorderColor,
 
-    borderWidth: border.width || '1px',
-    borderStyle: border.style || 'solid',
-    borderRadius: border.radius || '4px',
+    borderWidth:
+      border.width || '1px',
+
+    borderStyle:
+      border.style || 'solid',
+
+    borderRadius:
+      border.radius || '4px',
+
 
     /* -----------------------------------------
        TEXT
     ----------------------------------------- */
 
-    textAlign: text.align || 'left',
-    padding: text.padding || '5px 8px',
+    textAlign:
+      text.align || 'left',
+
+    padding:
+      text.padding || '5px 8px',
+
 
     /* -----------------------------------------
        CURSOR
     ----------------------------------------- */
 
-    cursor: props.enabled
-      ? props.cursor
-      : 'not-allowed',
+    cursor:
+      props.enabled
+        ? props.cursor
+        : 'not-allowed',
+
 
     /* -----------------------------------------
        BOX
     ----------------------------------------- */
 
-    boxSizing: 'border-box',
+    boxSizing:
+      'border-box',
+
 
     /* -----------------------------------------
        OUTLINE
     ----------------------------------------- */
 
-    outline: 'none'
+    outline:
+      'none'
+
   }
+
 })
 
 
 /* =========================================================
-   EVENTS
+   INPUT EVENT
    ========================================================= */
 
 function onInput(event) {
@@ -372,8 +551,13 @@ function onInput(event) {
     'input',
     event.target.value
   )
+
 }
 
+
+/* =========================================================
+   CHANGE EVENT
+   ========================================================= */
 
 function onChange(event) {
 
@@ -381,77 +565,169 @@ function onChange(event) {
     'change',
     event.target.value
   )
+
 }
 
+
+/* =========================================================
+   FOCUS EVENT
+   ========================================================= */
 
 function onFocus(event) {
 
   isFocused.value = true
 
-  emit('focus', event)
+  emit(
+    'focus',
+    event
+  )
+
 }
 
+
+/* =========================================================
+   BLUR EVENT
+   ========================================================= */
 
 function onBlur(event) {
 
   isFocused.value = false
 
-  emit('blur', event)
-}
+  emit(
+    'blur',
+    event
+  )
 
-
-function onKeydown(event) {
-
-  emit('keydown', event)
-}
-
-
-function onKeyup(event) {
-
-  emit('keyup', event)
-}
-
-
-function onClick(event) {
-
-  emit('click', event)
 }
 
 
 /* =========================================================
-   PUBLIC METHODS
+   KEYDOWN EVENT
+   ========================================================= */
+
+function onKeydown(event) {
+
+  emit(
+    'keydown',
+    event
+  )
+
+}
+
+
+/* =========================================================
+   KEYUP EVENT
+   ========================================================= */
+
+function onKeyup(event) {
+
+  emit(
+    'keyup',
+    event
+  )
+
+}
+
+
+/* =========================================================
+   CLICK EVENT
+   ========================================================= */
+
+function onClick(event) {
+
+  emit(
+    'click',
+    event
+  )
+
+}
+
+
+/* =========================================================
+   MOUSE ENTER
+   ========================================================= */
+
+function onMouseEnter() {
+
+  if (props.enabled) {
+
+    isHovered.value = true
+
+  }
+
+}
+
+
+/* =========================================================
+   MOUSE LEAVE
+   ========================================================= */
+
+function onMouseLeave() {
+
+  isHovered.value = false
+
+}
+
+
+/* =========================================================
+   PUBLIC METHOD
    VBA-LIKE
    ========================================================= */
 
 function focus() {
 
   inputRef.value?.focus()
+
 }
 
+
+/* =========================================================
+   BLUR
+   ========================================================= */
 
 function blur() {
 
   inputRef.value?.blur()
+
 }
 
+
+/* =========================================================
+   SELECT
+   ========================================================= */
 
 function select() {
 
   inputRef.value?.select()
+
 }
 
+
+/* =========================================================
+   SELECT ALL
+   ========================================================= */
 
 function selectAll() {
 
   inputRef.value?.select()
+
 }
 
+
+/* =========================================================
+   GET VALUE
+   ========================================================= */
 
 function getValue() {
 
   return inputRef.value?.value ?? ''
+
 }
 
+
+/* =========================================================
+   SET VALUE
+   ========================================================= */
 
 function setValue(value) {
 
@@ -459,6 +735,7 @@ function setValue(value) {
     'update:modelValue',
     value
   )
+
 }
 
 
@@ -469,43 +746,55 @@ function setValue(value) {
 defineExpose({
 
   focus,
+
   blur,
 
   select,
+
   selectAll,
 
   getValue,
+
   setValue,
 
   inputRef
 
 })
+
 </script>
 
 
 <style scoped>
 
+/* =========================================================
+   TEXTBOX
+   ========================================================= */
+
 .textbox {
 
   display: inline-block;
 
-  font-family: Arial, sans-serif;
+  font-family:
+    Arial,
+    sans-serif;
 
   transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
 
-}
+    border-color
+    0.15s
+    ease,
 
+    background-color
+    0.15s
+    ease,
 
-/* =========================================================
-   HOVER
-   ========================================================= */
+    color
+    0.15s
+    ease,
 
-.textbox:hover:not(:disabled) {
-
-  border-color: #777;
+    box-shadow
+    0.15s
+    ease;
 
 }
 
@@ -517,7 +806,9 @@ defineExpose({
 .textbox:focus {
 
   box-shadow:
-    0 0 0 1px currentColor;
+
+    0 0 0 1px
+    currentColor;
 
 }
 
@@ -530,7 +821,8 @@ defineExpose({
 
   opacity: 0.65;
 
-  background-color: #eeeeee !important;
+  cursor:
+    not-allowed;
 
 }
 
@@ -541,7 +833,8 @@ defineExpose({
 
 .textbox-readonly {
 
-  background-color: #f5f5f5;
+  cursor:
+    default;
 
 }
 
@@ -552,7 +845,8 @@ defineExpose({
 
 .textbox-error {
 
-  border-color: #dc3545 !important;
+  border-color:
+    #dc3545 !important;
 
 }
 
@@ -560,21 +854,26 @@ defineExpose({
 .textbox-error:focus {
 
   box-shadow:
-    0 0 0 1px #dc3545;
+
+    0 0 0 1px
+    #dc3545;
 
 }
 
 
+/* =========================================================
+   PLACEHOLDER
+   ========================================================= */
+
 .textbox::placeholder {
 
-  color: #999;
+  color:
+    #999999;
 
-  opacity: 1;
+  opacity:
+    1;
 
 }
 
 </style>
-
-
  
-

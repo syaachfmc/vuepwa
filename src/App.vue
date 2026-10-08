@@ -1,47 +1,9 @@
 <template>
 
-<TextBox
-  v-model="nama"
+  <TextBox v-model="namaku" placeholder="Masukkan nama ku" /> __
+  <TextBox v-model="namamu" placeholder="Masukkan nama mu" />
 
-  :size="{
-    width: '300px',
-    height: '36px'
-  }"
-
-  :font="{
-    family: 'Arial',
-    size: '15px',
-    weight: 700,
-    style: 'italic',
-    color: '#222'
-  }"
-
-  :background="{
-    color: '#fffde7'
-  }"
-
-  :border="{
-    color: '#999',
-    width: '1px',
-    style: 'solid',
-    radius: '5px'
-  }"
-
-  :focus="{
-    borderColor: '#2196F3',
-    backgroundColor: '#E3F2FD',
-    color: '#000'
-  }"
-
-  :text="{
-    align: 'left',
-    padding: '6px 10px'
-  }"
-
-  placeholder="Masukkan nama mu"
-/>
-
-  <p>Value: {{ nama }}</p>
+  <p>Value: {{ namaku }}</p>
 
 </template>
 
@@ -49,5 +11,6 @@
 import { ref } from 'vue'
 import TextBox from './components/textbox.vue'
 
-const nama = ref('')
+const namaku = ref('')
+const namamu = ref('')
 </script>
