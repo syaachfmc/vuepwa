@@ -83,7 +83,7 @@ const props = defineProps({
         default: () => ({
             family: 'Calibri, Arial, sans-serif',
             size: '14px',
-            weight: 200,
+            weight: 400,
             style: 'normal',
             color: '#222222'
         })
@@ -973,7 +973,7 @@ defineExpose({
 .textbox::placeholder {
 
     color:
-        #000000b2;
+        #0000005d;
 
     opacity:
         1;
