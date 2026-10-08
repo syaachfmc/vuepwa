@@ -1,51 +1,40 @@
 <template>
-  <input
-    v-if="visible"
-    ref="inputRef"
-
-    :type="type"
-    :value="modelValue"
-    :name="name"
-    :placeholder="placeholder"
-
-    :disabled="!enabled"
-    :readonly="readOnly"
-
-    :maxlength="maxlength"
-    :minlength="minlength"
-    :required="required"
-    :autocomplete="autocomplete"
-    :inputmode="inputMode"
-
-    :min="min"
-    :max="max"
-    :pattern="pattern"
-
-    :class="[
-      'textbox',
-      {
-        'textbox-error': error,
-        'textbox-disabled': !enabled,
-        'textbox-readonly': readOnly
-      }
-    ]"
-
-    :style="textboxStyle"
-
-    @input="onInput"
-    @change="onChange"
-
-    @focus="onFocus"
-    @blur="onBlur"
-
-    @keydown="onKeydown"
-    @keyup="onKeyup"
-
-    @click="onClick"
-
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
-  />
+    <input
+        v-if="visible"
+        ref="inputRef"
+        :type="type"
+        :value="modelValue"
+        :name="name"
+        :placeholder="placeholder"
+        :disabled="!enabled"
+        :readonly="readOnly"
+        :maxlength="maxlength"
+        :minlength="minlength"
+        :required="required"
+        :autocomplete="autocomplete"
+        :inputmode="inputMode"
+        :min="min"
+        :max="max"
+        :pattern="pattern"
+        :class="[
+            'textbox',
+            {
+                'textbox-error': error,
+                'textbox-disabled': !enabled,
+                'textbox-readonly': readOnly
+            }
+        ]"
+        :style="textboxStyle"
+        @input="onInput"
+        @change="onChange"
+        @focus="onFocus"
+        @blur="onBlur"
+        @keydown="onKeydown"
+        @keyup="onKeyup"
+        @click="onClick"
+        @mouseenter="onMouseEnter"
+        @mouseleave="onMouseLeave"
+    />
 </template>
 
 
@@ -60,223 +49,268 @@ import { computed, ref } from 'vue'
 
 const props = defineProps({
 
-  /* =======================================================
-     VALUE
-     ======================================================= */
+    /* =======================================================
+       VALUE
+       ======================================================= */
 
-  modelValue: {
-    type: [String, Number],
-    default: ''
-  },
+    modelValue: {
+        type: [String, Number],
+        default: ''
+    },
 
-  name: {
-    type: String,
-    default: ''
-  },
-
-
-  /* =======================================================
-     SIZE
-     ======================================================= */
-
-  size: {
-    type: Object,
-
-    default: () => ({
-      width: '200px',
-      height: '32px'
-    })
-  },
+    name: {
+        type: String,
+        default: ''
+    },
 
 
-  /* =======================================================
-     FONT
-     ======================================================= */
+    /* =======================================================
+       SIZE
+       ======================================================= */
 
-  font: {
-    type: Object,
-
-    default: () => ({
-      family: 'Arial, sans-serif',
-      size: '14px',
-      weight: 400,
-      style: 'normal',
-      color: '#222222'
-    })
-  },
+    size: {
+        type: Object,
+        default: () => ({
+            width: '200px',
+            height: '32px'
+        })
+    },
 
 
-  /* =======================================================
-     BACKGROUND
-     ======================================================= */
+    /* =======================================================
+       FONT
+       ======================================================= */
 
-  background: {
-    type: Object,
-
-    default: () => ({
-      color: '#ffffff'
-    })
-  },
-
-
-  /* =======================================================
-     BORDER
-     ======================================================= */
-
-  border: {
-    type: Object,
-
-    default: () => ({
-      color: '#999999',
-      width: '1px',
-      style: 'solid',
-      radius: '4px'
-    })
-  },
+    font: {
+        type: Object,
+        default: () => ({
+            family: 'Arial, sans-serif',
+            size: '14px',
+            weight: 400,
+            style: 'normal',
+            color: '#222222'
+        })
+    },
 
 
-  /* =======================================================
-     HOVER
-     ======================================================= */
+    /* =======================================================
+       BACKGROUND
+       ======================================================= */
 
-  hover: {
-    type: Object,
-
-    default: () => ({
-      borderColor: '#777777',
-      backgroundColor: '#000000',
-      color: '#FF0000'
-    })
-  },
+    background: {
+        type: Object,
+        default: () => ({
+            color: '#ffffff'
+        })
+    },
 
 
-  /* =======================================================
-     FOCUS
-     ======================================================= */
+    /* =======================================================
+       BORDER
+       ======================================================= */
 
-  focus: {
-    type: Object,
-
-    default: () => ({
-      borderColor: '#4285F4',
-      backgroundColor: null,
-      color: null
-    })
-  },
-
-
-  /* =======================================================
-     TEXT
-     ======================================================= */
-
-  text: {
-    type: Object,
-
-    default: () => ({
-      align: 'left',
-      padding: '5px 8px'
-    })
-  },
+    border: {
+        type: Object,
+        default: () => ({
+            color: '#999999',
+            width: '1px',
+            style: 'solid',
+            radius: '4px'
+        })
+    },
 
 
-  /* =======================================================
-     STATE
-     ======================================================= */
+    /* =======================================================
+       SHADOW
+       ======================================================= */
 
-  enabled: {
-    type: Boolean,
-    default: true
-  },
+    shadow: {
+        type: Object,
 
-  readOnly: {
-    type: Boolean,
-    default: false
-  },
+        default: () => ({
 
-  visible: {
-    type: Boolean,
-    default: true
-  },
+            normal: {
+                color: 'rgba(0, 0, 0, 0.3)',
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '0px',
+                inset: false
+            },
 
+            hover: {
+                color: 'rgba(0, 0, 0, 0.3)',
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '0px',
+                inset: true
+            },
 
-  /* =======================================================
-     INPUT
-     ======================================================= */
+            focus: {
+                color: 'rgba(66, 133, 244, 0.5)',
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '1px',
+                inset: true
+            },
 
-  type: {
-    type: String,
-    default: 'text'
-  },
+            error: {
+                color: 'rgba(220, 53, 69, 0.35)',
+                offsetX: '0px',
+                offsetY: '0px',
+                blur: '5px',
+                spread: '1px',
+                inset: false
+            }
 
-  placeholder: {
-    type: String,
-    default: ''
-  },
-
-  maxlength: {
-    type: Number,
-    default: null
-  },
-
-  minlength: {
-    type: Number,
-    default: null
-  },
-
-  autocomplete: {
-    type: String,
-    default: 'off'
-  },
-
-  inputMode: {
-    type: String,
-    default: null
-  },
-
-  min: {
-    type: [String, Number],
-    default: null
-  },
-
-  max: {
-    type: [String, Number],
-    default: null
-  },
-
-  pattern: {
-    type: String,
-    default: null
-  },
+        })
+    },
 
 
-  /* =======================================================
-     VALIDATION
-     ======================================================= */
+    /* =======================================================
+       HOVER
+       ======================================================= */
 
-  required: {
-    type: Boolean,
-    default: false
-  },
+    hover: {
+        type: Object,
 
-  error: {
-    type: Boolean,
-    default: false
-  },
-
-  errorMessage: {
-    type: String,
-    default: ''
-  },
+        default: () => ({
+            borderColor: '#777777',
+            backgroundColor: null,
+            color: null
+        })
+    },
 
 
-  /* =======================================================
-     CURSOR
-     ======================================================= */
+    /* =======================================================
+       FOCUS
+       ======================================================= */
 
-  cursor: {
-    type: String,
-    default: 'text'
-  }
+    focus: {
+        type: Object,
+
+        default: () => ({
+            borderColor: '#4285F4',
+            backgroundColor: null,
+            color: null
+        })
+    },
+
+
+    /* =======================================================
+       TEXT
+       ======================================================= */
+
+    text: {
+        type: Object,
+
+        default: () => ({
+            align: 'left',
+            padding: '5px 8px'
+        })
+    },
+
+
+    /* =======================================================
+       STATE
+       ======================================================= */
+
+    enabled: {
+        type: Boolean,
+        default: true
+    },
+
+    readOnly: {
+        type: Boolean,
+        default: false
+    },
+
+    visible: {
+        type: Boolean,
+        default: true
+    },
+
+
+    /* =======================================================
+       INPUT
+       ======================================================= */
+
+    type: {
+        type: String,
+        default: 'text'
+    },
+
+    placeholder: {
+        type: String,
+        default: ''
+    },
+
+    maxlength: {
+        type: Number,
+        default: null
+    },
+
+    minlength: {
+        type: Number,
+        default: null
+    },
+
+    autocomplete: {
+        type: String,
+        default: 'off'
+    },
+
+    inputMode: {
+        type: String,
+        default: null
+    },
+
+    min: {
+        type: [String, Number],
+        default: null
+    },
+
+    max: {
+        type: [String, Number],
+        default: null
+    },
+
+    pattern: {
+        type: String,
+        default: null
+    },
+
+
+    /* =======================================================
+       VALIDATION
+       ======================================================= */
+
+    required: {
+        type: Boolean,
+        default: false
+    },
+
+    error: {
+        type: Boolean,
+        default: false
+    },
+
+    errorMessage: {
+        type: String,
+        default: ''
+    },
+
+
+    /* =======================================================
+       CURSOR
+       ======================================================= */
+
+    cursor: {
+        type: String,
+        default: 'text'
+    }
 
 })
 
@@ -287,18 +321,21 @@ const props = defineProps({
 
 const emit = defineEmits([
 
-  'update:modelValue',
+    'update:modelValue',
 
-  'input',
-  'change',
+    'input',
 
-  'focus',
-  'blur',
+    'change',
 
-  'keydown',
-  'keyup',
+    'focus',
 
-  'click'
+    'blur',
+
+    'keydown',
+
+    'keyup',
+
+    'click'
 
 ])
 
@@ -320,218 +357,323 @@ const isHovered = ref(false)
 
 
 /* =========================================================
+   MAKE SHADOW
+   ========================================================= */
+
+function makeShadow(shadow = {}) {
+
+    const color =
+        shadow.color || 'rgba(0, 0, 0, 0.15)'
+
+    const offsetX =
+        shadow.offsetX || '0px'
+
+    const offsetY =
+        shadow.offsetY || '2px'
+
+    const blur =
+        shadow.blur || '4px'
+
+    const spread =
+        shadow.spread || '0px'
+
+    const inset =
+        shadow.inset ? 'inset ' : ''
+
+    return (
+        `${inset}` +
+        `${offsetX} ` +
+        `${offsetY} ` +
+        `${blur} ` +
+        `${spread} ` +
+        `${color}`
+    )
+}
+
+
+/* =========================================================
    COMPUTED STYLE
    ========================================================= */
 
 const textboxStyle = computed(() => {
 
-  const size = props.size || {}
+    const size =
+        props.size || {}
 
-  const font = props.font || {}
+    const font =
+        props.font || {}
 
-  const background = props.background || {}
+    const background =
+        props.background || {}
 
-  const border = props.border || {}
+    const border =
+        props.border || {}
 
-  const hover = props.hover || {}
+    const shadow =
+        props.shadow || {}
 
-  const focus = props.focus || {}
+    const hover =
+        props.hover || {}
 
-  const text = props.text || {}
+    const focus =
+        props.focus || {}
 
-
-  /* =======================================================
-     DETERMINE CURRENT STATE
-     ======================================================= */
-
-  let currentColor =
-    font.color || '#222222'
-
-
-  let currentBackground =
-    background.color || '#ffffff'
+    const text =
+        props.text || {}
 
 
-  let currentBorderColor =
-    border.color || '#999999'
+    /* =======================================================
+       DETERMINE CURRENT STATE
+       ======================================================= */
+
+    let currentColor =
+        font.color || '#222222'
+
+    let currentBackground =
+        background.color || '#ffffff'
+
+    let currentBorderColor =
+        border.color || '#999999'
+
+    let currentShadow =
+        makeShadow(
+            shadow.normal || {}
+        )
 
 
-  /* =======================================================
-     HOVER
-     ======================================================= */
+    /* =======================================================
+       HOVER
+       ======================================================= */
 
-  if (
-    isHovered.value &&
-    props.enabled &&
-    !props.error
-  ) {
+    if (
+        isHovered.value &&
+        props.enabled &&
+        !props.error
+    ) {
 
-    if (hover.color) {
-      currentColor = hover.color
+        if (hover.color) {
+
+            currentColor =
+                hover.color
+
+        }
+
+        if (hover.backgroundColor) {
+
+            currentBackground =
+                hover.backgroundColor
+
+        }
+
+        if (hover.borderColor) {
+
+            currentBorderColor =
+                hover.borderColor
+
+        }
+
+        if (shadow.hover) {
+
+            currentShadow =
+                makeShadow(
+                    shadow.hover
+                )
+
+        }
+
     }
 
-    if (hover.backgroundColor) {
-      currentBackground =
-        hover.backgroundColor
+
+    /* =======================================================
+       FOCUS
+       ======================================================= */
+
+    if (
+        isFocused.value &&
+        props.enabled
+    ) {
+
+        if (focus.color) {
+
+            currentColor =
+                focus.color
+
+        }
+
+        if (focus.backgroundColor) {
+
+            currentBackground =
+                focus.backgroundColor
+
+        }
+
+        if (focus.borderColor) {
+
+            currentBorderColor =
+                focus.borderColor
+
+        }
+
+        if (shadow.focus) {
+
+            currentShadow =
+                makeShadow(
+                    shadow.focus
+                )
+
+        }
+
     }
 
-    if (hover.borderColor) {
-      currentBorderColor =
-        hover.borderColor
+
+    /* =======================================================
+       ERROR
+       ======================================================= */
+
+    if (props.error) {
+
+        currentBorderColor =
+            '#dc3545'
+
+        if (shadow.error) {
+
+            currentShadow =
+                makeShadow(
+                    shadow.error
+                )
+
+        }
+
     }
 
-  }
 
+    /* =======================================================
+       DISABLED
+       ======================================================= */
 
-  /* =======================================================
-     FOCUS
-     ======================================================= */
+    if (!props.enabled) {
 
-  if (
-    isFocused.value &&
-    props.enabled
-  ) {
+        currentBackground =
+            '#eeeeee'
 
-    if (focus.color) {
-      currentColor = focus.color
     }
 
-    if (focus.backgroundColor) {
-      currentBackground =
-        focus.backgroundColor
+
+    /* =======================================================
+       RETURN STYLE
+       ======================================================= */
+
+    return {
+
+        /* -----------------------------------------
+           SIZE
+           ----------------------------------------- */
+
+        width:
+            size.width || '200px',
+
+        height:
+            size.height || '32px',
+
+
+        /* -----------------------------------------
+           FONT
+           ----------------------------------------- */
+
+        fontFamily:
+            font.family ||
+            'Arial, sans-serif',
+
+        fontSize:
+            font.size ||
+            '14px',
+
+        fontWeight:
+            font.weight ?? 400,
+
+        fontStyle:
+            font.style ||
+            'normal',
+
+        color:
+            currentColor,
+
+
+        /* -----------------------------------------
+           BACKGROUND
+           ----------------------------------------- */
+
+        backgroundColor:
+            currentBackground,
+
+
+        /* -----------------------------------------
+           BORDER
+           ----------------------------------------- */
+
+        borderColor:
+            currentBorderColor,
+
+        borderWidth:
+            border.width ||
+            '1px',
+
+        borderStyle:
+            border.style ||
+            'solid',
+
+        borderRadius:
+            border.radius ||
+            '4px',
+
+
+        /* -----------------------------------------
+           SHADOW
+           ----------------------------------------- */
+
+        boxShadow:
+            currentShadow,
+
+
+        /* -----------------------------------------
+           TEXT
+           ----------------------------------------- */
+
+        textAlign:
+            text.align ||
+            'left',
+
+        padding:
+            text.padding ||
+            '5px 8px',
+
+
+        /* -----------------------------------------
+           CURSOR
+           ----------------------------------------- */
+
+        cursor:
+            props.enabled
+                ? props.cursor
+                : 'not-allowed',
+
+
+        /* -----------------------------------------
+           BOX
+           ----------------------------------------- */
+
+        boxSizing:
+            'border-box',
+
+
+        /* -----------------------------------------
+           OUTLINE
+           ----------------------------------------- */
+
+        outline:
+            'none'
+
     }
-
-    if (focus.borderColor) {
-      currentBorderColor =
-        focus.borderColor
-    }
-
-  }
-
-
-  /* =======================================================
-     ERROR
-     ======================================================= */
-
-  if (props.error) {
-
-    currentBorderColor =
-      '#dc3545'
-
-  }
-
-
-  /* =======================================================
-     DISABLED
-     ======================================================= */
-
-  if (!props.enabled) {
-
-    currentBackground =
-      '#eeeeee'
-
-  }
-
-
-  /* =======================================================
-     RETURN STYLE
-     ======================================================= */
-
-  return {
-
-    /* -----------------------------------------
-       SIZE
-    ----------------------------------------- */
-
-    width:
-      size.width || '200px',
-
-    height:
-      size.height || '32px',
-
-
-    /* -----------------------------------------
-       FONT
-    ----------------------------------------- */
-
-    fontFamily:
-      font.family || 'Arial, sans-serif',
-
-    fontSize:
-      font.size || '14px',
-
-    fontWeight:
-      font.weight ?? 400,
-
-    fontStyle:
-      font.style || 'normal',
-
-    color:
-      currentColor,
-
-
-    /* -----------------------------------------
-       BACKGROUND
-    ----------------------------------------- */
-
-    backgroundColor:
-      currentBackground,
-
-
-    /* -----------------------------------------
-       BORDER
-    ----------------------------------------- */
-
-    borderColor:
-      currentBorderColor,
-
-    borderWidth:
-      border.width || '1px',
-
-    borderStyle:
-      border.style || 'solid',
-
-    borderRadius:
-      border.radius || '4px',
-
-
-    /* -----------------------------------------
-       TEXT
-    ----------------------------------------- */
-
-    textAlign:
-      text.align || 'left',
-
-    padding:
-      text.padding || '5px 8px',
-
-
-    /* -----------------------------------------
-       CURSOR
-    ----------------------------------------- */
-
-    cursor:
-      props.enabled
-        ? props.cursor
-        : 'not-allowed',
-
-
-    /* -----------------------------------------
-       BOX
-    ----------------------------------------- */
-
-    boxSizing:
-      'border-box',
-
-
-    /* -----------------------------------------
-       OUTLINE
-    ----------------------------------------- */
-
-    outline:
-      'none'
-
-  }
 
 })
 
@@ -542,15 +684,15 @@ const textboxStyle = computed(() => {
 
 function onInput(event) {
 
-  emit(
-    'update:modelValue',
-    event.target.value
-  )
+    emit(
+        'update:modelValue',
+        event.target.value
+    )
 
-  emit(
-    'input',
-    event.target.value
-  )
+    emit(
+        'input',
+        event.target.value
+    )
 
 }
 
@@ -561,10 +703,10 @@ function onInput(event) {
 
 function onChange(event) {
 
-  emit(
-    'change',
-    event.target.value
-  )
+    emit(
+        'change',
+        event.target.value
+    )
 
 }
 
@@ -575,12 +717,12 @@ function onChange(event) {
 
 function onFocus(event) {
 
-  isFocused.value = true
+    isFocused.value = true
 
-  emit(
-    'focus',
-    event
-  )
+    emit(
+        'focus',
+        event
+    )
 
 }
 
@@ -591,12 +733,12 @@ function onFocus(event) {
 
 function onBlur(event) {
 
-  isFocused.value = false
+    isFocused.value = false
 
-  emit(
-    'blur',
-    event
-  )
+    emit(
+        'blur',
+        event
+    )
 
 }
 
@@ -607,10 +749,10 @@ function onBlur(event) {
 
 function onKeydown(event) {
 
-  emit(
-    'keydown',
-    event
-  )
+    emit(
+        'keydown',
+        event
+    )
 
 }
 
@@ -621,10 +763,10 @@ function onKeydown(event) {
 
 function onKeyup(event) {
 
-  emit(
-    'keyup',
-    event
-  )
+    emit(
+        'keyup',
+        event
+    )
 
 }
 
@@ -635,10 +777,10 @@ function onKeyup(event) {
 
 function onClick(event) {
 
-  emit(
-    'click',
-    event
-  )
+    emit(
+        'click',
+        event
+    )
 
 }
 
@@ -649,11 +791,11 @@ function onClick(event) {
 
 function onMouseEnter() {
 
-  if (props.enabled) {
+    if (props.enabled) {
 
-    isHovered.value = true
+        isHovered.value = true
 
-  }
+    }
 
 }
 
@@ -664,7 +806,7 @@ function onMouseEnter() {
 
 function onMouseLeave() {
 
-  isHovered.value = false
+    isHovered.value = false
 
 }
 
@@ -676,7 +818,7 @@ function onMouseLeave() {
 
 function focus() {
 
-  inputRef.value?.focus()
+    inputRef.value?.focus()
 
 }
 
@@ -687,7 +829,7 @@ function focus() {
 
 function blur() {
 
-  inputRef.value?.blur()
+    inputRef.value?.blur()
 
 }
 
@@ -698,7 +840,7 @@ function blur() {
 
 function select() {
 
-  inputRef.value?.select()
+    inputRef.value?.select()
 
 }
 
@@ -709,7 +851,7 @@ function select() {
 
 function selectAll() {
 
-  inputRef.value?.select()
+    inputRef.value?.select()
 
 }
 
@@ -720,7 +862,9 @@ function selectAll() {
 
 function getValue() {
 
-  return inputRef.value?.value ?? ''
+    return (
+        inputRef.value?.value ?? ''
+    )
 
 }
 
@@ -731,10 +875,10 @@ function getValue() {
 
 function setValue(value) {
 
-  emit(
-    'update:modelValue',
-    value
-  )
+    emit(
+        'update:modelValue',
+        value
+    )
 
 }
 
@@ -745,19 +889,19 @@ function setValue(value) {
 
 defineExpose({
 
-  focus,
+    focus,
 
-  blur,
+    blur,
 
-  select,
+    select,
 
-  selectAll,
+    selectAll,
 
-  getValue,
+    getValue,
 
-  setValue,
+    setValue,
 
-  inputRef
+    inputRef
 
 })
 
@@ -772,43 +916,17 @@ defineExpose({
 
 .textbox {
 
-  display: inline-block;
+    display: inline-block;
 
-  font-family:
-    Arial,
-    sans-serif;
+    font-family:
+        Arial,
+        sans-serif;
 
-  transition:
-
-    border-color
-    0.15s
-    ease,
-
-    background-color
-    0.15s
-    ease,
-
-    color
-    0.15s
-    ease,
-
-    box-shadow
-    0.15s
-    ease;
-
-}
-
-
-/* =========================================================
-   FOCUS
-   ========================================================= */
-
-.textbox:focus {
-
-  box-shadow:
-
-    0 0 0 1px
-    currentColor;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
 
 }
 
@@ -819,10 +937,10 @@ defineExpose({
 
 .textbox-disabled {
 
-  opacity: 0.65;
+    opacity: 0.65;
 
-  cursor:
-    not-allowed;
+    cursor:
+        not-allowed;
 
 }
 
@@ -833,8 +951,8 @@ defineExpose({
 
 .textbox-readonly {
 
-  cursor:
-    default;
+    cursor:
+        default;
 
 }
 
@@ -845,18 +963,8 @@ defineExpose({
 
 .textbox-error {
 
-  border-color:
-    #dc3545 !important;
-
-}
-
-
-.textbox-error:focus {
-
-  box-shadow:
-
-    0 0 0 1px
-    #dc3545;
+    border-color:
+        #dc3545 !important;
 
 }
 
@@ -867,13 +975,12 @@ defineExpose({
 
 .textbox::placeholder {
 
-  color:
-    #999999;
+    color:
+        #999999;
 
-  opacity:
-    1;
+    opacity:
+        1;
 
 }
 
 </style>
- 
