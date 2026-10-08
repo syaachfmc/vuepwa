@@ -5,11 +5,15 @@
 
   <p>Value: {{ namaku }}</p>
 
+
+ 
+
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import TextBox from './components/textbox.vue'
+ 
 
 const namaku = ref('')
 const namamu = ref('')

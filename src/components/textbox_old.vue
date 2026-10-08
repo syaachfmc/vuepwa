@@ -37,8 +37,11 @@
     />
 </template>
 
+
 <script setup>
+
 import { computed, ref } from 'vue'
+
 
 /* =========================================================
    PROPS
@@ -81,9 +84,9 @@ const props = defineProps({
     font: {
         type: Object,
         default: () => ({
-            family: 'Calibri, Arial, sans-serif',
+            family: 'Arial, sans-serif',
             size: '14px',
-            weight: 100,
+            weight: 400,
             style: 'normal',
             color: '#222222'
         })
@@ -973,7 +976,7 @@ defineExpose({
 .textbox::placeholder {
 
     color:
-        #000000b2;
+        #999999;
 
     opacity:
         1;
