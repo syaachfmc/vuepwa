@@ -98,7 +98,7 @@ const props = defineProps({
 
     default: () => ({
       family: 'Arial, sans-serif',
-      size: '12px',
+      size: '14px',
       weight: 400,
       style: 'normal',
       color: '#222222'
