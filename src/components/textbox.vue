@@ -83,7 +83,7 @@ const props = defineProps({
         default: () => ({
             family: 'Calibri, Arial, sans-serif',
             size: '14px',
-            weight: 100,
+            weight: 200,
             style: 'normal',
             color: '#222222'
         })
@@ -109,7 +109,7 @@ const props = defineProps({
     border: {
         type: Object,
         default: () => ({
-            color: '#999999',
+            color: '#cccccc',
             width: '1px',
             style: 'solid',
             radius: '4px'
@@ -127,7 +127,7 @@ const props = defineProps({
         default: () => ({
 
             normal: {
-                color: 'rgba(0, 0, 0, 0.3)',
+                color: 'rgba(0, 0, 0, 0.2)',
                 offsetX: '0px',
                 offsetY: '2px',
                 blur: '4px',
@@ -136,7 +136,7 @@ const props = defineProps({
             },
 
             hover: {
-                color: 'rgba(0, 0, 0, 0.3)',
+                color: 'rgba(0, 0, 0, 0.2)',
                 offsetX: '0px',
                 offsetY: '2px',
                 blur: '4px',
@@ -145,7 +145,7 @@ const props = defineProps({
             },
 
             focus: {
-                color: 'rgba(66, 133, 244, 0.5)',
+                color: 'rgba(66, 133, 244, 0.2)',
                 offsetX: '0px',
                 offsetY: '2px',
                 blur: '4px',
@@ -189,7 +189,7 @@ const props = defineProps({
         type: Object,
 
         default: () => ({
-            borderColor: '#4285F4',
+            borderColor: '#777777',
             backgroundColor: null,
             color: null
         })

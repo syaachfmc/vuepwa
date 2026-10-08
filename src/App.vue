@@ -2,7 +2,9 @@
 
   <TextBox v-model="namaku" placeholder="Masukkan nama ku" /> __
   <TextBox v-model="namamu" placeholder="Masukkan nama mu" />
-
+  <TextBox v-model="namaku" placeholder="Masukkan nama ku" /> __
+  <TextBox v-model="namamu" placeholder="Masukkan nama mu" />
+  
   <p>Value: {{ namaku }}</p>
 
 
