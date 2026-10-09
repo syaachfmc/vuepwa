@@ -42,7 +42,7 @@
                 :disabled="!enabled"
                 @click="toggleDropdown"
             >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" :stroke="themeColors.textPrimary" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </button>
@@ -71,7 +71,7 @@
             </ul>
         </div>
 
-        <!-- MODE 2: Non-Editable (Custom UI dengan gaya & warna konsisten) -->
+        <!-- MODE 2: Non-Editable -->
         <div v-else class="custom-dropdown-container">
             <div
                 ref="selectRef"
@@ -98,7 +98,7 @@
                     {{ selectedLabel || placeholder }}
                 </span>
                 <span class="dropdown-arrow-icon">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" :stroke="themeColors.textPrimary" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </span>
@@ -133,6 +133,7 @@
 
 <script setup>
 import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
 
 const props = defineProps({
     modelValue: { type: [String, Number, Boolean], default: '' },
@@ -140,21 +141,21 @@ const props = defineProps({
     options: { type: Array, default: () => [] },
     editable: { type: Boolean, default: false },
     size: { type: Object, default: () => ({ width: '200px', height: '32px' }) },
-    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: '#222222' }) },
-    background: { type: Object, default: () => ({ color: '#ffffff' }) },
-    border: { type: Object, default: () => ({ color: '#cccccc', width: '1px', style: 'solid', radius: '4px' }) },
+    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: APP_COLORS.textPrimary }) },
+    background: { type: Object, default: () => ({ color: APP_COLORS.bgPrimary }) },
+    border: { type: Object, default: () => ({ color: APP_COLORS.borderDefault, width: '1px', style: 'solid', radius: '4px' }) },
     shadow: {
         type: Object,
         default: () => ({
-            normal: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
-            hover: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
-            focus: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
-            error: { color: 'rgba(220, 53, 69, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
-            errorHover: { color: 'rgba(220, 53, 69, 0.4)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
+            normal: { color: APP_COLORS.shadowColorNormal, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
+            hover: { color: APP_COLORS.shadowColorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
+            focus: { color: APP_COLORS.shadowColorFocus, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
+            error: { color: APP_COLORS.shadowColorError, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
+            errorHover: { color: APP_COLORS.shadowColorErrorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
         })
     },
-    hover: { type: Object, default: () => ({ borderColor: '#777777', backgroundColor: null, color: null }) },
-    focus: { type: Object, default: () => ({ borderColor: '#777777', backgroundColor: null, color: null }) },
+    hover: { type: Object, default: () => ({ borderColor: APP_COLORS.borderHover, backgroundColor: null, color: null }) },
+    focus: { type: Object, default: () => ({ borderColor: APP_COLORS.borderFocus, backgroundColor: null, color: null }) },
     text: { type: Object, default: () => ({ align: 'left', padding: '5px 8px' }) },
     enabled: { type: Boolean, default: true },
     visible: { type: Boolean, default: true },
@@ -168,6 +169,8 @@ const props = defineProps({
 const emit = defineEmits([
     'update:modelValue', 'input', 'change', 'focus', 'blur', 'click'
 ])
+
+const themeColors = APP_COLORS
 
 const wrapperRef = ref(null)
 const selectRef = ref(null)
@@ -200,9 +203,7 @@ function handleClickOutside(event) {
     }
 }
 
-const isDirty = computed(() => {
-    return props.modelValue !== initialValue.value
-})
+const isDirty = computed(() => props.modelValue !== initialValue.value)
 
 const normalizedOptions = computed(() => {
     return props.options.map(item => {
@@ -242,9 +243,7 @@ watch(isOpen, (newVal) => {
         focusedIndex.value = -1
     } else {
         const list = props.editable ? displayOptions.value : normalizedOptions.value
-        const currentIndex = list.findIndex(
-            opt => opt.value === props.modelValue
-        )
+        const currentIndex = list.findIndex(opt => opt.value === props.modelValue)
         focusedIndex.value = currentIndex >= 0 ? currentIndex : 0
         scrollToFocusedOption()
     }
@@ -319,15 +318,13 @@ function onKeydownNonEditable(event) {
 function scrollToFocusedOption() {
     nextTick(() => {
         if (focusedIndex.value >= 0 && optionRefs.value[focusedIndex.value]) {
-            optionRefs.value[focusedIndex.value]?.scrollIntoView({
-                block: 'nearest'
-            })
+            optionRefs.value[focusedIndex.value]?.scrollIntoView({ block: 'nearest' })
         }
     })
 }
 
 function makeShadow(shadow = {}) {
-    const color = shadow.color || 'rgba(0, 0, 0, 0.15)'
+    const color = shadow.color || APP_COLORS.shadowColorNormal
     const offsetX = shadow.offsetX || '0px'
     const offsetY = shadow.offsetY || '2px'
     const blur = shadow.blur || '4px'
@@ -346,18 +343,18 @@ const dropdownStyle = computed(() => {
     const focus = props.focus || {}
     const text = props.text || {}
 
-    let currentColor = font.color || '#222222'
-    let currentBackground = background.color || '#ffffff'
-    let currentBorderColor = border.color || '#999999'
+    let currentColor = font.color || APP_COLORS.textPrimary
+    let currentBackground = background.color || APP_COLORS.bgPrimary
+    let currentBorderColor = border.color || APP_COLORS.borderDefault
     let currentShadow = makeShadow(shadow.normal || {})
 
     if (props.error) {
-        currentBorderColor = '#dc3545'
+        currentBorderColor = APP_COLORS.borderError
         if (shadow.error) currentShadow = makeShadow(shadow.error)
     }
 
     if (!props.enabled) {
-        currentBackground = '#eeeeee'
+        currentBackground = APP_COLORS.bgDisabled
     }
 
     if (isHovered.value && props.enabled) {
@@ -462,14 +459,9 @@ function blur() {
     if (props.editable) inputRef.value?.blur()
     else selectRef.value?.blur() 
 }
-function getValue() { 
-    return props.modelValue
-}
+function getValue() { return props.modelValue }
 function setValue(value) { emit('update:modelValue', value) }
-
-function resetOriginalValue() {
-    initialValue.value = props.modelValue
-}
+function resetOriginalValue() { initialValue.value = props.modelValue }
 
 defineExpose({
     focus, blur, getValue, setValue, resetOriginalValue, selectRef, inputRef
@@ -477,7 +469,22 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Menggunakan v-bind CSS Variables dari JavaScript */
 .dropdown-wrapper {
+    --bg-primary: v-bind('APP_COLORS.bgPrimary');
+    --bg-disabled: v-bind('APP_COLORS.bgDisabled');
+    --text-primary: v-bind('APP_COLORS.textPrimary');
+    --text-secondary: v-bind('APP_COLORS.textSecondary');
+    --text-disabled: v-bind('APP_COLORS.textDisabled');
+    --border-error: v-bind('APP_COLORS.borderError');
+    --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
+    --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
+    --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
+    --option-list-bg: v-bind('APP_COLORS.optionListBg');
+    --option-list-border: v-bind('APP_COLORS.optionListBorder');
+    --option-hover-bg: v-bind('APP_COLORS.optionHoverBg');
+    --option-hover-text: v-bind('APP_COLORS.optionHoverText');
+
     position: relative;
     display: inline-flex;
     flex-direction: column;
@@ -502,14 +509,13 @@ defineExpose({
     width: 100%;
 }
 
-/* Custom Non-Editable styling */
 .dropdown-non-editable {
     user-select: none;
     position: relative;
 }
 
 .dropdown-non-editable.is-placeholder .dropdown-selected-text {
-    color: #888888;
+    color: var(--text-secondary);
 }
 
 .dropdown-selected-text {
@@ -550,7 +556,6 @@ defineExpose({
     opacity: 0.5;
 }
 
-/* Custom list popup */
 .custom-options-list {
     position: absolute;
     top: 100%;
@@ -559,8 +564,8 @@ defineExpose({
     margin: 2px 0 0 0;
     padding: 4px 0;
     list-style: none;
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
+    background-color: var(--option-list-bg);
+    border: 1px solid var(--option-list-border);
     border-radius: 4px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.15);
     max-height: 180px;
@@ -571,25 +576,23 @@ defineExpose({
 .custom-option-item {
     padding: 6px 10px;
     font-size: 14px;
-    color: #222222;
+    color: var(--text-primary);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-/* Warna Hover & Active (Biru Muda) */
 .custom-option-item:hover,
 .custom-option-item.is-active {
-    background-color: #e6f0ff !important;
-    color: #0056b3 !important;
+    background-color: var(--option-hover-bg) !important;
+    color: var(--option-hover-text) !important;
 }
 
-/* Status opsi terpilih */
 .custom-option-item.is-selected {
     font-weight: 600;
 }
 
 .custom-option-item.is-disabled {
-    color: #a0a0a0;
+    color: var(--text-disabled);
     cursor: not-allowed;
     background-color: transparent !important;
 }
@@ -597,26 +600,10 @@ defineExpose({
 .custom-option-empty {
     padding: 6px 10px;
     font-size: 13px;
-    color: #888888;
+    color: var(--option-empty-text);
     text-align: center;
 }
 
-/* Indikator Bola Kecil (Dirty Badge) */
-.dirty-badge {
-    position: absolute;
-    top: -3px;
-    right: -3px;
-    width: 8px;
-    height: 8px;
-    background-color: #ff9100;
-    border-width: 1px;
-    border-color: #ffc400;
-    border-style: solid;
-    border-radius: 50%;
-    z-index: 1001;
-    box-shadow: 0px 0px 5px 2px rgb(255, 251, 0);
-    pointer-events: none;
-}
 
 .dropdown-disabled {
     opacity: 0.65;
@@ -624,11 +611,11 @@ defineExpose({
 }
 
 .dropdown-error {
-    border-color: #dc3545 !important;
+    border-color: var(--border-error) !important;
 }
 
 .error-text {
-    color: #dc3545;
+    color: var(--border-error);
     font-size: 12px;
     margin-top: 4px;
 }

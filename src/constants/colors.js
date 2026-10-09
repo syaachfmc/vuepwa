@@ -1,0 +1,38 @@
+ 
+// src/constants/colors.js
+
+export const APP_COLORS = {
+  // --- WARNA NETRAL & DASAR ---
+  bgPrimary: 'rgba(255, 255, 255, 1)',
+  bgDisabled: 'rgba(238, 238, 238, 1)',
+  textPrimary: 'rgba(34, 34, 34, 1)',
+  textSecondary: 'rgba(136, 136, 136, 1)',
+  textDisabled: 'rgba(160, 160, 160, 1)',
+
+  // --- WARNA BORDER ---
+  borderDefault: 'rgba(204, 204, 204, 1)',
+  borderHover: 'rgba(119, 119, 119, 1)',
+  borderFocus: 'rgba(119, 119, 119, 1)',
+  borderError: 'rgba(220, 53, 69, 1)',
+
+  // --- WARNA STATE (DIRTY BADGE, ERROR) ---
+  dirtyBadgeBg: 'rgba(219, 156, 20, 1)',
+  dirtyBadgeBorder: 'rgba(255, 196, 0, 1)',
+  dirtyBadgeGlow: 'rgba(255, 251, 0, 0.8)',
+  errorText: 'rgba(220, 53, 69, 1)',
+
+  // --- WARNA DROPDOWN OPTIONS (POPUP LIST) ---
+  optionListBg: 'rgba(255, 255, 255, 1)',
+  optionListBorder: 'rgba(204, 204, 204, 1)',
+  optionHoverBg: 'rgba(230, 240, 255, 1)',
+  optionHoverText: 'rgba(0, 86, 179, 1)',
+  optionEmptyText: 'rgba(136, 136, 136, 1)',
+
+  // --- SHADOWS ---
+  shadowColorNormal: 'rgba(0, 0, 0, 0.2)',
+  shadowColorHover: 'rgba(0, 0, 0, 0.2)',
+  shadowColorFocus: 'rgba(0, 0, 0, 0.2)',
+  shadowColorError: 'rgba(220, 53, 69, 0.2)',
+  shadowColorErrorHover: 'rgba(220, 53, 69, 0.4)'
+};
+ 
