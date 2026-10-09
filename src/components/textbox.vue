@@ -25,27 +25,28 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
 
 // --- PROPS ---
 const props = defineProps({
     modelValue: { type: [String, Number], default: '' },
     name: { type: String, default: '' },
     size: { type: Object, default: () => ({ width: '200px', height: '32px' }) },
-    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: '#222222' }) },
-    background: { type: Object, default: () => ({ color: '#ffffff' }) },
-    border: { type: Object, default: () => ({ color: '#cccccc', width: '1px', style: 'solid', radius: '4px' }) },
+    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: APP_COLORS.textPrimary }) },
+    background: { type: Object, default: () => ({ color: APP_COLORS.bgPrimary }) },
+    border: { type: Object, default: () => ({ color: APP_COLORS.borderDefault, width: '1px', style: 'solid', radius: '4px' }) },
     shadow: {
         type: Object,
         default: () => ({
-            normal: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
-            hover: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
-            focus: { color: 'rgba(0, 0, 0, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
-            error: { color: 'rgba(220, 53, 69, 0.2)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
-            errorHover: { color: 'rgba(220, 53, 69, 0.4)', offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
+            normal: { color: APP_COLORS.shadowColorNormal, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
+            hover: { color: APP_COLORS.shadowColorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
+            focus: { color: APP_COLORS.shadowColorFocus, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
+            error: { color: APP_COLORS.shadowColorError, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
+            errorHover: { color: APP_COLORS.shadowColorErrorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
         })
     },
-    hover: { type: Object, default: () => ({ borderColor: '#777777', backgroundColor: null, color: null }) },
-    focus: { type: Object, default: () => ({ borderColor: '#777777', backgroundColor: null, color: null }) },
+    hover: { type: Object, default: () => ({ borderColor: APP_COLORS.borderHover, backgroundColor: null, color: null }) },
+    focus: { type: Object, default: () => ({ borderColor: APP_COLORS.borderFocus, backgroundColor: null, color: null }) },
     text: { type: Object, default: () => ({ align: 'left', padding: '5px 8px' }) },
     enabled: { type: Boolean, default: true },
     readOnly: { type: Boolean, default: false },
@@ -90,7 +91,7 @@ const isDirty = computed(() => {
 
 // --- MAKE SHADOW ---
 function makeShadow(shadow = {}) {
-    const color = shadow.color || 'rgba(0, 0, 0, 0.15)'
+    const color = shadow.color || APP_COLORS.shadowColorNormal
     const offsetX = shadow.offsetX || '0px'
     const offsetY = shadow.offsetY || '2px'
     const blur = shadow.blur || '4px'
@@ -110,18 +111,18 @@ const textboxStyle = computed(() => {
     const focus = props.focus || {}
     const text = props.text || {}
 
-    let currentColor = font.color || '#222222'
-    let currentBackground = background.color || '#ffffff'
-    let currentBorderColor = border.color || '#999999'
+    let currentColor = font.color || APP_COLORS.textPrimary
+    let currentBackground = background.color || APP_COLORS.bgPrimary
+    let currentBorderColor = border.color || APP_COLORS.borderDefault
     let currentShadow = makeShadow(shadow.normal || {})
 
     if (props.error) {
-        currentBorderColor = '#dc3545'
+        currentBorderColor = APP_COLORS.borderError
         if (shadow.error) currentShadow = makeShadow(shadow.error)
     }
 
     if (!props.enabled) {
-        currentBackground = '#eeeeee'
+        currentBackground = APP_COLORS.bgDisabled
     }
 
     if (isHovered.value && props.enabled) {
@@ -197,12 +198,14 @@ defineExpose({
 </script>
 
 <style scoped>
-
 .textbox-wrapper {
+    --text-secondary: v-bind('APP_COLORS.textSecondary');
+    --border-error: v-bind('APP_COLORS.borderError');
+
     position: relative;
     display: inline-flex;
     flex-direction: column;
-    width: fit-content; /* Sesuai dengan ukuran elemen di dalamnya */
+    width: fit-content;
 }
 
 .textbox {
@@ -215,8 +218,6 @@ defineExpose({
         box-shadow 0.15s ease;
 }
 
-/* Style Bola Kecil Indikator */
-
 .textbox-disabled {
     opacity: 0.65;
     cursor: not-allowed;
@@ -227,16 +228,16 @@ defineExpose({
 }
 
 .textbox-error {
-    border-color: #dc3545 !important;
+    border-color: var(--border-error) !important;
 }
 
 .textbox::placeholder {
-    color: #0000005d;
+    color: var(--text-secondary);
     opacity: 1;
 }
 
 .error-text {
-    color: #dc3545;
+    color: var(--border-error);
     font-size: 12px;
     margin-top: 4px;
 }
