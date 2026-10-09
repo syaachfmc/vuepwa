@@ -5,11 +5,11 @@
         v-if="visible"
         @mouseleave="onMouseLeaveWrapper"
     >
-        <!-- Indikator Bola Kecil (Hanya muncul jika nilai berubah/isDirty) -->
+        <!-- Indikator Bola Kecil (Dirty Badge) -->
         <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
-        <!-- MODE 1: Editable (Bisa diketik + Custom Options Popup) -->
-        <div v-if="editable" class="editable-container">
+        <!-- MODE 1: Editable -->
+        <div v-if="editable" class="custom-dropdown-container">
             <input 
                 ref="inputRef"
                 :value="modelValue" 
@@ -35,7 +35,6 @@
                 @mouseenter="onMouseEnter" 
                 @mouseleave="onMouseLeave"
             />
-            <!-- Tombol Panah Dropdown untuk Mode Editable -->
             <button 
                 type="button"
                 tabindex="-1"
@@ -48,17 +47,17 @@
                 </svg>
             </button>
 
-            <!-- Popup List Opsi untuk Mode Editable -->
-            <ul v-if="isOpen && enabled" ref="optionsListRef" class="editable-options-list">
+            <ul v-if="isOpen && enabled" ref="optionsListRef" class="custom-options-list">
                 <li 
                     v-for="(option, index) in displayOptions" 
                     :key="index"
                     :ref="el => optionRefs[index] = el"
                     :class="[
-                        'editable-option-item', 
+                        'custom-option-item', 
                         { 
                             'is-disabled': option.disabled,
-                            'is-active': index === focusedIndex
+                            'is-active': index === focusedIndex,
+                            'is-selected': option.value === modelValue
                         }
                     ]"
                     @mousedown.prevent="selectOption(option)"
@@ -66,51 +65,65 @@
                 >
                     {{ option.label }}
                 </li>
-                <li v-if="displayOptions.length === 0" class="editable-option-empty">
+                <li v-if="displayOptions.length === 0" class="custom-option-empty">
                     Tidak ada opsi
                 </li>
             </ul>
         </div>
 
-        <!-- MODE 2: Standard Select Dropdown (Bawaan) -->
-        <select 
-            v-else
-            ref="selectRef"
-            :value="modelValue" 
-            :name="name" 
-            :disabled="!enabled" 
-            :required="required"
-            :class="[
-                'dropdown',
-                {
-                    'dropdown-error': error,
-                    'dropdown-disabled': !enabled,
-                    'dropdown-dirty': isDirty
-                }
-            ]" 
-            :style="dropdownStyle" 
-            @change="onChange" 
-            @focus="onFocus" 
-            @blur="onBlur"
-            @click="onClick" 
-            @mouseenter="onMouseEnter" 
-            @mouseleave="onMouseLeave"
-        >
-            <!-- Opsi Placeholder (jika ada) -->
-            <option v-if="placeholder" value="" disabled hidden selected>
-                {{ placeholder }}
-            </option>
-
-            <!-- Loop Opsi -->
-            <option 
-                v-for="(option, index) in normalizedOptions" 
-                :key="index" 
-                :value="option.value"
-                :disabled="option.disabled"
+        <!-- MODE 2: Non-Editable (Custom UI dengan gaya & warna konsisten) -->
+        <div v-else class="custom-dropdown-container">
+            <div
+                ref="selectRef"
+                tabindex="0"
+                :class="[
+                    'dropdown',
+                    'dropdown-non-editable',
+                    {
+                        'dropdown-error': error,
+                        'dropdown-disabled': !enabled,
+                        'dropdown-dirty': isDirty,
+                        'is-placeholder': !selectedLabel
+                    }
+                ]"
+                :style="dropdownStyle"
+                @click="toggleDropdown"
+                @keydown="onKeydownNonEditable"
+                @focus="onFocus"
+                @blur="onBlur"
+                @mouseenter="onMouseEnter"
+                @mouseleave="onMouseLeave"
             >
-                {{ option.label }}
-            </option>
-        </select>
+                <span class="dropdown-selected-text">
+                    {{ selectedLabel || placeholder }}
+                </span>
+                <span class="dropdown-arrow-icon">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#222222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </div>
+
+            <ul v-if="isOpen && enabled" ref="optionsListRef" class="custom-options-list">
+                <li 
+                    v-for="(option, index) in normalizedOptions" 
+                    :key="index"
+                    :ref="el => optionRefs[index] = el"
+                    :class="[
+                        'custom-option-item', 
+                        { 
+                            'is-disabled': option.disabled,
+                            'is-active': index === focusedIndex,
+                            'is-selected': option.value === modelValue
+                        }
+                    ]"
+                    @mousedown.prevent="selectOption(option)"
+                    @mouseenter="focusedIndex = index"
+                >
+                    {{ option.label }}
+                </li>
+            </ul>
+        </div>
 
         <span v-if="error && errorMessage" class="error-text">
             {{ errorMessage }}
@@ -121,7 +134,6 @@
 <script setup>
 import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
-// --- PROPS ---
 const props = defineProps({
     modelValue: { type: [String, Number, Boolean], default: '' },
     name: { type: String, default: '' },
@@ -153,12 +165,10 @@ const props = defineProps({
     cursor: { type: String, default: 'pointer' }
 })
 
-// --- EMITS ---
 const emit = defineEmits([
     'update:modelValue', 'input', 'change', 'focus', 'blur', 'click'
 ])
 
-// --- REF & STATE ---
 const wrapperRef = ref(null)
 const selectRef = ref(null)
 const inputRef = ref(null)
@@ -169,8 +179,6 @@ const isFocused = ref(false)
 const isHovered = ref(false)
 const isOpen = ref(false)
 const isFiltering = ref(false)
-
-// Indeks opsi yang sedang disorot via keyboard
 const focusedIndex = ref(-1)
 
 const initialValue = ref('')
@@ -209,6 +217,11 @@ const normalizedOptions = computed(() => {
     })
 })
 
+const selectedLabel = computed(() => {
+    const found = normalizedOptions.value.find(opt => opt.value === props.modelValue)
+    return found ? found.label : ''
+})
+
 const displayOptions = computed(() => {
     if (!isFiltering.value || !props.modelValue) {
         return normalizedOptions.value
@@ -219,19 +232,17 @@ const displayOptions = computed(() => {
     )
 })
 
-// Reset focusedIndex ketika opsi yang tampil berubah
 watch(displayOptions, () => {
     focusedIndex.value = -1
     optionRefs.value = []
 })
 
-// Reset focusedIndex ketika dropdown tertutup
 watch(isOpen, (newVal) => {
     if (!newVal) {
         focusedIndex.value = -1
     } else {
-        // Cari indeks item yang sedang dipilih jika ada
-        const currentIndex = displayOptions.value.findIndex(
+        const list = props.editable ? displayOptions.value : normalizedOptions.value
+        const currentIndex = list.findIndex(
             opt => opt.value === props.modelValue
         )
         focusedIndex.value = currentIndex >= 0 ? currentIndex : 0
@@ -239,11 +250,9 @@ watch(isOpen, (newVal) => {
     }
 })
 
-// --- NAVIGASI KEYBOARD ---
 function onKeydownEditable(event) {
     if (!props.enabled) return
 
-    // Jika dropdown tertutup dan user menekan Panah Bawah/Atas -> Buka dropdown
     if (!isOpen.value && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
         event.preventDefault()
         isOpen.value = true
@@ -266,8 +275,7 @@ function onKeydownEditable(event) {
     } else if (event.key === 'Enter') {
         event.preventDefault()
         if (focusedIndex.value >= 0 && focusedIndex.value < displayOptions.value.length) {
-            const selectedOpt = displayOptions.value[focusedIndex.value]
-            selectOption(selectedOpt)
+            selectOption(displayOptions.value[focusedIndex.value])
         }
     } else if (event.key === 'Escape') {
         isOpen.value = false
@@ -276,7 +284,38 @@ function onKeydownEditable(event) {
     }
 }
 
-// Otomatis scroll saat berpindah opsi via keyboard
+function onKeydownNonEditable(event) {
+    if (!props.enabled) return
+
+    if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault()
+        if (!isOpen.value) {
+            isOpen.value = true
+            return
+        }
+    }
+
+    if (!isOpen.value) return
+
+    if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        focusedIndex.value = (focusedIndex.value + 1) % normalizedOptions.value.length
+        scrollToFocusedOption()
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        focusedIndex.value = (focusedIndex.value - 1 + normalizedOptions.value.length) % normalizedOptions.value.length
+        scrollToFocusedOption()
+    } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        if (focusedIndex.value >= 0 && focusedIndex.value < normalizedOptions.value.length) {
+            selectOption(normalizedOptions.value[focusedIndex.value])
+        }
+    } else if (event.key === 'Escape') {
+        isOpen.value = false
+        focusedIndex.value = -1
+    }
+}
+
 function scrollToFocusedOption() {
     nextTick(() => {
         if (focusedIndex.value >= 0 && optionRefs.value[focusedIndex.value]) {
@@ -287,7 +326,6 @@ function scrollToFocusedOption() {
     })
 }
 
-// --- MAKE SHADOW ---
 function makeShadow(shadow = {}) {
     const color = shadow.color || 'rgba(0, 0, 0, 0.15)'
     const offsetX = shadow.offsetX || '0px'
@@ -298,7 +336,6 @@ function makeShadow(shadow = {}) {
     return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`
 }
 
-// --- COMPUTED STYLE ---
 const dropdownStyle = computed(() => {
     const size = props.size || {}
     const font = props.font || {}
@@ -356,24 +393,24 @@ const dropdownStyle = computed(() => {
         borderRadius: border.radius || '4px',
         boxShadow: currentShadow,
         textAlign: text.align || 'left',
-        padding: props.editable ? '5px 28px 5px 8px' : (text.padding || '5px 24px 5px 8px'),
+        padding: text.padding || '5px 28px 5px 8px',
         cursor: props.enabled ? (props.editable ? 'text' : props.cursor) : 'not-allowed',
         boxSizing: 'border-box',
-        outline: 'none',
-        appearance: 'none',
-        webkitAppearance: 'none',
-        mozAppearance: 'none'
+        outline: 'none'
     }
 })
 
-// --- EDITABLE ACTIONS ---
 function toggleDropdown() {
     if (!props.enabled) return
     
     if (!isOpen.value) {
         isFiltering.value = false
         isOpen.value = true
-        inputRef.value?.focus()
+        if (props.editable) {
+            inputRef.value?.focus()
+        } else {
+            selectRef.value?.focus()
+        }
     } else {
         isOpen.value = false
     }
@@ -402,19 +439,12 @@ function onBlurEditable(event) {
     emit('blur', event)
 }
 
-// --- EVENTS ---
 function onInput(event) {
     const value = event.target.value
     isFiltering.value = true
     isOpen.value = true
     emit('update:modelValue', value)
     emit('input', value)
-}
-
-function onChange(event) {
-    const value = event.target.value
-    emit('update:modelValue', value)
-    emit('change', value)
 }
 
 function onFocus(event) { isFocused.value = true; emit('focus', event) }
@@ -424,7 +454,6 @@ function onMouseEnter() { if (props.enabled) isHovered.value = true }
 function onMouseLeave() { isHovered.value = false }
 function onMouseLeaveWrapper() { isHovered.value = false }
 
-// --- PUBLIC METHODS ---
 function focus() { 
     if (props.editable) inputRef.value?.focus()
     else selectRef.value?.focus() 
@@ -434,8 +463,7 @@ function blur() {
     else selectRef.value?.blur() 
 }
 function getValue() { 
-    if (props.editable) return inputRef.value?.value ?? ''
-    return selectRef.value?.value ?? '' 
+    return props.modelValue
 }
 function setValue(value) { emit('update:modelValue', value) }
 
@@ -457,31 +485,51 @@ defineExpose({
 }
 
 .dropdown {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
     font-family: Arial, sans-serif;
     transition:
         border-color 0.15s ease,
         background-color 0.15s ease,
         color 0.15s ease,
         box-shadow 0.15s ease;
-    
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23222222' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
 }
 
-/* Container khusus mode editable */
-.editable-container {
+.custom-dropdown-container {
     position: relative;
     display: inline-block;
     width: 100%;
+}
+
+/* Custom Non-Editable styling */
+.dropdown-non-editable {
+    user-select: none;
+    position: relative;
+}
+
+.dropdown-non-editable.is-placeholder .dropdown-selected-text {
+    color: #888888;
+}
+
+.dropdown-selected-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.dropdown-arrow-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
 }
 
 .dropdown-editable {
     background-image: none !important;
 }
 
-/* Tombol panah pada mode editable */
 .dropdown-arrow-btn {
     position: absolute;
     right: 4px;
@@ -502,8 +550,8 @@ defineExpose({
     opacity: 0.5;
 }
 
-/* Custom list popup untuk mode editable */
-.editable-options-list {
+/* Custom list popup */
+.custom-options-list {
     position: absolute;
     top: 100%;
     left: 0;
@@ -520,28 +568,33 @@ defineExpose({
     z-index: 1000;
 }
 
-.editable-option-item {
+.custom-option-item {
     padding: 6px 10px;
     font-size: 14px;
     color: #222222;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-/* Style ketika di-hover mouse atau dipilih via keyboard (is-active) */
-.editable-option-item:hover,
-.editable-option-item.is-active {
-    background-color: #e6f0ff;
-    color: #0056b3;
+/* Warna Hover & Active (Biru Muda) */
+.custom-option-item:hover,
+.custom-option-item.is-active {
+    background-color: #e6f0ff !important;
+    color: #0056b3 !important;
 }
 
-.editable-option-item.is-disabled {
+/* Status opsi terpilih */
+.custom-option-item.is-selected {
+    font-weight: 600;
+}
+
+.custom-option-item.is-disabled {
     color: #a0a0a0;
     cursor: not-allowed;
-    background-color: transparent;
+    background-color: transparent !important;
 }
 
-.editable-option-empty {
+.custom-option-empty {
     padding: 6px 10px;
     font-size: 13px;
     color: #888888;
