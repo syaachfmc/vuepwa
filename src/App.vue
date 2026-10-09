@@ -1,198 +1,105 @@
-
-<script setup>
-import { ref, onMounted } from "vue";
-import {
-  login,
-  validateSession,
-  logout
-} from "./api/auth.js";
-
-const username = ref("");
-const password = ref("");
-const user = ref(null);
-const token = ref(sessionStorage.getItem("authToken") || "");
-const loading = ref(false);
-const errorMessage = ref("");
-
-async function handleLogin() {
-  errorMessage.value = "";
-  loading.value = true;
-
-  try {
-    const result = await login(
-      username.value,
-      password.value
-    );
-
-    if (!result.success) {
-      errorMessage.value = result.message;
-      return;
-    }
-
-    token.value = result.token;
-    user.value = result.user;
-
-    sessionStorage.setItem("authToken", result.token);
-  } catch (error) {
-    errorMessage.value =
-      "Gagal menghubungi server. Coba lagi.";
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function handleLogout() {
-  loading.value = true;
-
-  try {
-    if (token.value) {
-      await logout(token.value);
-    }
-  } catch (error) {
-    console.error("Logout server gagal:", error);
-  } finally {
-    token.value = "";
-    user.value = null;
-    password.value = "";
-
-    sessionStorage.removeItem("authToken");
-    loading.value = false;
-  }
-}
-
-onMounted(async () => {
-  if (!token.value) return;
-
-  try {
-    const result = await validateSession(token.value);
-
-    if (result.success) {
-      user.value = result.user;
-    } else {
-      sessionStorage.removeItem("authToken");
-      token.value = "";
-    }
-  } catch (error) {
-    errorMessage.value =
-      "Sesi belum bisa diverifikasi. Periksa koneksi.";
-    console.error(error);
-  }
-});
-</script>
-
 <template>
-  <main class="container">
-    <section v-if="!user" class="card">
-      <h1>Login</h1>
-      <p>Masukkan username dan password.</p>
+  <div class="form-container">
+    <div class="form-group">
+      <label>TextBox Nama Aku:</label>
+      <TextBox ref="textboxAku1Ref" v-model="namaku" placeholder="Masukkan nama ku" />
+    </div>
 
-      <form @submit.prevent="handleLogin">
-        <label for="username">Username</label>
-        <input
-          id="username"
-          v-model.trim="username"
-          autocomplete="username"
-          required
-        />
+    <div class="form-group">
+      <label>Dropdown Pilihan Kategori:</label>
+      <Dropdown ref="dropdownKategoriRef" v-model="kategori" :options="opsiKategori" placeholder="Pilih Kategori" />
+    </div>
 
-        <label for="password">Password</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        />
+    <div class="form-group">
+      <label>TextBox Nama Mu (Readonly/Disabled):</label>
+      <TextBox ref="textboxAku2Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="false" />
+    </div>
 
-        <p v-if="errorMessage" class="error">
-          {{ errorMessage }}
-        </p>
+    <div class="form-group">
+      <label>Dropdown Role (Validasi Error):</label>
+      <Dropdown ref="dropdownRoleRef" v-model="role" :options="opsiRole" placeholder="Pilih Role" :error="isRoleError"
+        errorMessage="Role harus 'Admin'" :editable="true" />
+    </div>
 
-        <button type="submit" :disabled="loading">
-          {{ loading ? "Memproses..." : "Login" }}
-        </button>
-      </form>
-    </section>
+    <div class="data-preview">
+      <p><strong>Value Namaku:</strong> {{ namaku }}</p>
+      <p><strong>Value Kategori:</strong> {{ kategori }}</p>
+      <p><strong>Value Role:</strong> {{ role }}</p>
+    </div>
 
-    <section v-else class="card">
-      <h1>Dashboard</h1>
-      <p>Login berhasil.</p>
-
-      <p><strong>Nama:</strong> {{ user.name }}</p>
-      <p><strong>Username:</strong> {{ user.username }}</p>
-      <p><strong>Role:</strong> {{ user.role }}</p>
-
-      <button @click="handleLogout" :disabled="loading">
-        {{ loading ? "Memproses..." : "Logout" }}
+    <div style="margin-top: 16px;">
+      <button @click="handleResetOriginal">
+        Simpan & Set Nilai Asli Baru
       </button>
-    </section>
-  </main>
+    </div>
+  </div>
 </template>
 
-<style>
-* {
-  box-sizing: border-box;
+<script setup>
+import { ref, computed } from 'vue'
+import TextBox from './components/textbox.vue'
+import Dropdown from './components/dropdown.vue'
+
+// --- STATE ---
+const namaku = ref('')
+const kategori = ref('')
+const role = ref('')
+
+// Data Opsi Dropdown
+const opsiKategori = ref([
+  { label: 'Elektronik', value: 'elektronik' },
+  { label: 'Pakaian', value: 'pakaian' },
+  { label: 'Makanan', value: 'makanan' }
+])
+
+const opsiRole = ref([
+  { label: 'Administrator', value: 'Admin' },
+  { label: 'User Biasa', value: 'User' },
+  { label: 'Guest', value: 'Guest' }
+])
+
+// --- REFS KOMPONEN ---
+const textboxAku1Ref = ref(null)
+const dropdownKategoriRef = ref(null)
+const textboxAku2Ref = ref(null)
+const dropdownRoleRef = ref(null)
+
+// --- COMPUTED VALIDASI ---
+const isRoleError = computed(() => {
+  return role.value !== '' && role.value !== 'Admin'
+})
+
+// --- HANDLER ---
+function handleResetOriginal() {
+  // Riset status dirty pada semua instance komponen
+  textboxAku1Ref.value?.resetOriginalValue()
+  dropdownKategoriRef.value?.resetOriginalValue()
+  textboxAku2Ref.value?.resetOriginalValue()
+  dropdownRoleRef.value?.resetOriginalValue()
 }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f3f4f6;
-  color: #1f2937;
-}
 
-.container {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
 
-.card {
-  width: 100%;
+</script>
+
+<style scoped>
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   max-width: 400px;
-  padding: 28px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 18px #00000012;
 }
 
-h1 {
-  margin-top: 0;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-label {
-  display: block;
-  margin: 16px 0 6px;
-}
-
-input {
-  width: 100%;
-  padding: 11px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 16px;
-}
-
-button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  border: 0;
-  border-radius: 6px;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.error {
-  color: #dc2626;
+.data-preview {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 </style>
