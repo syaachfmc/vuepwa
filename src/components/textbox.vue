@@ -197,11 +197,12 @@ defineExpose({
 </script>
 
 <style scoped>
+
 .textbox-wrapper {
     position: relative;
-    /* Wajib agar elemen penanda posisi absolute berpatokan pada wrapper ini */
     display: inline-flex;
     flex-direction: column;
+    width: fit-content; /* Sesuai dengan ukuran elemen di dalamnya */
 }
 
 .textbox {
