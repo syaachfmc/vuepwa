@@ -5,13 +5,13 @@ export const APP_COLORS = {
   // --- WARNA NETRAL & DASAR ---
   bgPrimary: 'rgb(13, 243, 255)',
  
-  bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 60%, rgb(240, 240, 240) 100%)',
+  bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
 
 
-  bgDisabled: 'rgba(238, 238, 238, 1)',
+  bgDisabled: 'rgb(200, 200, 200)',
   textPrimary: 'rgb(0, 0, 0)',
-  textSecondary: 'rgba(0, 0, 0, 0.71)',
-  textDisabled: 'rgba(160, 160, 160, 1)',
+  textSecondary: 'rgba(118, 118, 118, 0.71)',
+  textDisabled: 'rgb(25, 25, 25)',
 
   // --- WARNA BORDER ---
   borderDefault: 'rgba(204, 204, 204, 1)',

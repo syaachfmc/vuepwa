@@ -156,9 +156,11 @@
             currentBorderColor = APP_COLORS.borderError
             if (shadow.error) currentShadow = makeShadow(shadow.error)
         }
+    
 
         if (!props.enabled) {
             currentBackground = APP_COLORS.bgDisabled
+            currentColor = APP_COLORS.textDisabled
         }
 
         if (isHovered.value && props.enabled) {
@@ -186,7 +188,9 @@
             fontSize: font.size,
             fontWeight: font.weight,
             fontStyle: font.style,
-            color: currentColor,
+            color: !props.enabled 
+                    ? APP_COLORS.textDisabled 
+                    : (props.font.color || APP_COLORS.textPrimary),
             background: currentBackground,
             borderColor: currentBorderColor,
             borderWidth: border.width,
@@ -200,6 +204,8 @@
             outline: 'none'
         }
     })
+
+    
 
     // --- EVENTS ---
     function onInput(event) {
