@@ -9,8 +9,8 @@ export const APP_COLORS = {
 
 
   bgDisabled: 'rgba(238, 238, 238, 1)',
-  textPrimary: 'rgba(34, 34, 34, 1)',
-  textSecondary: 'rgba(136, 136, 136, 1)',
+  textPrimary: 'rgb(0, 0, 0)',
+  textSecondary: 'rgba(4, 0, 0, 0.71)',
   textDisabled: 'rgba(160, 160, 160, 1)',
 
   // --- WARNA BORDER ---

@@ -205,11 +205,30 @@ defineExpose({
 .textbox-wrapper {
     --text-secondary: v-bind('APP_COLORS.textSecondary');
     --border-error: v-bind('APP_COLORS.borderError');
+    /* Tambahkan variabel warna dirty badge */
+    --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
+    --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
+    --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
 
     position: relative;
     display: inline-flex;
     flex-direction: column;
     width: fit-content;
+}
+
+/* --- CSS STYLING UNTUK DIRTY BADGE --- */
+.dirty-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--dirty-badge-bg, #f59e0b); /* Fallback ke warna oranye jika null */
+    border: 1px solid var(--dirty-badge-border, #ffffff);
+    border-radius: 50%;
+    box-shadow: 0 0 4px var(--dirty-badge-glow, rgba(245, 158, 11, 0.5));
+    z-index: 10;
+    pointer-events: none;
 }
 
 .textbox {
