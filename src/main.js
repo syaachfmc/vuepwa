@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { applyThemeColors } from './utils/theme.js'
-
+ 
 
 
 // Import style dirty badge global
