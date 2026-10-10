@@ -90,7 +90,7 @@
   const initialDate = ref(null)
   
   onMounted(() => {
-    initialDate.value = date.value.
+    initialDate.value = date.value
   })
   
   // 3. Computed check status dirty tanggal
