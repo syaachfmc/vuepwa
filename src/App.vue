@@ -37,27 +37,40 @@
       </div>
   
       <div class="form-group">
-      <label>Pilih Tanggal:</label>
-      <div class="datepicker-wrapper">
-        <!-- Dirty Badge -->
-        <span v-if="isDateDirty" class="dirty-badge" title="Data telah diubah"></span>
-        <VueDatePicker
-          v-model="date"
-          :formats="{ input: 'dd MMM yyyy' }"
-          placeholder="Pilih Tanggal"
-          :enable-time-picker="false"
-          auto-apply
-        />
+        <label>Pilih Tanggal:</label>
+        <div class="datepicker-wrapper">
+          <!-- Dirty Badge -->
+          <span v-if="isDate1Dirty" class="dirty-badge" title="Data telah diubah"></span>
+          <VueDatePicker
+            v-model="date1"
+            :formats="{ input: 'dd MMM yyyy' }"
+            placeholder="Pilih Tanggal"
+            :enable-time-picker="true"
+            auto-apply
+           
+          />
+        </div>
+        <div class="datepicker-wrapper">
+          <!-- Dirty Badge -->
+          <span v-if="isDate2Dirty" class="dirty-badge" title="Data telah diubah"></span>
+          <VueDatePicker
+            v-model="date2"
+            :formats="{ input: 'dd MMM yyyy' }"
+            placeholder="Pilih Tanggal"
+            :enable-time-picker="false"
+            
+            auto-apply
+          />
+        </div>
       </div>
-    </div>
 
   
       <div class="data-preview">
         <p><strong>Value Namaku:</strong> {{ namaku }}</p>
         <p><strong>Value Kategori:</strong> {{ kategori }}</p>
         <p><strong>Value Role:</strong> {{ role }}</p>
-        <p><strong>Tanggal Terpilih:</strong> {{ date ? formatTanggal(date) : '-' }}</p>
-      </div>
+        <p><strong>Tanggal Terpilih:</strong> {{ date1 ? formatTanggal(date1) : '-' }}</p>
+        <p><strong>Tanggal Terpilih:</strong> {{ date2 ? formatTanggal(date2) : '-' }}</p>      </div>
   
       <div style="margin-top: 16px;">
         <button @click="handleResetOriginal">
@@ -84,19 +97,28 @@
   const namaku = ref('')
   const kategori = ref('')
   const role = ref('')
-  const date = ref(null)
+  const date1 = ref(null)
+  const date2 = ref(null)
   
   // 2. State untuk menyimpan nilai awal tanggal
-  const initialDate = ref(null)
+  const initialDate1 = ref(null)
+  const initialDate2 = ref(null)
   
   onMounted(() => {
-    initialDate.value = date.value
+    initialDate1.value = date1.value
+    initialDate2.value = date2.value
   })
   
   // 3. Computed check status dirty tanggal
-  const isDateDirty = computed(() => {
-    const current = date.value ? new Date(date.value).getTime() : null
-    const initial = initialDate.value ? new Date(initialDate.value).getTime() : null
+  const isDate1Dirty = computed(() => {
+    const current = date1.value ? new Date(date1.value).getTime() : null
+    const initial = initialDate1.value ? new Date(initialDate1.value).getTime() : null
+    return current !== initial
+  })
+
+  const isDate2Dirty = computed(() => {
+    const current = date2.value ? new Date(date2.value).getTime() : null
+    const initial = initialDate2.value ? new Date(initialDate2.value).getTime() : null
     return current !== initial
   })
   
@@ -134,7 +156,8 @@
     dropdownRoleRef.value?.resetOriginalValue()
     
     // 4. Reset status dirty tanggal setelah simpan
-    initialDate.value = date.value
+    initialDate1.value = date1.value
+    initialDate2.value = date2.value
   }
   </script>
 

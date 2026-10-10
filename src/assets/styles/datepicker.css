@@ -17,16 +17,16 @@
   }
   
   .dp--input-wrap{
-    width: 170px;
+    width: 180px;
   }
   .dp--input:hover {
-    border-color: #16a34a !important;
-    box-shadow: 0 2px 6px rgb(22 163 74 / 12%);
+    box-shadow: inset 0 2px 4px 0 var(--color-shadowColorHover);
+    border-color: var(--color-borderHover) !important;
   }
   
   .dp--input:focus {
-    border-color: #16a34a !important;
-    box-shadow: 0 0 0 3px rgb(22 163 74 / 15%);
+    box-shadow: inset 0 2px 4px 0 var(--color-shadowColorFocus);
+    border-color: var(--color-borderFocus) !important;
   }
   
   /* ========================================
@@ -39,3 +39,58 @@
     overflow: hidden;
   }
   
+/*
+  .dp--instance-calendar{
+    box-shadow: 0 8px 24px rgba(92, 92, 92, 0.15);
+    border-radius: 10%;
+  }
+
+  .dp--menu-inner{
+    box-shadow: 0 8px 24px rgba(92, 92, 92, 0.15);
+    border-radius: 10%;
+    
+  }
+
+  */
+  .dp--theme-light {
+
+    box-shadow: 0 8px 14px rgba(92, 92, 92, 0.15);
+    border-radius: 10px;
+    border-width: 1px;
+
+  
+   background: var(--color-bgPrimaryGrad);
+
+   --dp-background-color: #ffffff;
+    --dp-text-color: #212121;
+    --dp-hover-color: #f3f3f3;
+    --dp-hover-text-color: #212121;
+    --dp-hover-icon-color: #959595;
+    --dp-primary-color: #b3b5b7;
+    --dp-primary-disabled-color: #6bacea;
+    --dp-primary-text-color: #fff;
+    --dp-secondary-color: #c0c4cc;
+    --dp-border-color: #bdbdbd;
+    --dp-menu-border-color: #ddd;
+    --dp-border-color-hover: #0953ff;
+    --dp-border-color-focus: #aaaeb7;
+    --dp-disabled-color: #f6f6f6;
+    --dp-scroll-bar-background: #f3f3f3;
+    --dp-scroll-bar-color: #959595;
+    --dp-success-color: #717171;
+    --dp-success-color-disabled: #686868;
+    --dp-icon-color: #959595;
+    --dp-danger-color: #ff6f60;
+    --dp-marker-color: #ff6f60;
+    --dp-tooltip-color: #fafafa;
+    --dp-disabled-color-text: #8e8e8e;
+    --dp-highlight-color: #1976d21a;
+    --dp-range-between-dates-background-color: var(--dp-hover-color,#f3f3f3);
+    --dp-range-between-dates-text-color: var(--dp-hover-text-color,#212121);
+    --dp-range-between-border-color: var(--dp-hover-color,#f3f3f3);
+    --dp-loader: 5px solid #1976d2;
+  }
+
+  .dp--button-bottom{
+    display: none;
+  }
