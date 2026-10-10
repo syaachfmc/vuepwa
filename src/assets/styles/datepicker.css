@@ -12,9 +12,13 @@
     border-radius: 6px !important;
     box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
-    background-color:var(--color-bgPrimary);
+    background:var(--color-bgPrimaryGrad);
+   
   }
   
+  .dp--input-wrap{
+    width: 170px;
+  }
   .dp--input:hover {
     border-color: #16a34a !important;
     box-shadow: 0 2px 6px rgb(22 163 74 / 12%);

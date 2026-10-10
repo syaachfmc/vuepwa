@@ -3,9 +3,23 @@
         <!-- Indikator Bola Kecil (Hanya muncul jika nilai berubah/isDirty) -->
         <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
-        <input ref="inputRef" :type="type" :value="modelValue" :name="name" :placeholder="placeholder"
-            :disabled="!enabled" :readonly="readOnly" :maxlength="maxlength" :minlength="minlength" :required="required"
-            :autocomplete="autocomplete" :inputmode="inputMode" :min="min" :max="max" :pattern="pattern" :class="[
+        <input 
+            ref="inputRef" 
+            :type="type" 
+            :value="modelValue" 
+            :name="name" 
+            :placeholder="placeholder"
+            :disabled="!enabled" 
+            :readonly="readOnly" 
+            :maxlength="maxlength" 
+            :minlength="minlength" 
+            :required="required"
+            :autocomplete="autocomplete" 
+            :inputmode="inputMode" 
+            :min="min" 
+            :max="max" 
+            :pattern="pattern" 
+            :class="[
                 'textbox',
                 {
                     'textbox-error': error,
@@ -13,9 +27,18 @@
                     'textbox-readonly': readOnly,
                     'textbox-dirty': isDirty
                 }
-            ]" :style="textboxStyle" @input="onInput" @change="onChange" @focus="onFocus" @blur="onBlur"
-            @keydown="onKeydown" @keyup="onKeyup" @click="onClick" @mouseenter="onMouseEnter"
-            @mouseleave="onMouseLeave" />
+             ]" 
+            :style="textboxStyle" 
+            @input="onInput" 
+            @change="onChange" 
+            @focus="onFocus" 
+            @blur="onBlur"
+            @keydown="onKeydown" 
+            @keyup="onKeyup" 
+            @click="onClick" 
+            @mouseenter="onMouseEnter"
+            @mouseleave="onMouseLeave" 
+        />
 
         <span v-if="error && errorMessage" class="error-text">
             {{ errorMessage }}
@@ -24,181 +47,190 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
-import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
+    import { computed, ref, onMounted } from 'vue'
+    import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
 
-// --- PROPS ---
-const props = defineProps({
-    modelValue: { type: [String, Number], default: '' },
-    name: { type: String, default: '' },
-    size: { type: Object, default: () => ({ width: '200px', height: '32px' }) },
-    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: APP_COLORS.textPrimary }) },
-    background: { type: Object, default: () => ({ color: APP_COLORS.bgPrimary }) },
-    border: { type: Object, default: () => ({ color: APP_COLORS.borderDefault, width: '1px', style: 'solid', radius: '4px' }) },
-    shadow: {
-        type: Object,
-        default: () => ({
-            normal: { color: APP_COLORS.shadowColorNormal, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
-            hover: { color: APP_COLORS.shadowColorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
-            focus: { color: APP_COLORS.shadowColorFocus, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
-            error: { color: APP_COLORS.shadowColorError, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
-            errorHover: { color: APP_COLORS.shadowColorErrorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
-        })
-    },
-    hover: { type: Object, default: () => ({ borderColor: APP_COLORS.borderHover, backgroundColor: null, color: null }) },
-    focus: { type: Object, default: () => ({ borderColor: APP_COLORS.borderFocus, backgroundColor: null, color: null }) },
-    text: { type: Object, default: () => ({ align: 'left', padding: '5px 8px' }) },
-    enabled: { type: Boolean, default: true },
-    readOnly: { type: Boolean, default: false },
-    visible: { type: Boolean, default: true },
-    type: { type: String, default: 'text' },
-    placeholder: { type: String, default: '' },
-    maxlength: { type: Number, default: null },
-    minlength: { type: Number, default: null },
-    autocomplete: { type: String, default: 'off' },
-    inputMode: { type: String, default: null },
-    min: { type: [String, Number], default: null },
-    max: { type: [String, Number], default: null },
-    pattern: { type: String, default: null },
-    required: { type: Boolean, default: false },
-    error: { type: Boolean, default: false },
-    errorMessage: { type: String, default: '' },
-    cursor: { type: String, default: 'text' }
-})
+    // --- PROPS ---
+    const props = defineProps({
+        modelValue: { type: [String, Number], default: '' },
+        name: { type: String, default: '' },
+        size: { type: Object, default: () => ({ width: '200px', height: '32px' }) },
+        
+        font: { 
+                type: Object, 
+                default: () => ({ 
+                    family: 'inherit', // Mengikuti font dari parent / CSS global (*)
+                    size: 'inherit',   // (Opsional) Mengikuti ukuran font parent jika diinginkan
+                    weight: 'normal', 
+                    style: 'normal', 
+                    color: APP_COLORS.textPrimary 
+                    }) 
+                },
 
-// --- EMITS ---
-const emit = defineEmits([
-    'update:modelValue', 'input', 'change', 'focus', 'blur', 'keydown', 'keyup', 'click'
-])
+        background: { type: Object, default: () => ({ color: APP_COLORS.bgPrimary }) },
+        border: { type: Object, default: () => ({ color: APP_COLORS.borderDefault, width: '1px', style: 'solid', radius: '4px' }) },
+        shadow: {
+            type: Object,
+            default: () => ({
+                normal: { color: APP_COLORS.shadowColorNormal, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
+                hover: { color: APP_COLORS.shadowColorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
+                focus: { color: APP_COLORS.shadowColorFocus, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
+                error: { color: APP_COLORS.shadowColorError, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
+                errorHover: { color: APP_COLORS.shadowColorErrorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
+            })
+        },
+        hover: { type: Object, default: () => ({ borderColor: APP_COLORS.borderHover, backgroundColor: null, color: null }) },
+        focus: { type: Object, default: () => ({ borderColor: APP_COLORS.borderFocus, backgroundColor: null, color: null }) },
+        text: { type: Object, default: () => ({ align: 'left', padding: '5px 8px' }) },
+        enabled: { type: Boolean, default: true },
+        readOnly: { type: Boolean, default: false },
+        visible: { type: Boolean, default: true },
+        type: { type: String, default: 'text' },
+        placeholder: { type: String, default: '' },
+        maxlength: { type: Number, default: null },
+        minlength: { type: Number, default: null },
+        autocomplete: { type: String, default: 'off' },
+        inputMode: { type: String, default: null },
+        min: { type: [String, Number], default: null },
+        max: { type: [String, Number], default: null },
+        pattern: { type: String, default: null },
+        required: { type: Boolean, default: false },
+        error: { type: Boolean, default: false },
+        errorMessage: { type: String, default: '' },
+        cursor: { type: String, default: 'text' }
+    })
 
-// --- REF & STATE ---
-const inputRef = ref(null)
-const isFocused = ref(false)
-const isHovered = ref(false)
+    // --- EMITS ---
+    const emit = defineEmits([
+        'update:modelValue', 'input', 'change', 'focus', 'blur', 'keydown', 'keyup', 'click'
+    ])
 
-// 1. Variabel penampung nilai awal
-const initialValue = ref('')
+    // --- REF & STATE ---
+    const inputRef = ref(null)
+    const isFocused = ref(false)
+    const isHovered = ref(false)
 
-// Simpan nilai awal saat komponen pertama kali dipasang
-onMounted(() => {
-    initialValue.value = props.modelValue
-})
+    // 1. Variabel penampung nilai awal
+    const initialValue = ref('')
 
-// 2. Computed untuk mengecek apakah data sudah diedit/berubah
-const isDirty = computed(() => {
-    return props.modelValue !== initialValue.value
-})
+    // Simpan nilai awal saat komponen pertama kali dipasang
+    onMounted(() => {
+        initialValue.value = props.modelValue
+    })
 
-// --- MAKE SHADOW ---
-function makeShadow(shadow = {}) {
-    const color = shadow.color || APP_COLORS.shadowColorNormal
-    const offsetX = shadow.offsetX || '0px'
-    const offsetY = shadow.offsetY || '2px'
-    const blur = shadow.blur || '4px'
-    const spread = shadow.spread || '0px'
-    const inset = shadow.inset ? 'inset ' : ''
-    return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`
-}
+    // 2. Computed untuk mengecek apakah data sudah diedit/berubah
+    const isDirty = computed(() => {
+        return props.modelValue !== initialValue.value
+    })
 
-// --- COMPUTED STYLE ---
-const textboxStyle = computed(() => {
-    const size = props.size || {}
-    const font = props.font || {}
-    const background = props.background || {}
-    const border = props.border || {}
-    const shadow = props.shadow || {}
-    const hover = props.hover || {}
-    const focus = props.focus || {}
-    const text = props.text || {}
-
-    let currentColor = font.color || APP_COLORS.textPrimary
-    
-
-     
-    let currentBackground = APP_COLORS.bgPrimaryGrad
-     
-    let currentBorderColor = border.color || APP_COLORS.borderDefault
-    let currentShadow = makeShadow(shadow.normal || {})
-
-    if (props.error) {
-        currentBorderColor = APP_COLORS.borderError
-        if (shadow.error) currentShadow = makeShadow(shadow.error)
+    // --- MAKE SHADOW ---
+    function makeShadow(shadow = {}) {
+        const color = shadow.color || APP_COLORS.shadowColorNormal
+        const offsetX = shadow.offsetX || '0px'
+        const offsetY = shadow.offsetY || '2px'
+        const blur = shadow.blur || '4px'
+        const spread = shadow.spread || '0px'
+        const inset = shadow.inset ? 'inset ' : ''
+        return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`
     }
 
-    if (!props.enabled) {
-        currentBackground = APP_COLORS.bgDisabled
-    }
+    // --- COMPUTED STYLE ---
+    const textboxStyle = computed(() => {
+        const size = props.size || {}
+        const font = props.font || {}
+        const background = props.background || {}
+        const border = props.border || {}
+        const shadow = props.shadow || {}
+        const hover = props.hover || {}
+        const focus = props.focus || {}
+        const text = props.text || {}
 
-    if (isHovered.value && props.enabled) {
+        let currentColor = font.color || APP_COLORS.textPrimary
+                
+        let currentBackground = APP_COLORS.bgPrimaryGrad
+        
+        let currentBorderColor = border.color || APP_COLORS.borderDefault
+        let currentShadow = makeShadow(shadow.normal || {})
+
         if (props.error) {
-            if (shadow.errorHover) currentShadow = makeShadow(shadow.errorHover)
-        } else {
-            if (hover.color) currentColor = hover.color
-            if (hover.backgroundColor) currentBackground = hover.backgroundColor
-            if (hover.borderColor) currentBorderColor = hover.borderColor
-            if (shadow.hover) currentShadow = makeShadow(shadow.hover)
+            currentBorderColor = APP_COLORS.borderError
+            if (shadow.error) currentShadow = makeShadow(shadow.error)
         }
+
+        if (!props.enabled) {
+            currentBackground = APP_COLORS.bgDisabled
+        }
+
+        if (isHovered.value && props.enabled) {
+            if (props.error) {
+                if (shadow.errorHover) currentShadow = makeShadow(shadow.errorHover)
+            } else {
+                if (hover.color) currentColor = hover.color
+                if (hover.backgroundColor) currentBackground = hover.backgroundColor
+                if (hover.borderColor) currentBorderColor = hover.borderColor
+                if (shadow.hover) currentShadow = makeShadow(shadow.hover)
+            }
+        }
+
+        if (isFocused.value && props.enabled) {
+            if (focus.color) currentColor = focus.color
+            if (focus.backgroundColor) currentBackground = focus.backgroundColor
+            if (focus.borderColor) currentBorderColor = focus.borderColor
+            if (shadow.focus) currentShadow = makeShadow(shadow.focus)
+        }
+
+        return {
+            width: size.width,
+            height: size.height,
+            fontFamily: font.family,
+            fontSize: font.size,
+            fontWeight: font.weight,
+            fontStyle: font.style,
+            color: currentColor,
+            background: currentBackground,
+            borderColor: currentBorderColor,
+            borderWidth: border.width,
+            borderStyle: border.style,
+            borderRadius: border.radius,
+            boxShadow: currentShadow,
+            textAlign: text.align,
+            padding: text.padding,
+            cursor: props.enabled ? props.cursor : 'not-allowed',
+            boxSizing: 'border-box',
+            outline: 'none'
+        }
+    })
+
+    // --- EVENTS ---
+    function onInput(event) {
+        emit('update:modelValue', event.target.value)
+        emit('input', event.target.value)
+    }
+    function onChange(event) { emit('change', event.target.value) }
+    function onFocus(event) { isFocused.value = true; emit('focus', event) }
+    function onBlur(event) { isFocused.value = false; emit('blur', event) }
+    function onKeydown(event) { emit('keydown', event) }
+    function onKeyup(event) { emit('keyup', event) }
+    function onClick(event) { emit('click', event) }
+    function onMouseEnter() { if (props.enabled) isHovered.value = true }
+    function onMouseLeave() { isHovered.value = false }
+
+    // --- PUBLIC METHODS ---
+    function focus() { inputRef.value?.focus() }
+    function blur() { inputRef.value?.blur() }
+    function select() { inputRef.value?.select() }
+    function selectAll() { inputRef.value?.select() }
+    function getValue() { return inputRef.value?.value ?? '' }
+    function setValue(value) { emit('update:modelValue', value) }
+
+    // Method opsional untuk meriset status "asli" setelah data berhasil disimpan ke API
+    function resetOriginalValue() {
+        initialValue.value = props.modelValue
     }
 
-    if (isFocused.value && props.enabled) {
-        if (focus.color) currentColor = focus.color
-        if (focus.backgroundColor) currentBackground = focus.backgroundColor
-        if (focus.borderColor) currentBorderColor = focus.borderColor
-        if (shadow.focus) currentShadow = makeShadow(shadow.focus)
-    }
-
-    return {
-        width: size.width || '200px',
-        height: size.height || '32px',
-        fontFamily: font.family || 'Arial, sans-serif',
-        fontSize: font.size || '14px',
-        fontWeight: font.weight ?? 400,
-        fontStyle: font.style || 'normal',
-        color: currentColor,
-        background: currentBackground,
-        borderColor: currentBorderColor,
-        borderWidth: border.width || '1px',
-        borderStyle: border.style || 'solid',
-        borderRadius: border.radius || '4px',
-        boxShadow: currentShadow,
-        textAlign: text.align || 'left',
-        padding: text.padding || '5px 8px',
-        cursor: props.enabled ? props.cursor : 'not-allowed',
-        boxSizing: 'border-box',
-        outline: 'none'
-    }
-})
-
-// --- EVENTS ---
-function onInput(event) {
-    emit('update:modelValue', event.target.value)
-    emit('input', event.target.value)
-}
-function onChange(event) { emit('change', event.target.value) }
-function onFocus(event) { isFocused.value = true; emit('focus', event) }
-function onBlur(event) { isFocused.value = false; emit('blur', event) }
-function onKeydown(event) { emit('keydown', event) }
-function onKeyup(event) { emit('keyup', event) }
-function onClick(event) { emit('click', event) }
-function onMouseEnter() { if (props.enabled) isHovered.value = true }
-function onMouseLeave() { isHovered.value = false }
-
-// --- PUBLIC METHODS ---
-function focus() { inputRef.value?.focus() }
-function blur() { inputRef.value?.blur() }
-function select() { inputRef.value?.select() }
-function selectAll() { inputRef.value?.select() }
-function getValue() { return inputRef.value?.value ?? '' }
-function setValue(value) { emit('update:modelValue', value) }
-
-// Method opsional untuk meriset status "asli" setelah data berhasil disimpan ke API
-function resetOriginalValue() {
-    initialValue.value = props.modelValue
-}
-
-defineExpose({
-    focus, blur, select, selectAll, getValue, setValue, resetOriginalValue, inputRef
-})
+    defineExpose({
+        focus, blur, select, selectAll, getValue, setValue, resetOriginalValue, inputRef
+    })
 </script>
 
 <style scoped>
@@ -216,24 +248,10 @@ defineExpose({
     width: fit-content;
 }
 
-/* --- CSS STYLING UNTUK DIRTY BADGE --- */
-.dirty-badge {
-    position: absolute;
-    top: -3px;
-    right: -3px;
-    width: 8px;
-    height: 8px;
-    background-color: var(--dirty-badge-bg, #f59e0b); /* Fallback ke warna oranye jika null */
-    border: 1px solid var(--dirty-badge-border, #ffffff);
-    border-radius: 50%;
-    box-shadow: 0 0 4px var(--dirty-badge-glow, rgba(245, 158, 11, 0.5));
-    z-index: 10;
-    pointer-events: none;
-}
-
+ 
 .textbox {
     display: inline-block;
-    font-family: Arial, sans-serif;
+    font-family: inherit; /* Pastikan input mewarisi font global / parent */
     transition:
         border-color 0.15s ease,
         background-color 0.15s ease,

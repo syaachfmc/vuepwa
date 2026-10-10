@@ -1,20 +1,24 @@
+
 <template>
-    <div 
+    <div
         ref="wrapperRef"
-        class="dropdown-wrapper" 
+        class="dropdown-wrapper"
         v-if="visible"
         @mouseleave="onMouseLeaveWrapper"
     >
-        <!-- Indikator Bola Kecil (Dirty Badge) -->
-        <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
+        <span
+            v-if="isDirty"
+            class="dirty-badge"
+            title="Data telah diubah"
+        ></span>
 
         <!-- MODE 1: Editable -->
         <div v-if="editable" class="custom-dropdown-container">
-            <input 
+            <input
                 ref="inputRef"
-                :value="modelValue" 
-                :name="name" 
-                :disabled="!enabled" 
+                :value="modelValue"
+                :name="name"
+                :disabled="!enabled"
                 :placeholder="placeholder"
                 :required="required"
                 :class="[
@@ -25,47 +29,68 @@
                         'dropdown-disabled': !enabled,
                         'dropdown-dirty': isDirty
                     }
-                ]" 
-                :style="dropdownStyle" 
+                ]"
+                :style="dropdownStyle"
                 @input="onInput"
-                @focus="onFocusEditable" 
+                @focus="onFocusEditable"
                 @blur="onBlurEditable"
                 @keydown="onKeydownEditable"
-                @click="onClick" 
-                @mouseenter="onMouseEnter" 
+                @click="onClick"
+                @mouseenter="onMouseEnter"
                 @mouseleave="onMouseLeave"
             />
-            <button 
+
+            <button
                 type="button"
                 tabindex="-1"
                 class="dropdown-arrow-btn"
                 :disabled="!enabled"
                 @click="toggleDropdown"
             >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" :stroke="themeColors.textPrimary" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    :stroke="themeColors.textPrimary"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
             </button>
 
-            <ul v-if="isOpen && enabled" ref="optionsListRef" class="custom-options-list">
-                <li 
-                    v-for="(option, index) in displayOptions" 
+            <ul
+                v-if="isOpen && enabled"
+                ref="optionsListRef"
+                class="custom-options-list"
+                :style="optionsListStyle"
+            >
+                <li
+                    v-for="(option, index) in displayOptions"
                     :key="index"
                     :ref="el => optionRefs[index] = el"
                     :class="[
-                        'custom-option-item', 
-                        { 
+                        'custom-option-item',
+                        {
                             'is-disabled': option.disabled,
                             'is-active': index === focusedIndex,
                             'is-selected': option.value === modelValue
                         }
                     ]"
+                    :style="optionStyle"
                     @mousedown.prevent="selectOption(option)"
                     @mouseenter="focusedIndex = index"
                 >
                     {{ option.label }}
                 </li>
-                <li v-if="displayOptions.length === 0" class="custom-option-empty">
+
+                <li
+                    v-if="displayOptions.length === 0"
+                    class="custom-option-empty"
+                    :style="optionStyle"
+                >
                     Tidak ada opsi
                 </li>
             </ul>
@@ -94,29 +119,48 @@
                 @mouseenter="onMouseEnter"
                 @mouseleave="onMouseLeave"
             >
-                <span class="dropdown-selected-text">
+                <span
+                    class="dropdown-selected-text"
+                    :style="selectedTextStyle"
+                >
                     {{ selectedLabel || placeholder }}
                 </span>
+
                 <span class="dropdown-arrow-icon">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" :stroke="themeColors.textPrimary" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        :stroke="themeColors.textPrimary"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
                         <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </span>
             </div>
 
-            <ul v-if="isOpen && enabled" ref="optionsListRef" class="custom-options-list">
-                <li 
-                    v-for="(option, index) in normalizedOptions" 
+            <ul
+                v-if="isOpen && enabled"
+                ref="optionsListRef"
+                class="custom-options-list"
+                :style="optionsListStyle"
+            >
+                <li
+                    v-for="(option, index) in normalizedOptions"
                     :key="index"
                     :ref="el => optionRefs[index] = el"
                     :class="[
-                        'custom-option-item', 
-                        { 
+                        'custom-option-item',
+                        {
                             'is-disabled': option.disabled,
                             'is-active': index === focusedIndex,
                             'is-selected': option.value === modelValue
                         }
                     ]"
+                    :style="optionStyle"
                     @mousedown.prevent="selectOption(option)"
                     @mouseenter="focusedIndex = index"
                 >
@@ -132,42 +176,171 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
+import {
+    computed,
+    ref,
+    watch,
+    nextTick,
+    onMounted,
+    onBeforeUnmount
+} from 'vue'
+
+import { APP_COLORS } from '../constants/colors.js'
 
 const props = defineProps({
-    modelValue: { type: [String, Number, Boolean], default: '' },
-    name: { type: String, default: '' },
-    options: { type: Array, default: () => [] },
-    editable: { type: Boolean, default: false },
-    size: { type: Object, default: () => ({ width: '200px', height: '32px' }) },
-    font: { type: Object, default: () => ({ family: 'Calibri, Arial, sans-serif', size: '14px', weight: 400, style: 'normal', color: APP_COLORS.textPrimary }) },
-    background: { type: Object, default: () => ({ color: APP_COLORS.bgPrimary }) },
-    border: { type: Object, default: () => ({ color: APP_COLORS.borderDefault, width: '1px', style: 'solid', radius: '4px' }) },
+    modelValue: {
+        type: [String, Number, Boolean],
+        default: ''
+    },
+    name: {
+        type: String,
+        default: ''
+    },
+    options: {
+        type: Array,
+        default: () => []
+    },
+    editable: {
+        type: Boolean,
+        default: false
+    },
+    size: {
+        type: Object,
+        default: () => ({
+            width: '200px',
+            height: '32px'
+        })
+    },
+    font: {
+        type: Object,
+        default: () => ({
+            family: 'inherit',
+            size: 'inherit',
+            weight: 400,
+            style: 'normal',
+            color: APP_COLORS.textPrimary
+        })
+    },
+    background: {
+        type: Object,
+        default: () => ({
+            color: APP_COLORS.bgPrimary
+        })
+    },
+    border: {
+        type: Object,
+        default: () => ({
+            color: APP_COLORS.borderDefault,
+            width: '1px',
+            style: 'solid',
+            radius: '4px'
+        })
+    },
     shadow: {
         type: Object,
         default: () => ({
-            normal: { color: APP_COLORS.shadowColorNormal, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: false },
-            hover: { color: APP_COLORS.shadowColorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '0px', inset: true },
-            focus: { color: APP_COLORS.shadowColorFocus, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true },
-            error: { color: APP_COLORS.shadowColorError, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: false },
-            errorHover: { color: APP_COLORS.shadowColorErrorHover, offsetX: '0px', offsetY: '2px', blur: '4px', spread: '1px', inset: true }
+            normal: {
+                color: APP_COLORS.shadowColorNormal,
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '0px',
+                inset: false
+            },
+            hover: {
+                color: APP_COLORS.shadowColorHover,
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '0px',
+                inset: true
+            },
+            focus: {
+                color: APP_COLORS.shadowColorFocus,
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '1px',
+                inset: true
+            },
+            error: {
+                color: APP_COLORS.shadowColorError,
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '1px',
+                inset: false
+            },
+            errorHover: {
+                color: APP_COLORS.shadowColorErrorHover,
+                offsetX: '0px',
+                offsetY: '2px',
+                blur: '4px',
+                spread: '1px',
+                inset: true
+            }
         })
     },
-    hover: { type: Object, default: () => ({ borderColor: APP_COLORS.borderHover, backgroundColor: null, color: null }) },
-    focus: { type: Object, default: () => ({ borderColor: APP_COLORS.borderFocus, backgroundColor: null, color: null }) },
-    text: { type: Object, default: () => ({ align: 'left', padding: '5px 8px' }) },
-    enabled: { type: Boolean, default: true },
-    visible: { type: Boolean, default: true },
-    placeholder: { type: String, default: '' },
-    required: { type: Boolean, default: false },
-    error: { type: Boolean, default: false },
-    errorMessage: { type: String, default: '' },
-    cursor: { type: String, default: 'pointer' }
+    hover: {
+        type: Object,
+        default: () => ({
+            borderColor: APP_COLORS.borderHover,
+            backgroundColor: null,
+            color: null
+        })
+    },
+    focus: {
+        type: Object,
+        default: () => ({
+            borderColor: APP_COLORS.borderFocus,
+            backgroundColor: null,
+            color: null
+        })
+    },
+    text: {
+        type: Object,
+        default: () => ({
+            align: 'left',
+            padding: '5px 8px'
+        })
+    },
+    enabled: {
+        type: Boolean,
+        default: true
+    },
+    visible: {
+        type: Boolean,
+        default: true
+    },
+    placeholder: {
+        type: String,
+        default: ''
+    },
+    required: {
+        type: Boolean,
+        default: false
+    },
+    error: {
+        type: Boolean,
+        default: false
+    },
+    errorMessage: {
+        type: String,
+        default: ''
+    },
+    cursor: {
+        type: String,
+        default: 'pointer'
+    }
 })
 
 const emit = defineEmits([
-    'update:modelValue', 'input', 'change', 'focus', 'blur', 'click'
+    'update:modelValue',
+    'input',
+    'change',
+    'focus',
+    'blur',
+    'click'
 ])
 
 const themeColors = APP_COLORS
@@ -196,30 +369,43 @@ onBeforeUnmount(() => {
 })
 
 function handleClickOutside(event) {
-    if (wrapperRef.value && !wrapperRef.value.contains(event.target)) {
+    if (
+        wrapperRef.value &&
+        !wrapperRef.value.contains(event.target)
+    ) {
         isOpen.value = false
         isFiltering.value = false
         focusedIndex.value = -1
     }
 }
 
-const isDirty = computed(() => props.modelValue !== initialValue.value)
+const isDirty = computed(
+    () => props.modelValue !== initialValue.value
+)
 
 const normalizedOptions = computed(() => {
     return props.options.map(item => {
         if (typeof item === 'object' && item !== null) {
             return {
-                label: item.label ?? item.value,
+                label: String(item.label ?? item.value ?? ''),
                 value: item.value,
                 disabled: !!item.disabled
             }
         }
-        return { label: String(item), value: item, disabled: false }
+
+        return {
+            label: String(item),
+            value: item,
+            disabled: false
+        }
     })
 })
 
 const selectedLabel = computed(() => {
-    const found = normalizedOptions.value.find(opt => opt.value === props.modelValue)
+    const found = normalizedOptions.value.find(
+        opt => opt.value === props.modelValue
+    )
+
     return found ? found.label : ''
 })
 
@@ -227,24 +413,64 @@ const displayOptions = computed(() => {
     if (!isFiltering.value || !props.modelValue) {
         return normalizedOptions.value
     }
+
     const search = String(props.modelValue).toLowerCase()
-    return normalizedOptions.value.filter(opt => 
+
+    return normalizedOptions.value.filter(opt =>
         opt.label.toLowerCase().includes(search)
     )
 })
+
+/*
+ * FONT STYLE
+ * Menggunakan props.font secara langsung untuk:
+ * 1. Teks yang dipilih
+ * 2. Placeholder
+ * 3. Daftar opsi
+ */
+const selectedTextStyle = computed(() => ({
+    fontFamily: props.font.family || 'Calibri, Arial, sans-serif',
+    fontSize: props.font.size || '14px',
+    fontWeight: props.font.weight ?? 400,
+    fontStyle: props.font.style || 'normal',
+    color: !selectedLabel.value
+        ? APP_COLORS.textSecondary
+        : (props.font.color || APP_COLORS.textPrimary)
+}))
+
+const optionStyle = computed(() => ({
+    fontFamily: props.font.family || 'Calibri, Arial, sans-serif',
+    fontSize: props.font.size || '14px',
+    fontWeight: props.font.weight ?? 400,
+    fontStyle: props.font.style || 'normal'
+}))
+
+const optionsListStyle = computed(() => ({
+    fontFamily: props.font.family || 'Calibri, Arial, sans-serif',
+    fontSize: props.font.size || '14px'
+}))
 
 watch(displayOptions, () => {
     focusedIndex.value = -1
     optionRefs.value = []
 })
 
-watch(isOpen, (newVal) => {
+watch(isOpen, newVal => {
     if (!newVal) {
         focusedIndex.value = -1
     } else {
-        const list = props.editable ? displayOptions.value : normalizedOptions.value
-        const currentIndex = list.findIndex(opt => opt.value === props.modelValue)
-        focusedIndex.value = currentIndex >= 0 ? currentIndex : 0
+        const list = props.editable
+            ? displayOptions.value
+            : normalizedOptions.value
+
+        const currentIndex = list.findIndex(
+            opt => opt.value === props.modelValue
+        )
+
+        focusedIndex.value = currentIndex >= 0
+            ? currentIndex
+            : (list.length > 0 ? 0 : -1)
+
         scrollToFocusedOption()
     }
 })
@@ -252,7 +478,10 @@ watch(isOpen, (newVal) => {
 function onKeydownEditable(event) {
     if (!props.enabled) return
 
-    if (!isOpen.value && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+    if (
+        !isOpen.value &&
+        ['ArrowDown', 'ArrowUp'].includes(event.key)
+    ) {
         event.preventDefault()
         isOpen.value = true
         isFiltering.value = false
@@ -263,17 +492,30 @@ function onKeydownEditable(event) {
 
     if (event.key === 'ArrowDown') {
         event.preventDefault()
-        if (displayOptions.value.length === 0) return
-        focusedIndex.value = (focusedIndex.value + 1) % displayOptions.value.length
+
+        if (!displayOptions.value.length) return
+
+        focusedIndex.value =
+            (focusedIndex.value + 1) % displayOptions.value.length
+
         scrollToFocusedOption()
     } else if (event.key === 'ArrowUp') {
         event.preventDefault()
-        if (displayOptions.value.length === 0) return
-        focusedIndex.value = (focusedIndex.value - 1 + displayOptions.value.length) % displayOptions.value.length
+
+        if (!displayOptions.value.length) return
+
+        focusedIndex.value =
+            (focusedIndex.value - 1 + displayOptions.value.length) %
+            displayOptions.value.length
+
         scrollToFocusedOption()
     } else if (event.key === 'Enter') {
         event.preventDefault()
-        if (focusedIndex.value >= 0 && focusedIndex.value < displayOptions.value.length) {
+
+        if (
+            focusedIndex.value >= 0 &&
+            focusedIndex.value < displayOptions.value.length
+        ) {
             selectOption(displayOptions.value[focusedIndex.value])
         }
     } else if (event.key === 'Escape') {
@@ -286,9 +528,13 @@ function onKeydownEditable(event) {
 function onKeydownNonEditable(event) {
     if (!props.enabled) return
 
-    if (event.key === ' ' || event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    if (
+        [' ', 'Enter', 'ArrowDown', 'ArrowUp'].includes(event.key)
+    ) {
         event.preventDefault()
+
         if (!isOpen.value) {
+            isFiltering.value = false
             isOpen.value = true
             return
         }
@@ -296,17 +542,31 @@ function onKeydownNonEditable(event) {
 
     if (!isOpen.value) return
 
+    const length = normalizedOptions.value.length
+
     if (event.key === 'ArrowDown') {
         event.preventDefault()
-        focusedIndex.value = (focusedIndex.value + 1) % normalizedOptions.value.length
+
+        if (!length) return
+
+        focusedIndex.value = (focusedIndex.value + 1) % length
         scrollToFocusedOption()
     } else if (event.key === 'ArrowUp') {
         event.preventDefault()
-        focusedIndex.value = (focusedIndex.value - 1 + normalizedOptions.value.length) % normalizedOptions.value.length
+
+        if (!length) return
+
+        focusedIndex.value =
+            (focusedIndex.value - 1 + length) % length
+
         scrollToFocusedOption()
     } else if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
-        if (focusedIndex.value >= 0 && focusedIndex.value < normalizedOptions.value.length) {
+
+        if (
+            focusedIndex.value >= 0 &&
+            focusedIndex.value < length
+        ) {
             selectOption(normalizedOptions.value[focusedIndex.value])
         }
     } else if (event.key === 'Escape') {
@@ -317,8 +577,12 @@ function onKeydownNonEditable(event) {
 
 function scrollToFocusedOption() {
     nextTick(() => {
-        if (focusedIndex.value >= 0 && optionRefs.value[focusedIndex.value]) {
-            optionRefs.value[focusedIndex.value]?.scrollIntoView({ block: 'nearest' })
+        if (
+            focusedIndex.value >= 0 &&
+            optionRefs.value[focusedIndex.value]
+        ) {
+            optionRefs.value[focusedIndex.value]
+                .scrollIntoView({ block: 'nearest' })
         }
     })
 }
@@ -330,13 +594,13 @@ function makeShadow(shadow = {}) {
     const blur = shadow.blur || '4px'
     const spread = shadow.spread || '0px'
     const inset = shadow.inset ? 'inset ' : ''
+
     return `${inset}${offsetX} ${offsetY} ${blur} ${spread} ${color}`
 }
 
 const dropdownStyle = computed(() => {
     const size = props.size || {}
     const font = props.font || {}
-    const background = props.background || {}
     const border = props.border || {}
     const shadow = props.shadow || {}
     const hover = props.hover || {}
@@ -344,13 +608,17 @@ const dropdownStyle = computed(() => {
     const text = props.text || {}
 
     let currentColor = font.color || APP_COLORS.textPrimary
-    let currentBackground =  APP_COLORS.bgPrimaryGrad
-    let currentBorderColor = border.color || APP_COLORS.borderDefault
+    let currentBackground = APP_COLORS.bgPrimaryGrad
+    let currentBorderColor =
+        border.color || APP_COLORS.borderDefault
     let currentShadow = makeShadow(shadow.normal || {})
 
     if (props.error) {
         currentBorderColor = APP_COLORS.borderError
-        if (shadow.error) currentShadow = makeShadow(shadow.error)
+
+        if (shadow.error) {
+            currentShadow = makeShadow(shadow.error)
+        }
     }
 
     if (!props.enabled) {
@@ -359,39 +627,61 @@ const dropdownStyle = computed(() => {
 
     if (isHovered.value && props.enabled) {
         if (props.error) {
-            if (shadow.errorHover) currentShadow = makeShadow(shadow.errorHover)
+            if (shadow.errorHover) {
+                currentShadow = makeShadow(shadow.errorHover)
+            }
         } else {
             if (hover.color) currentColor = hover.color
-            if (hover.backgroundColor) currentBackground = hover.backgroundColor
-            if (hover.borderColor) currentBorderColor = hover.borderColor
-            if (shadow.hover) currentShadow = makeShadow(shadow.hover)
+
+            if (hover.backgroundColor) {
+                currentBackground = hover.backgroundColor
+            }
+
+            if (hover.borderColor) {
+                currentBorderColor = hover.borderColor
+            }
+
+            if (shadow.hover) {
+                currentShadow = makeShadow(shadow.hover)
+            }
         }
     }
 
     if (isFocused.value && props.enabled) {
         if (focus.color) currentColor = focus.color
-        if (focus.backgroundColor) currentBackground = focus.backgroundColor
-        if (focus.borderColor) currentBorderColor = focus.borderColor
-        if (shadow.focus) currentShadow = makeShadow(shadow.focus)
+
+        if (focus.backgroundColor) {
+            currentBackground = focus.backgroundColor
+        }
+
+        if (focus.borderColor) {
+            currentBorderColor = focus.borderColor
+        }
+
+        if (shadow.focus) {
+            currentShadow = makeShadow(shadow.focus)
+        }
     }
 
     return {
-        width: size.width || '200px',
-        height: size.height || '32px',
-        fontFamily: font.family || 'Arial, sans-serif',
-        fontSize: font.size || '14px',
-        fontWeight: font.weight ?? 400,
-        fontStyle: font.style || 'normal',
+        width: size.width,
+        height: size.height,
+        fontFamily: font.family,
+        fontSize: font.size,
+        fontWeight: font.weight,
+        fontStyle: font.style,
         color: currentColor,
         background: currentBackground,
         borderColor: currentBorderColor,
-        borderWidth: border.width || '1px',
-        borderStyle: border.style || 'solid',
-        borderRadius: border.radius || '4px',
+        borderWidth: border.width,
+        borderStyle: border.style,
+        borderRadius: border.radius,
         boxShadow: currentShadow,
-        textAlign: text.align || 'left',
-        padding: text.padding || '5px 28px 5px 8px',
-        cursor: props.enabled ? (props.editable ? 'text' : props.cursor) : 'not-allowed',
+        textAlign: text.align,
+        padding: text.padding,
+        cursor: props.enabled
+            ? (props.editable ? 'text' : props.cursor)
+            : 'not-allowed',
         boxSizing: 'border-box',
         outline: 'none'
     }
@@ -399,10 +689,11 @@ const dropdownStyle = computed(() => {
 
 function toggleDropdown() {
     if (!props.enabled) return
-    
+
     if (!isOpen.value) {
         isFiltering.value = false
         isOpen.value = true
+
         if (props.editable) {
             inputRef.value?.focus()
         } else {
@@ -415,8 +706,10 @@ function toggleDropdown() {
 
 function selectOption(option) {
     if (option.disabled) return
+
     emit('update:modelValue', option.value)
     emit('change', option.value)
+
     isOpen.value = false
     isFiltering.value = false
     focusedIndex.value = -1
@@ -424,10 +717,12 @@ function selectOption(option) {
 
 function onFocusEditable(event) {
     isFocused.value = true
+
     if (!isOpen.value) {
         isFiltering.value = false
         isOpen.value = true
     }
+
     emit('focus', event)
 }
 
@@ -438,38 +733,80 @@ function onBlurEditable(event) {
 
 function onInput(event) {
     const value = event.target.value
+
     isFiltering.value = true
     isOpen.value = true
+
     emit('update:modelValue', value)
     emit('input', value)
 }
 
-function onFocus(event) { isFocused.value = true; emit('focus', event) }
-function onBlur(event) { isFocused.value = false; emit('blur', event) }
-function onClick(event) { emit('click', event) }
-function onMouseEnter() { if (props.enabled) isHovered.value = true }
-function onMouseLeave() { isHovered.value = false }
-function onMouseLeaveWrapper() { isHovered.value = false }
+function onFocus(event) {
+    isFocused.value = true
+    emit('focus', event)
+}
 
-function focus() { 
-    if (props.editable) inputRef.value?.focus()
-    else selectRef.value?.focus() 
+function onBlur(event) {
+    isFocused.value = false
+    emit('blur', event)
 }
-function blur() { 
-    if (props.editable) inputRef.value?.blur()
-    else selectRef.value?.blur() 
+
+function onClick(event) {
+    emit('click', event)
 }
-function getValue() { return props.modelValue }
-function setValue(value) { emit('update:modelValue', value) }
-function resetOriginalValue() { initialValue.value = props.modelValue }
+
+function onMouseEnter() {
+    if (props.enabled) isHovered.value = true
+}
+
+function onMouseLeave() {
+    isHovered.value = false
+}
+
+function onMouseLeaveWrapper() {
+    isHovered.value = false
+}
+
+function focus() {
+    if (props.editable) {
+        inputRef.value?.focus()
+    } else {
+        selectRef.value?.focus()
+    }
+}
+
+function blur() {
+    if (props.editable) {
+        inputRef.value?.blur()
+    } else {
+        selectRef.value?.blur()
+    }
+}
+
+function getValue() {
+    return props.modelValue
+}
+
+function setValue(value) {
+    emit('update:modelValue', value)
+}
+
+function resetOriginalValue() {
+    initialValue.value = props.modelValue
+}
 
 defineExpose({
-    focus, blur, getValue, setValue, resetOriginalValue, selectRef, inputRef
+    focus,
+    blur,
+    getValue,
+    setValue,
+    resetOriginalValue,
+    selectRef,
+    inputRef
 })
 </script>
 
 <style scoped>
-/* Menggunakan v-bind CSS Variables dari JavaScript */
 .dropdown-wrapper {
     --bg-primary: v-bind('APP_COLORS.bgPrimary');
     --bg-disabled: v-bind('APP_COLORS.bgDisabled');
@@ -495,7 +832,6 @@ defineExpose({
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
-    font-family: Arial, sans-serif;
     transition:
         border-color 0.15s ease,
         background-color 0.15s ease,
@@ -510,8 +846,8 @@ defineExpose({
 }
 
 .dropdown-non-editable {
-    user-select: none;
     position: relative;
+    user-select: none;
 }
 
 .dropdown-non-editable.is-placeholder .dropdown-selected-text {
@@ -519,14 +855,17 @@ defineExpose({
 }
 
 .dropdown-selected-text {
+    display: block;
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 100%;
 }
 
 .dropdown-arrow-icon {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     margin-left: 4px;
@@ -561,24 +900,26 @@ defineExpose({
     top: 100%;
     left: 0;
     right: 0;
-    margin: 2px 0 0 0;
+    margin: 2px 0 0;
     padding: 4px 0;
     list-style: none;
     background-color: var(--option-list-bg);
     border: 1px solid var(--option-list-border);
     border-radius: 4px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     max-height: 180px;
     overflow-y: auto;
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .custom-option-item {
     padding: 6px 10px;
-    font-size: 14px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .custom-option-item:hover,
@@ -599,11 +940,9 @@ defineExpose({
 
 .custom-option-empty {
     padding: 6px 10px;
-    font-size: 13px;
-    color: var(--option-empty-text);
+    color: var(--text-secondary);
     text-align: center;
 }
-
 
 .dropdown-disabled {
     opacity: 0.65;

@@ -2,22 +2,37 @@
   <div class="form-container">
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <TextBox ref="textboxAku1Ref" v-model="namaku" placeholder="Masukkan nama ku" />
+      <TextBox ref="textboxAku1Ref" v-model="namaku" placeholder="Masukkan nama ku" 
+      
+      />
     </div>
 
     <div class="form-group">
       <label>Dropdown Pilihan Kategori:</label>
-      <Dropdown ref="dropdownKategoriRef" v-model="kategori" :options="opsiKategori" placeholder="Pilih Kategori" />
+      <Dropdown ref="dropdownKategoriRef" v-model="kategori" :options="opsiKategori" placeholder="Pilih Kategori"
+        
+       />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Mu (Readonly/Disabled):</label>
-      <TextBox ref="textboxAku2Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="false" />
+      <TextBox ref="textboxAku2Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="false" 
+      
+      />
     </div>
+
+    <div class="form-group">
+      <label>TextBox Nama Mu (Error):</label>
+      <TextBox ref="textboxAku2Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="true" :error="isRoleError"  errorMessage="ini error message" 
+      
+      />
+    </div>
+
 
     <div class="form-group">
       <label>Dropdown Role (Validasi Error):</label>
       <Dropdown ref="dropdownRoleRef" v-model="role" :options="opsiRole" placeholder="Pilih Role" :error="isRoleError"
+        
         errorMessage="Role harus 'Admin'" :editable="true" />
     </div>
 

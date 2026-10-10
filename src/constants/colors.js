@@ -10,7 +10,7 @@ export const APP_COLORS = {
 
   bgDisabled: 'rgba(238, 238, 238, 1)',
   textPrimary: 'rgb(0, 0, 0)',
-  textSecondary: 'rgba(4, 0, 0, 0.71)',
+  textSecondary: 'rgba(0, 0, 0, 0.71)',
   textDisabled: 'rgba(160, 160, 160, 1)',
 
   // --- WARNA BORDER ---
@@ -20,7 +20,7 @@ export const APP_COLORS = {
   borderError: 'rgba(220, 53, 69, 1)',
 
   // --- WARNA STATE (DIRTY BADGE, ERROR) ---
-  dirtyBadgeBg: 'rgba(219, 156, 20, 1)',
+  dirtyBadgeBg: 'rgb(255, 179, 0)',
   dirtyBadgeBorder: 'rgba(255, 196, 0, 1)',
   dirtyBadgeGlow: 'rgba(255, 251, 0, 0.8)',
   errorText: 'rgba(220, 53, 69, 1)',
