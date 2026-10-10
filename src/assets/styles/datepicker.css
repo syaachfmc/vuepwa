@@ -1,0 +1,37 @@
+
+/* ========================================
+   WARNA TEMA DATEPICKER V14
+======================================== */
+
+ 
+  /* ========================================
+     INPUT V14
+  ======================================== */
+  
+  .dp--input {
+    border-radius: 6px !important;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    background-color:var(--color-bgPrimary);
+  }
+  
+  .dp--input:hover {
+    border-color: #16a34a !important;
+    box-shadow: 0 2px 6px rgb(22 163 74 / 12%);
+  }
+  
+  .dp--input:focus {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 3px rgb(22 163 74 / 15%);
+  }
+  
+  /* ========================================
+     POPUP KALENDER
+  ======================================== */
+  
+  .dp__menu {
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
+    overflow: hidden;
+  }
+  

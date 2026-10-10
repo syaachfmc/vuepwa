@@ -344,7 +344,7 @@ const dropdownStyle = computed(() => {
     const text = props.text || {}
 
     let currentColor = font.color || APP_COLORS.textPrimary
-    let currentBackground = background.color || APP_COLORS.bgPrimary
+    let currentBackground =  APP_COLORS.bgPrimaryGrad
     let currentBorderColor = border.color || APP_COLORS.borderDefault
     let currentShadow = makeShadow(shadow.normal || {})
 
@@ -383,7 +383,7 @@ const dropdownStyle = computed(() => {
         fontWeight: font.weight ?? 400,
         fontStyle: font.style || 'normal',
         color: currentColor,
-        backgroundColor: currentBackground,
+        background: currentBackground,
         borderColor: currentBorderColor,
         borderWidth: border.width || '1px',
         borderStyle: border.style || 'solid',
@@ -533,7 +533,7 @@ defineExpose({
 }
 
 .dropdown-editable {
-    background-image: none !important;
+    background-image: inherit;
 }
 
 .dropdown-arrow-btn {

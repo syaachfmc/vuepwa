@@ -21,10 +21,26 @@
         errorMessage="Role harus 'Admin'" :editable="true" />
     </div>
 
+    <!-- Datepicker -->
+    <div class="form-group">
+      <label>Pilih Tanggal:</label>
+      <VueDatePicker
+        v-model="date"
+        :formats="{ input: 'dd MMM yyyy' }"
+        placeholder="Pilih Tanggal"
+        :enable-time-picker="false"
+        auto-apply
+          
+      />
+
+
+</div>
+
     <div class="data-preview">
       <p><strong>Value Namaku:</strong> {{ namaku }}</p>
       <p><strong>Value Kategori:</strong> {{ kategori }}</p>
       <p><strong>Value Role:</strong> {{ role }}</p>
+      <p><strong>Tanggal Terpilih:</strong> {{ date ? formatTanggal(date) : '-' }}</p>
     </div>
 
     <div style="margin-top: 16px;">
@@ -39,6 +55,15 @@
 import { ref, computed } from 'vue'
 import TextBox from './components/textbox.vue'
 import Dropdown from './components/dropdown.vue'
+
+//---- DATE
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import './assets/styles/datepicker.css'
+
+import { formatTanggal } from './utils/tools.js'
+const date = ref(null)
+
 
 // --- STATE ---
 const namaku = ref('')
@@ -71,15 +96,11 @@ const isRoleError = computed(() => {
 
 // --- HANDLER ---
 function handleResetOriginal() {
-  // Riset status dirty pada semua instance komponen
   textboxAku1Ref.value?.resetOriginalValue()
   dropdownKategoriRef.value?.resetOriginalValue()
   textboxAku2Ref.value?.resetOriginalValue()
   dropdownRoleRef.value?.resetOriginalValue()
 }
-
-
-
 </script>
 
 <style scoped>
@@ -102,4 +123,9 @@ function handleResetOriginal() {
   background-color: #f5f5f5;
   border-radius: 4px;
 }
+
+
+
 </style>
+
+ 

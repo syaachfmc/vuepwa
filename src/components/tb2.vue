@@ -112,11 +112,7 @@ const textboxStyle = computed(() => {
     const text = props.text || {}
 
     let currentColor = font.color || APP_COLORS.textPrimary
-    
-
-     
-    let currentBackground = APP_COLORS.bgPrimaryGrad
-     
+    let currentBackground = background.color || APP_COLORS.bgPrimary
     let currentBorderColor = border.color || APP_COLORS.borderDefault
     let currentShadow = makeShadow(shadow.normal || {})
 
@@ -155,7 +151,7 @@ const textboxStyle = computed(() => {
         fontWeight: font.weight ?? 400,
         fontStyle: font.style || 'normal',
         color: currentColor,
-        background: currentBackground,
+        backgroundColor: currentBackground,
         borderColor: currentBorderColor,
         borderWidth: border.width || '1px',
         borderStyle: border.style || 'solid',

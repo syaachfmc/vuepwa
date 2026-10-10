@@ -3,7 +3,11 @@
 
 export const APP_COLORS = {
   // --- WARNA NETRAL & DASAR ---
-  bgPrimary: 'rgba(255, 255, 255, 1)',
+  bgPrimary: 'rgb(13, 243, 255)',
+ 
+  bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 60%, rgb(240, 240, 240) 100%)',
+
+
   bgDisabled: 'rgba(238, 238, 238, 1)',
   textPrimary: 'rgba(34, 34, 34, 1)',
   textSecondary: 'rgba(136, 136, 136, 1)',
