@@ -23,7 +23,7 @@
   
       <div class="form-group">
         <label>TextBox Nama Mu (Error):</label>
-        <TextBox ref="textboxAku2Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="true" :error="isRoleError"  errorMessage="ini error message" 
+        <TextBox ref="textboxAku3Ref" v-model="namaku" placeholder="Masukkan nama ku" :enabled="true" :error="isRoleError"  errorMessage="ini error message" 
         
         />
       </div>
@@ -90,7 +90,7 @@
   const initialDate = ref(null)
   
   onMounted(() => {
-    initialDate.value = date.value
+    initialDate.value = date.value.
   })
   
   // 3. Computed check status dirty tanggal
@@ -117,6 +117,7 @@
   const textboxAku1Ref = ref(null)
   const dropdownKategoriRef = ref(null)
   const textboxAku2Ref = ref(null)
+  const textboxAku3Ref = ref(null)
   const dropdownRoleRef = ref(null)
   
   // --- COMPUTED VALIDASI ---
@@ -129,12 +130,15 @@
     textboxAku1Ref.value?.resetOriginalValue()
     dropdownKategoriRef.value?.resetOriginalValue()
     textboxAku2Ref.value?.resetOriginalValue()
+    textboxAku3Ref.value?.resetOriginalValue()
     dropdownRoleRef.value?.resetOriginalValue()
     
     // 4. Reset status dirty tanggal setelah simpan
     initialDate.value = date.value
   }
   </script>
+
+  
   <style scoped>
 
 .datepicker-wrapper {
