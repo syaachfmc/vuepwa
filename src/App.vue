@@ -1,9 +1,39 @@
 <template>
   <div class="form-container">
-    <div class="form-group">
+    
+    <div class="button-form-container">
+      <Button
+        label="Simpan"
+        @click="simpanData"
+      />
+
+      <Button
+        label="Reset"
+        size="small"
+        @click="resetData"
+      />
+
+      <Button
+        label="Proses"
+        size="large"
+        :loading="sedangProses"
+        @click="prosesData"
+      />
+      
+      
+     </div> 
+      
+      <div class="form-group">
       <label>TextBox Nama Aku:</label>
       <TextBox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
     </div>
+
+    <div class="form-group">
+      <label>TextBox Nama Aku:</label>
+      <TextBox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
+    </div>
+
+
 
     <div class="form-group">
       <label>Dropdown Pilihan Kategori:</label>
@@ -69,6 +99,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import Button from './components/Button.vue'
 import TextBox from './components/textbox.vue'
 import Dropdown from './components/dropdown.vue'
 
@@ -96,13 +127,29 @@ const { form, isDirty, commitOriginal } = useFormTracker({
 const opsiKategori = ref([
   { label: 'Elektronik', value: 'elektronik' },
   { label: 'Pakaian', value: 'pakaian' },
-  { label: 'Makanan', value: 'makanan' }
+  { label: 'Makanan', value: 'makanan' },
+  { label: 'Elektronik', value: 'elektronik' },
+  { label: 'Pakaian', value: 'pakaian' },
+  { label: 'Makanan', value: 'makanan' },
+  { label: 'Elektronik', value: 'elektronik' },
+  { label: 'Pakaian', value: 'pakaian' },
+  { label: 'Majjjjjjjj jjjjjjjjjjjj jjjjj jjjjjj jjjjjjjjj jjjjjjjj  jjjj jjjjjjkanan', value: 'makanan' },
+  
 ])
 
 const opsiRole = ref([
   { label: 'Administrator', value: 'Admin' },
   { label: 'User Biasa', value: 'User' },
-  { label: 'Guest', value: 'Guest' }
+  { label: 'Guest', value: 'Guest' },
+  { label: 'Administrator', value: 'Admin' },
+  { label: 'User Biasa', value: 'User' },
+  { label: 'Guest', value: 'Guest' },
+  { label: 'Administrator', value: 'Admin' },
+  { label: 'User Biasa', value: 'User' },
+  { label: 'Guest', value: 'Guest' },
+  { label: 'Administrator', value: 'Admin' },
+  { label: 'User Biasa', value: 'khkjhkhkjhhkjhkhkhkhkhkhkhkhkhkhkhkhkhkhkj' },
+  { label: 'Guest mkmkmkmkmkmkmkmkmkmkmkmkmkmkmkm', value: 'Guest' }
 ])
 
 // --- REFS KOMPONEN ---
@@ -111,6 +158,7 @@ const dropdownKategoriRef = ref(null)
 const textboxAku2Ref = ref(null)
 const textboxAku3Ref = ref(null)
 const dropdownRoleRef = ref(null)
+const textboxAku4Ref = ref(null)
 
 // --- COMPUTED VALIDASI ---
 const isRoleError = computed(() => {
@@ -125,9 +173,26 @@ function handleResetOriginal() {
     dropdownKategoriRef,
     textboxAku2Ref,
     textboxAku3Ref,
-    dropdownRoleRef
+    dropdownRoleRef,
+    textboxAku4Ref
   ])
 }
+
+const sedangProses = ref(false)
+
+function simpanData() {
+  console.log('Simpan:', nama.value)
+}
+
+function resetData() {
+  nama.value = ''
+}
+
+function prosesData() {
+  console.log('Proses data')
+}
+ 
+
 </script>
 
 <style scoped>
@@ -141,23 +206,52 @@ function handleResetOriginal() {
   --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
 }
 
+.button-form-container{
+  display: flex;
+  flex-direction:row;
+  gap: 12px;
+   
+  max-width: 200px;
+  flex-wrap:nowrap;
+ 
+  border: 1px;
+  border-style: solid;
+  padding: 5px;
+  overflow: auto;
+}
+
+
 .form-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 400px;
+  flex-direction: row; /* Diubah dari column ke row agar berjejer ke kanan */
+  flex-wrap:wrap;
+  overflow-x: auto;
+  border: 1px;
+  border-style: solid;
+  padding: 5px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  
+ 
+  gap: 6px;
+  border: 1px;
+  border-style: solid;
+  border-color: blue;
 }
 
 .data-preview {
+  display: flex;
+  flex-direction: column;
   margin-top: 12px;
   padding: 8px 12px;
   background-color: #f5f5f5;
   border-radius: 4px;
+  overflow: auto;
+  min-width: 200px; 
 }
 </style>

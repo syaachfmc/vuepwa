@@ -37,6 +37,25 @@ export const APP_COLORS = {
   shadowColorHover: 'rgba(0, 0, 0, 0.2)',
   shadowColorFocus: 'rgba(0, 0, 0, 0.2)',
   shadowColorError: 'rgba(220, 53, 69, 0.2)',
-  shadowColorErrorHover: 'rgba(220, 53, 69, 0.4)'
+  shadowColorErrorHover: 'rgba(220, 53, 69, 0.4)',
+
+
+// ---- BUTTON ----
+  buttonBg :  'linear-gradient(180deg, rgb(241, 241, 241) 10%,  rgb(224, 224, 224) 90%, rgb(213, 213, 213) 100%)',
+  buttonBgSolid: 'rgb(13, 243, 255)',
+  buttonBgDisabled:'rgb(200, 200, 200)',
+
+  buttonText:'rgb(90, 90, 90)',
+  buttonTextDisabled: 'rgb(200, 200, 200)',
+
+  buttonBorder: 'rgba(204, 204, 204, 1)',
+  buttonBorderHover:'rgba(119, 119, 119, 1)',
+  buttonBorderFocus: 'rgb(141, 141, 141)',
+ 
+buttonShadow: 'rgba(0, 0, 0, 0.1)',
+buttonShadowHover: 'rgba(0, 0, 0, 0.15)',
+buttonShadowFocus: 'rgba(0, 0, 0, 0.25)'
+
+
 };
  
