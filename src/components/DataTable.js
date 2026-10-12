@@ -1,0 +1,104 @@
+/**
+ * Memanggil GAS Web API dan mereturn result object ter-wrapper dengan method .get().
+ *
+ * @param {string} webAppUrl - URL Web App Apps Script.
+ * @param {string} gsheetID - Spreadsheet ID.
+ * @param {string} sheetName - Nama tab.
+ * @param {number} columnIDRow - Baris ID Kolom.
+ * @param {number} columnTitleRow - Baris Judul Kolom (Header Tabel).
+ * @param {number} columnTitleDescriptionRow - Baris Deskripsi Judul.
+ * @param {number} columnTypeRow - Baris Tipe Kolom.
+ * @param {string} dataRange - Range data (misal: "A5:Z").
+ * @returns {Promise<Object>}
+ */
+export async function fetchGSheetData(
+    webAppUrl,
+    gsheetID,
+    sheetName,
+    columnIDRow = 1,
+    columnTitleRow = 2,
+    columnTitleDescriptionRow = 3,
+    columnTypeRow = 4,
+    dataRange = 'A5:Z'
+  ) {
+    const url = new URL(webAppUrl);
+    url.searchParams.append("GSheetID", gsheetID);
+    url.searchParams.append("sheetName", sheetName);
+    url.searchParams.append("columnIDRow", columnIDRow);
+    url.searchParams.append("columnTitleRow", columnTitleRow);
+    url.searchParams.append("columnTitleDescriptionRow", columnTitleDescriptionRow);
+    url.searchParams.append("columnTypeRow", columnTypeRow);
+    url.searchParams.append("dataRange", dataRange);
+  
+    try {
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        redirect: "follow"
+      });
+  
+      if (!response.ok) {
+        return attachClientWrapper({
+          status: "error",
+          error: `HTTP Error ${response.status}: ${response.statusText}`,
+          columnIDs: [],
+          columnTitles: [],
+          columnDescriptions: [],
+          columnTypes: [],
+          data: []
+        });
+      }
+  
+      const rawResult = await response.json();
+      return attachClientWrapper(rawResult);
+  
+    } catch (err) {
+      return attachClientWrapper({
+        status: "error",
+        error: "Gagal terhubung ke API: " + err.message,
+        columnIDs: [],
+        columnTitles: [],
+        columnDescriptions: [],
+        columnTypes: [],
+        data: []
+      });
+    }
+  }
+  
+  /**
+   * Menambahkan method .get(rowIndex, colIndex) secara non-enumerable pada objek client-side.
+   */
+  function attachClientWrapper(obj) {
+    const safeObj = {
+      status: obj && obj.status ? obj.status : "error",
+      error: obj && obj.error !== undefined ? obj.error : "Unknown client error",
+      columnIDs: Array.isArray(obj && obj.columnIDs) ? obj.columnIDs : [],
+      // columnTitles digunakan sebagai header utama tabel
+      columnTitles: Array.isArray(obj && obj.columnTitles) 
+        ? obj.columnTitles 
+        : (Array.isArray(obj && obj.columnHeaders) ? obj.columnHeaders : []),
+      columnDescriptions: Array.isArray(obj && obj.columnDescriptions) ? obj.columnDescriptions : [],
+      columnTypes: Array.isArray(obj && obj.columnTypes) ? obj.columnTypes : [],
+      data: Array.isArray(obj && obj.data) ? obj.data : []
+    };
+  
+    Object.defineProperty(safeObj, 'get', {
+      value: function(rowIndex, colIndex) {
+        if (
+          Array.isArray(this.data) &&
+          rowIndex >= 0 &&
+          rowIndex < this.data.length &&
+          Array.isArray(this.data[rowIndex]) &&
+          colIndex >= 0 &&
+          colIndex < this.data[rowIndex].length
+        ) {
+          return this.data[rowIndex][colIndex];
+        }
+        return null;
+      },
+      writable: false,
+      configurable: true,
+      enumerable: false
+    });
+  
+    return safeObj;
+  }
