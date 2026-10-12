@@ -1,13 +1,21 @@
 import { createApp } from 'vue'
-import './assets/styles/main.css'
 import App from './App.vue'
-import { applyThemeColors } from './utils/theme.js'
- 
 
-
-// Import style dirty badge global
+// Styles lokal
+import './assets/styles/main.css'
 import './assets/styles/dirtyBadge.css'
-// Jalankan penataan warna CSS Variables dari colors.js
-applyThemeColors()// Jalankan penataan warna CSS Variables dari colors.js
- 
-createApp(App).mount('#app')
+
+// Import Tabulator CSS v6.3.1 (atau theme yang disukai)
+import 'tabulator-tables/dist/css/tabulator.min.css'
+
+// Theme Utils
+import { applyThemeColors } from './utils/theme.js'
+
+// Jalankan penataan warna CSS Variables
+applyThemeColors()
+
+// Inisialisasi App
+const app = createApp(App)
+
+// Mount Aplikasi
+app.mount('#app')
