@@ -74,20 +74,20 @@ import { fetchGSheetData } from './DataTable.js';
 import { APP_COLORS } from '../constants/colors.js';
 
 // ==========================================
-// Props & Reaktivitas Utama
+// Props, Emits & Reaktivitas Utama
 // ==========================================
 const props = defineProps({
     config: {
         type: Object,
         required: true
     },
-    // Format tampilan untuk kolom dengan columnTypes = 'date'.
-    // Kosong berarti mempertahankan format asli dari sumber data.
     tableDateFormat: {
         type: String,
         default: ''
     }
 });
+
+const emit = defineEmits(['row-selected']);
 
 const loading = ref(false);
 const searchText = ref('');
@@ -95,7 +95,6 @@ const lastUpdated = ref('');
 const tableElement = ref(null);
 const showFilters = ref(false);
 
-// Default Wrap: OFF
 const wrapText = ref(false);
 
 const sheetData = ref({
@@ -108,11 +107,9 @@ const sheetData = ref({
     data: []
 });
 
-// Instance Tabulator & Pengontrol Request Async
 let table = null;
 let requestSequence = 0;
 
-// Computed Properties
 const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
@@ -120,24 +117,15 @@ const totalColumns = computed(() => sheetData.value.columnTitles.length);
 // Method Interaksi UI
 // ==========================================
 
-/**
- * Mengubah mode pembungkusan teks (Wrap ON / Wrap OFF).
- */
 function toggleWrap() {
     wrapText.value = !wrapText.value;
 
     if (table) {
-        // Perbarui formatter agar class wrap langsung berubah
         table.getRows().forEach(row => row.reformat());
         table.redraw(true);
     }
 }
 
-/**
- * Menampilkan atau menyembunyikan input filter header per kolom.
- * Saat filter disembunyikan, filter kolom dibersihkan.
- * Pencarian global tetap dipertahankan.
- */
 async function toggleFilters() {
     showFilters.value = !showFilters.value;
 
@@ -150,20 +138,15 @@ async function toggleFilters() {
         await table.setColumns(columns);
 
         if (!showFilters.value) {
-            // Hapus filter kolom saat header filter disembunyikan
             table.clearFilter(true);
         }
 
-        // Terapkan kembali pencarian global jika ada
         applySearch();
     } catch (error) {
         console.error('Gagal memperbarui filter kolom:', error);
     }
 }
 
-/**
- * Menghapus teks pencarian global dan seluruh filter aktif di tabel.
- */
 function clearAllFilters() {
     searchText.value = '';
 
@@ -176,11 +159,6 @@ function clearAllFilters() {
 // Helper Generator Konfigurasi Tabulator
 // ==========================================
 
-/**
- * Mengubah metadata kolom hasil Fetch menjadi skema kolom Tabulator.
- * @param {Object} result Data Sheet dari API
- * @returns {Array} List konfigurasi kolom Tabulator
- */
 function buildColumns(result) {
     return result.columnTitles.map((title, index) => {
         const columnID = result.columnIDs[index] || `col_${index + 1}`;
@@ -199,7 +177,7 @@ function buildColumns(result) {
                 ? sortDateValues
                 : getSorter(type),
             headerHozAlign: 'center',
-            maxWidth: 300,
+            maxWidth: 500,
             widthGrow: 0,
             tooltip: true,
             headerWordWrap: true,
@@ -213,7 +191,6 @@ function buildColumns(result) {
                 div.className = 'cell-scroll';
                 div.textContent = String(displayValue);
 
-                // Menerapkan class CSS sesuai state wrapText
                 div.classList.toggle('wrap-text', wrapText.value);
                 div.classList.toggle('nowrap-text', !wrapText.value);
 
@@ -221,7 +198,6 @@ function buildColumns(result) {
             }
         };
 
-        // Konfigurasi khusus untuk kolom bertipe 'link'
         if (type === 'link') {
             column.hozAlign = 'center';
             column.width = 70;
@@ -235,7 +211,6 @@ function buildColumns(result) {
 
                 if (!url) return '';
 
-                // Validasi protokol URL (hanya HTTP/HTTPS)
                 try {
                     const parsedURL = new URL(url);
                     if (!['http:', 'https:'].includes(parsedURL.protocol)) {
@@ -245,7 +220,6 @@ function buildColumns(result) {
                     return '';
                 }
 
-                // Sanitasi karakter HTML spesial
                 const safeURL = url
                     .replace(/&/g, '&amp;')
                     .replace(/"/g, '&quot;')
@@ -268,11 +242,6 @@ function buildColumns(result) {
     });
 }
 
-/**
- * Menentukan tipe pengurutan (sorter) Tabulator berdasarkan tipe data kolom.
- * @param {string} type Tipe data kolom
- * @returns {string} Nama sorter Tabulator
- */
 function getSorter(type) {
     const numericTypes = ['number', 'numeric', 'integer', 'float', 'decimal', 'currency'];
 
@@ -283,10 +252,6 @@ function getSorter(type) {
     return 'string';
 }
 
-/**
- * Mendeteksi kolom tanggal berdasarkan metadata atau isi datanya.
- * Mendukung format seperti: 02 Dec 25.
- */
 function isDateColumn(result, index, type) {
     if (['date', 'datetime'].includes(type)) return true;
 
@@ -296,18 +261,15 @@ function isDateColumn(result, index, type) {
 
     if (!values.length) return false;
 
-    // Deteksi jika seluruh nilai non-kosong mengikuti format dd MMM yy/yyyy.
     return values.every(value => parseDateValue(value) !== null);
 }
 
-/** Mengubah tanggal seperti "02 Dec 25" menjadi timestamp untuk sorting. */
 function parseDateValue(value) {
     if (value === null || value === undefined) return null;
 
     const text = String(value).trim();
     const match = text.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2}|\d{4})$/);
 
-    // Format tanggal lain (misalnya ISO yyyy-mm-dd) sebagai fallback.
     if (!match) {
         const timestamp = Date.parse(text);
         return Number.isNaN(timestamp) ? null : timestamp;
@@ -331,12 +293,6 @@ function parseDateValue(value) {
     return date.getTime();
 }
 
-/**
- * Memformat tampilan tanggal sesuai token tableDateFormat.
- * Token yang didukung: d, dd, M, MM, MMM, MMMM, yy, yyyy.
- * Contoh: dd MMM yy -> 02 Dec 25; dd/MM/yyyy -> 02/12/2025.
- * Nilai asli tidak diubah sehingga sorting tanggal tetap bekerja.
- */
 function formatDateValue(value, format) {
     if (value === null || value === undefined || String(value).trim() === '') {
         return value ?? '';
@@ -371,7 +327,6 @@ function formatDateValue(value, format) {
     );
 }
 
-/** Sorter tanggal Tabulator, bukan sorter alfabetis. */
 function sortDateValues(a, b) {
     const dateA = parseDateValue(a);
     const dateB = parseDateValue(b);
@@ -383,11 +338,6 @@ function sortDateValues(a, b) {
     return dateA - dateB;
 }
 
-/**
- * Mengubah array 2D dari Google Sheet menjadi Array of Objects untuk Tabulator.
- * @param {Object} result Data Sheet dari API
- * @returns {Array<Object>}
- */
 function buildTableData(result) {
     return result.data
         .filter(row =>
@@ -398,7 +348,6 @@ function buildTableData(result) {
                     .replace(/[\s\u00A0\u200B\uFEFF]/g, '')
                     .trim();
 
-                // Mengabaikan baris kosong dan baris yang hanya bernilai 'FALSE'
                 return text !== '' && text.toUpperCase() !== 'FALSE';
             })
         )
@@ -410,7 +359,6 @@ function buildTableData(result) {
             result.columnIDs.forEach((columnID, columnIndex) => {
                 const value = row[columnIndex] ?? '';
 
-                // Mengubah string 'FALSE' menjadi string kosong
                 record[columnID] = String(value).trim().toUpperCase() === 'FALSE'
                     ? ''
                     : value;
@@ -424,9 +372,6 @@ function buildTableData(result) {
 // Render & Integrasi Tabulator
 // ==========================================
 
-/**
- * Menginisialisasi baru atau memperbarui data pada tabel Tabulator.
- */
 async function renderTable() {
     await nextTick();
 
@@ -446,7 +391,6 @@ async function renderTable() {
         table = new Tabulator(tableElement.value, {
             data,
             columns,
-           
             selectableRows: 1,
             layout: 'fitDataStretch',
             height: '600px',
@@ -487,6 +431,16 @@ async function renderTable() {
         table.on('tableBuilt', () => {
             applySearch();
         });
+
+        // Event listener saat baris pada tabel diklik
+        table.on('rowClick', (e, row) => {
+            const rowData = row.getData();
+            const firstColumnID = sheetData.value.columnIDs[0];
+            const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
+
+            // Emit nilai kolom pertama dari baris yang diklik
+            emit('row-selected', firstColumnValue);
+        });
     } else {
         await table.setColumns(columns);
         await table.replaceData(data);
@@ -494,9 +448,6 @@ async function renderTable() {
     }
 }
 
-/**
- * Menjalankan filter pencarian global di seluruh kolom.
- */
 function applySearch() {
     if (!table) return;
 
@@ -519,9 +470,6 @@ function applySearch() {
 // Fetching Data API
 // ==========================================
 
-/**
- * Mengambil data terbaru dari Google Apps Script Web App.
- */
 async function loadData() {
     const currentRequest = ++requestSequence;
     loading.value = true;
@@ -540,7 +488,6 @@ async function loadData() {
             config.dataRange ?? 'A5:Z'
         );
 
-        // Abaikan hasil jika ada request yang lebih baru
         if (currentRequest !== requestSequence) return;
 
         if (result.status !== 'success') {
@@ -583,9 +530,6 @@ async function loadData() {
     }
 }
 
-/**
- * Membersihkan instance Tabulator dari DOM.
- */
 function destroyTable() {
     if (table) {
         table.destroy();
@@ -620,9 +564,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ==========================================
-   Layout Container & Toolbar
-   ========================================== */
+/* style tetap sama */
 .data-table-container {
     width: 100%;
     min-width: 0;
@@ -659,9 +601,6 @@ onBeforeUnmount(() => {
     align-items: center;
 }
 
-/* ==========================================
-   Inputs & Buttons
-   ========================================== */
 .table-search {
     box-sizing: border-box;
     width: 220px;
@@ -717,9 +656,6 @@ onBeforeUnmount(() => {
     color: #1a73e8;
 }
 
-/* ==========================================
-   States (Loading, Error, Empty)
-   ========================================== */
 .table-wrapper,
 .data-table {
     width: 100%;
@@ -747,11 +683,6 @@ onBeforeUnmount(() => {
     overflow-wrap: anywhere;
 }
 
-/* ==========================================
-   Kustomisasi Tabulator UI (:deep)
-   ========================================== */
-
-/* Header Tabulator */
 .data-table :deep(.tabulator-col-content) {
     display: flex;
     flex-direction: column;
@@ -770,7 +701,6 @@ onBeforeUnmount(() => {
     text-align: center;
 }
 
-/* Styling Elemen Cell Text */
 .data-table :deep(.cell-scroll) {
     display: block;
     width: 100%;
@@ -785,7 +715,6 @@ onBeforeUnmount(() => {
     height: 0;
 }
 
-/* Mode Wrap: ON */
 .data-table :deep(.cell-scroll.wrap-text) {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
@@ -793,7 +722,6 @@ onBeforeUnmount(() => {
     overflow-y: hidden;
 }
 
-/* Mode Wrap: OFF */
 .data-table :deep(.cell-scroll.nowrap-text) {
     display: block;
     width: 100%;
@@ -808,7 +736,6 @@ onBeforeUnmount(() => {
     box-sizing: border-box;
 }
 
-/* Scrollbar kustom saat mouse hover di mode Wrap OFF */
 .data-table :deep(.cell-scroll.nowrap-text:hover) {
     scrollbar-width: thin;
 }
@@ -831,44 +758,49 @@ onBeforeUnmount(() => {
     background: #666;
 }
 
-/* Penyesuaian Tinggi Baris/Cell */
 .data-table :deep(.tabulator-row),
 .data-table :deep(.tabulator-row.tabulator-row-even),
 .data-table :deep(.tabulator-row.tabulator-row-odd) {
     height: auto;
     min-height: 0;
-
-/* warna     */
-/* background-color: #f0f0f0 !important; */
- background: v-bind('APP_COLORS.bgTableRowGrad') ;  
-
+    background: v-bind('APP_COLORS.bgTableRowGrad');
 }
-   
 
-/* Efek Hover (opsional) */
 .data-table :deep(.tabulator-row:hover) {
-    /* background-color: #aca9a9 !important; */
-    background: v-bind('APP_COLORS.bgTableRowHovwer') ;  
+    background: v-bind('APP_COLORS.bgTableRowHovwer');
 }
 
-/* Efek saat diklik / dipilih (Selected) */
 .data-table :deep(.tabulator-row.tabulator-selected) {
-    /* background-color: #b72828 !important; */
-    background: v-bind('APP_COLORS.bgTableRowSelected') ;  
+    background: v-bind('APP_COLORS.bgTableRowSelected');
 }
 
-
-
- 
 .data-table :deep(.tabulator-cell) {
     height: auto;
     white-space: normal;
     background: transparent !important;
-}  
+}
 
-/* ==========================================
-   Responsive Layout (Mobile)
-   ========================================== */
+.data-table :deep(.tabulator-col-content) {
+    background: v-bind('APP_COLORS.buttonBg');
+}
+
+.data-table :deep(.tabulator-header-filter input) {
+    background: v-bind('APP_COLORS.bgPrimaryGrad');
+     border-color: v-bind('APP_COLORS.borderDefault');       
+    border-style:solid;
+    border-width: 1px;
+    box-shadow:   0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
+    outline: none;
+}
+ 
+.data-table :deep(.tabulator-header-filter input:focus) {
+  outline: none;
+  border-style:solid;
+    border-width: 1px;
+    box-shadow: inset 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
+
+}
+
 @media (max-width: 600px) {
     .table-toolbar {
         align-items: stretch;
