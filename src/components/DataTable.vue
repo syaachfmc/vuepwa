@@ -104,7 +104,8 @@ const sheetData = ref({
     columnTitles: [],
     columnDescriptions: [],
     columnTypes: [],
-    data: []
+    data: [],
+    rowIDs: []
 });
 
 let table = null;
@@ -339,33 +340,35 @@ function sortDateValues(a, b) {
 }
 
 function buildTableData(result) {
-    return result.data
-        .filter(row =>
-            row.some(value => {
-                if (value === null || value === undefined) return false;
+    const validRows = [];
 
-                const text = String(value)
-                    .replace(/[\s\u00A0\u200B\uFEFF]/g, '')
-                    .trim();
+    (result.data || []).forEach((row, rowIndex) => {
+        const hasValue = row.some(value => {
+            if (value === null || value === undefined) return false;
+            const text = String(value)
+                .replace(/[\s\u00A0\u200B\uFEFF]/g, '')
+                .trim();
+            return text !== '' && text.toUpperCase() !== 'FALSE';
+        });
 
-                return text !== '' && text.toUpperCase() !== 'FALSE';
-            })
-        )
-        .map((row, rowIndex) => {
+        if (hasValue) {
             const record = {
-                __rowIndex: rowIndex
+                __rowIndex: rowIndex,
+                __rowID: result.rowIDs && result.rowIDs[rowIndex] !== undefined ? result.rowIDs[rowIndex] : ''
             };
 
             result.columnIDs.forEach((columnID, columnIndex) => {
                 const value = row[columnIndex] ?? '';
-
                 record[columnID] = String(value).trim().toUpperCase() === 'FALSE'
                     ? ''
                     : value;
             });
 
-            return record;
-        });
+            validRows.push(record);
+        }
+    });
+
+    return validRows;
 }
 
 // ==========================================
@@ -437,9 +440,13 @@ async function renderTable() {
             const rowData = row.getData();
             const firstColumnID = sheetData.value.columnIDs[0];
             const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
+            const rowID = rowData.__rowID || '';
 
-            // Emit nilai kolom pertama dari baris yang diklik
-            emit('row-selected', firstColumnValue);
+            // Emit payload berisi object { value, rowID }
+            emit('row-selected', {
+                value: firstColumnValue,
+                rowID: rowID
+            });
         });
     } else {
         await table.setColumns(columns);
@@ -485,7 +492,8 @@ async function loadData() {
             config.columnTitleRow ?? 2,
             config.columnTitleDescriptionRow ?? 3,
             config.columnTypeRow ?? 4,
-            config.dataRange ?? 'A5:Z'
+            config.dataRange ?? 'A5:Z',
+            config.RowIDColumn ?? ''
         );
 
         if (currentRequest !== requestSequence) return;
@@ -498,7 +506,8 @@ async function loadData() {
                 columnTitles: [],
                 columnDescriptions: [],
                 columnTypes: [],
-                data: []
+                data: [],
+                rowIDs: []
             };
 
             destroyTable();
@@ -519,7 +528,8 @@ async function loadData() {
             columnTitles: [],
             columnDescriptions: [],
             columnTypes: [],
-            data: []
+            data: [],
+            rowIDs: []
         };
 
         destroyTable();
@@ -564,7 +574,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* style tetap sama */
 .data-table-container {
     width: 100%;
     min-width: 0;
@@ -786,19 +795,18 @@ onBeforeUnmount(() => {
 
 .data-table :deep(.tabulator-header-filter input) {
     background: v-bind('APP_COLORS.bgPrimaryGrad');
-     border-color: v-bind('APP_COLORS.borderDefault');       
-    border-style:solid;
+    border-color: v-bind('APP_COLORS.borderDefault');        
+    border-style: solid;
     border-width: 1px;
-    box-shadow:   0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
+    box-shadow: 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
     outline: none;
 }
  
 .data-table :deep(.tabulator-header-filter input:focus) {
-  outline: none;
-  border-style:solid;
+    outline: none;
+    border-style: solid;
     border-width: 1px;
     box-shadow: inset 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
-
 }
 
 @media (max-width: 600px) {

@@ -2,6 +2,11 @@
   <main class="app-container">
     <h1>Data Table Google Sheet</h1>
     
+    <!-- Menampilkan Row ID dari baris yang diklik -->
+    <p class="selected-info">
+      Row ID: <strong>{{ selectedRowID || '-' }}</strong>
+    </p>
+
     <!-- Menampilkan data kolom pertama dari baris yang diklik -->
     <p class="selected-info">
       Data yang di klik: <strong>{{ selectedData || '-' }}</strong>
@@ -21,9 +26,12 @@ import { ref } from 'vue';
 import DataTable from './components/DataTable.vue';
 
 const selectedData = ref('');
+const selectedRowID = ref('');
 
-function handleRowSelected(val) {
-  selectedData.value = val;
+function handleRowSelected(payload) {
+  // Payload berupa object { value, rowID }
+  selectedData.value = payload ? payload.value : '';
+  selectedRowID.value = payload ? payload.rowID : '';
 }
 
 const config = ref({
@@ -34,7 +42,8 @@ const config = ref({
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'B5:BW100',
+  dataRange: 'A5:BW100',
+  RowIDColumn: 'A', // Ubah huruf kolom ini sesuai letak kolom RowID di GSheet Anda (misal 'Z' atau 'A')
   tableDateFormat: 'dd MMM yy'
 });
 </script>
@@ -53,7 +62,7 @@ h1 {
 }
 
 .selected-info {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   font-size: 1rem;
   color: #555;
   background-color: #f8f9fa;
