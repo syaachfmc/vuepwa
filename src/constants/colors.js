@@ -60,7 +60,10 @@ buttonShadowFocus: 'rgba(0, 0, 0, 0.25)',
 
 //-----TABLE
 
-bgTableCellGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
+bgTableRowGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
+bgTableRowHovwer: 'linear-gradient(180deg, rgb(229, 229, 229) 10%,  rgb(220, 220, 220) 90%)',
+bgTableRowSelected: 'linear-gradient(180deg, rgb(199, 199, 199) 10%,  rgb(176, 176, 176) 90%)',
+txtTableRowSelected: 'rgb(6, 6, 6)',
   
 
 

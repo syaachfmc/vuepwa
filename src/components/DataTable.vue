@@ -446,6 +446,8 @@ async function renderTable() {
         table = new Tabulator(tableElement.value, {
             data,
             columns,
+           
+            selectableRows: 1,
             layout: 'fitDataStretch',
             height: '600px',
             index: '__rowIndex',
@@ -835,14 +837,34 @@ onBeforeUnmount(() => {
 .data-table :deep(.tabulator-row.tabulator-row-odd) {
     height: auto;
     min-height: 0;
-    background: v-bind('APP_COLORS.bgTableCellGrad') !important;
+
+/* warna     */
+/* background-color: #f0f0f0 !important; */
+ background: v-bind('APP_COLORS.bgTableRowGrad') ;  
+
+}
+   
+
+/* Efek Hover (opsional) */
+.data-table :deep(.tabulator-row:hover) {
+    /* background-color: #aca9a9 !important; */
+    background: v-bind('APP_COLORS.bgTableRowHovwer') ;  
 }
 
+/* Efek saat diklik / dipilih (Selected) */
+.data-table :deep(.tabulator-row.tabulator-selected) {
+    /* background-color: #b72828 !important; */
+    background: v-bind('APP_COLORS.bgTableRowSelected') ;  
+}
+
+
+
+ 
 .data-table :deep(.tabulator-cell) {
     height: auto;
     white-space: normal;
     background: transparent !important;
-}
+}  
 
 /* ==========================================
    Responsive Layout (Mobile)

@@ -1,6 +1,7 @@
 <template>
     <main class="app-container">
       <h1>Data Table Google Sheet</h1>
+      
       <!-- Mengirimkan objek config ke komponen DataTable.vue via props -->
       <DataTable :config="config"
             :tableDateFormat="config.tableDateFormat"
