@@ -1,4 +1,3 @@
-
 <template>
     <div class="data-table-container">
         <!-- Toolbar Table -->
@@ -12,45 +11,22 @@
             </div>
 
             <div class="table-actions">
-                <input
-                    v-model="searchText"
-                    type="text"
-                    class="table-search"
-                    placeholder="Cari data..."
-                    :disabled="loading || sheetData.status !== 'success'"
-                />
+                <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..."
+                    :disabled="loading || sheetData.status !== 'success'" />
 
-                <button
-                    type="button"
-                    class="filter-button"
-                    @click="toggleFilters"
-                >
+                <button type="button" class="filter-button" @click="toggleFilters">
                     {{ showFilters ? '✖ Hide Filter' : '🔍 Show Filter' }}
                 </button>
 
-                <button
-                    type="button"
-                    class="filter-button"
-                    @click="clearAllFilters"
-                >
+                <button type="button" class="filter-button" @click="clearAllFilters">
                     🧹 Clear Filter
                 </button>
 
-                <button
-                    type="button"
-                    class="filter-button"
-                    :class="{ 'wrap-active': wrapText }"
-                    @click="toggleWrap"
-                >
+                <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap">
                     {{ wrapText ? '↕ Wrap: ON' : '↔ Wrap: OFF' }}
                 </button>
 
-                <button
-                    type="button"
-                    class="refresh-button"
-                    :disabled="loading"
-                    @click="loadData"
-                >
+                <button type="button" class="refresh-button" :disabled="loading" @click="loadData">
                     {{ loading ? 'Memuat...' : 'Refresh' }}
                 </button>
             </div>
@@ -66,28 +42,18 @@
             <strong>Gagal memuat data</strong>
             <p>{{ sheetData.error }}</p>
 
-            <button
-                type="button"
-                class="refresh-button"
-                @click="loadData"
-            >
+            <button type="button" class="refresh-button" @click="loadData">
                 Coba Lagi
             </button>
         </div>
 
         <!-- Status Empty -->
-        <div
-            v-else-if="sheetData.status === 'success' && totalRows === 0"
-            class="empty-state"
-        >
+        <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="empty-state">
             Tidak ada data untuk ditampilkan.
         </div>
 
         <!-- Container Tabulator -->
-        <div
-            v-show="sheetData.status === 'success' && totalRows > 0"
-            class="table-wrapper"
-        >
+        <div v-show="sheetData.status === 'success' && totalRows > 0" class="table-wrapper">
             <div ref="tableElement" class="data-table"></div>
         </div>
     </div>
@@ -105,6 +71,7 @@ import {
 
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { fetchGSheetData } from './DataTable.js';
+import { APP_COLORS } from '../constants/colors.js';
 
 // ==========================================
 // Props & Reaktivitas Utama
@@ -113,6 +80,12 @@ const props = defineProps({
     config: {
         type: Object,
         required: true
+    },
+    // Format tampilan untuk kolom dengan columnTypes = 'date'.
+    // Kosong berarti mempertahankan format asli dari sumber data.
+    tableDateFormat: {
+        type: String,
+        default: ''
     }
 });
 
@@ -222,7 +195,9 @@ function buildColumns(result) {
             headerFilterPlaceholder: '',
             headerFilterFunc: 'like',
             headerSort: true,
-            sorter: getSorter(type),
+            sorter: isDateColumn(result, index, type)
+                ? sortDateValues
+                : getSorter(type),
             headerHozAlign: 'center',
             maxWidth: 300,
             widthGrow: 0,
@@ -230,10 +205,13 @@ function buildColumns(result) {
             headerWordWrap: true,
             formatter: function (cell) {
                 const value = cell.getValue() ?? '';
+                const displayValue = type === 'date'
+                    ? formatDateValue(value, props.tableDateFormat)
+                    : value;
 
                 const div = document.createElement('div');
                 div.className = 'cell-scroll';
-                div.textContent = String(value);
+                div.textContent = String(displayValue);
 
                 // Menerapkan class CSS sesuai state wrapText
                 div.classList.toggle('wrap-text', wrapText.value);
@@ -302,11 +280,107 @@ function getSorter(type) {
         return 'number';
     }
 
-    if (['date', 'datetime'].includes(type)) {
-        return 'string';
+    return 'string';
+}
+
+/**
+ * Mendeteksi kolom tanggal berdasarkan metadata atau isi datanya.
+ * Mendukung format seperti: 02 Dec 25.
+ */
+function isDateColumn(result, index, type) {
+    if (['date', 'datetime'].includes(type)) return true;
+
+    const values = (result.data || [])
+        .map(row => row[index])
+        .filter(value => value !== null && value !== undefined && String(value).trim() !== '');
+
+    if (!values.length) return false;
+
+    // Deteksi jika seluruh nilai non-kosong mengikuti format dd MMM yy/yyyy.
+    return values.every(value => parseDateValue(value) !== null);
+}
+
+/** Mengubah tanggal seperti "02 Dec 25" menjadi timestamp untuk sorting. */
+function parseDateValue(value) {
+    if (value === null || value === undefined) return null;
+
+    const text = String(value).trim();
+    const match = text.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2}|\d{4})$/);
+
+    // Format tanggal lain (misalnya ISO yyyy-mm-dd) sebagai fallback.
+    if (!match) {
+        const timestamp = Date.parse(text);
+        return Number.isNaN(timestamp) ? null : timestamp;
     }
 
-    return 'string';
+    const day = Number(match[1]);
+    const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const month = monthNames.indexOf(match[2].toLowerCase());
+    let year = Number(match[3]);
+
+    if (month < 0) return null;
+    if (match[3].length === 2) year += year >= 50 ? 1900 : 2000;
+
+    const date = new Date(year, month, day);
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month ||
+        date.getDate() !== day
+    ) return null;
+
+    return date.getTime();
+}
+
+/**
+ * Memformat tampilan tanggal sesuai token tableDateFormat.
+ * Token yang didukung: d, dd, M, MM, MMM, MMMM, yy, yyyy.
+ * Contoh: dd MMM yy -> 02 Dec 25; dd/MM/yyyy -> 02/12/2025.
+ * Nilai asli tidak diubah sehingga sorting tanggal tetap bekerja.
+ */
+function formatDateValue(value, format) {
+    if (value === null || value === undefined || String(value).trim() === '') {
+        return value ?? '';
+    }
+
+    if (!format || !String(format).trim()) return value;
+
+    const timestamp = parseDateValue(value);
+    if (timestamp === null) return value;
+
+    const date = new Date(timestamp);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const longMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const tokens = {
+        yyyy: String(year),
+        yy: String(year).slice(-2),
+        MMMM: longMonths[month - 1],
+        MMM: shortMonths[month - 1],
+        MM: String(month).padStart(2, '0'),
+        M: String(month),
+        dd: String(day).padStart(2, '0'),
+        d: String(day)
+    };
+
+    return String(format).replace(
+        /yyyy|MMMM|MMM|MM|M|dd|d|yy/g,
+        token => tokens[token]
+    );
+}
+
+/** Sorter tanggal Tabulator, bukan sorter alfabetis. */
+function sortDateValues(a, b) {
+    const dateA = parseDateValue(a);
+    const dateB = parseDateValue(b);
+
+    if (dateA === null && dateB === null) return 0;
+    if (dateA === null) return 1;
+    if (dateB === null) return -1;
+
+    return dateA - dateB;
 }
 
 /**
@@ -756,14 +830,18 @@ onBeforeUnmount(() => {
 }
 
 /* Penyesuaian Tinggi Baris/Cell */
-.data-table :deep(.tabulator-row) {
+.data-table :deep(.tabulator-row),
+.data-table :deep(.tabulator-row.tabulator-row-even),
+.data-table :deep(.tabulator-row.tabulator-row-odd) {
     height: auto;
     min-height: 0;
+    background: v-bind('APP_COLORS.bgTableCellGrad') !important;
 }
 
 .data-table :deep(.tabulator-cell) {
     height: auto;
     white-space: normal;
+    background: transparent !important;
 }
 
 /* ==========================================

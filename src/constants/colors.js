@@ -8,6 +8,8 @@ export const APP_COLORS = {
   bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
   bgPrimaryGradB: 'linear-gradient(180deg,rgba(242, 242, 242, 1) 0%, rgb(248, 248, 248) 25%, rgba(248, 248, 248, 1) 76%, rgba(227, 227, 227, 1) 100%)',
 
+
+
   bgDisabled: 'rgb(200, 200, 200)',
   textPrimary: 'rgb(0, 0, 0)',
   textSecondary: 'rgba(118, 118, 118, 0.71)',
@@ -54,7 +56,12 @@ export const APP_COLORS = {
  
 buttonShadow: 'rgba(0, 0, 0, 0.1)',
 buttonShadowHover: 'rgba(0, 0, 0, 0.15)',
-buttonShadowFocus: 'rgba(0, 0, 0, 0.25)'
+buttonShadowFocus: 'rgba(0, 0, 0, 0.25)',
+
+//-----TABLE
+
+bgTableCellGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
+  
 
 
 };

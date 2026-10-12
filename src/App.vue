@@ -2,7 +2,9 @@
     <main class="app-container">
       <h1>Data Table Google Sheet</h1>
       <!-- Mengirimkan objek config ke komponen DataTable.vue via props -->
-      <DataTable :config="config" />
+      <DataTable :config="config"
+            :tableDateFormat="config.tableDateFormat"
+            />
     </main>
   </template>
   
@@ -20,7 +22,9 @@
     columnTitleRow: 2,            // Baris Judul Kolom (Header Utama Tabel)
     columnTitleDescriptionRow: 3,  // Baris Deskripsi Judul (Tooltip/Keterangan)
     columnTypeRow: 4,             // Baris Tipe Data Kolom
-    dataRange: 'B5:BW'             // Range Data dimulai dari baris ke-5
+    dataRange: 'B5:BW',             // Range Data dimulai dari baris ke-5
+    tableDateFormat: 'dd MMM yy'
+    
   });
   </script>
   
