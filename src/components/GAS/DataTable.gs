@@ -120,6 +120,16 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
       }
     }
 
+console.log({
+  RowIDColumn: RowIDColumn,
+  targetColIndex: colLetterToNumber(RowIDColumn),
+  lastSheetCol: lastSheetCol,
+  startRow: startRow,
+  endRow: endRow,
+  rowIDsLength: rowIDs.length,
+  rowIDsSample: rowIDs.slice(0, 5)
+});
+
     // 9. Kembalikan Response Sukses
     return createSuccessResult(columnIDs, columnTitles, columnDescriptions, columnTypes, data, rowIDs);
 
@@ -217,3 +227,4 @@ function doGet(e) {
     .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }
+

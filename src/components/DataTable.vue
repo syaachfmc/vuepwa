@@ -438,7 +438,7 @@ async function renderTable() {
         // Event listener saat baris pada tabel diklik
         table.on('rowClick', (e, row) => {
             const rowData = row.getData();
-            const firstColumnID = sheetData.value.columnIDs[0];
+            const firstColumnID = sheetData.value.columnIDs[4];
             const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
             const rowID = rowData.__rowID || '';
 
@@ -515,6 +515,7 @@ async function loadData() {
         }
 
         sheetData.value = result;
+
         lastUpdated.value = new Date().toLocaleString('id-ID');
 
         await renderTable();

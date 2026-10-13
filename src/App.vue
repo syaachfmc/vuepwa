@@ -11,6 +11,12 @@
     <p class="selected-info">
       Data yang di klik: <strong>{{ selectedData || '-' }}</strong>
     </p>
+
+    <!-- Menampilkan data kolom pertama dari baris yang diklik -->
+    <p class="selected-info">
+      Data yang di klik: <strong>{{ selectedDataGSheet || '-' }}</strong>
+    </p>
+        
     
     <!-- Mengirimkan objek config dan mendengarkan event @row-selected -->
     <DataTable 
@@ -27,6 +33,7 @@ import DataTable from './components/DataTable.vue';
 
 const selectedData = ref('');
 const selectedRowID = ref('');
+const selectedDataGSheet = ref('');
 
 function handleRowSelected(payload) {
   // Payload berupa object { value, rowID }
@@ -42,8 +49,8 @@ const config = ref({
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'A5:BW100',
-  RowIDColumn: 'A', // Ubah huruf kolom ini sesuai letak kolom RowID di GSheet Anda (misal 'Z' atau 'A')
+  dataRange: 'B5:BW20',
+  RowIDColumn: 'A', 
   tableDateFormat: 'dd MMM yy'
 });
 </script>
