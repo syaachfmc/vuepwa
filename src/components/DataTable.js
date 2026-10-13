@@ -1,15 +1,15 @@
 /**
  * Memanggil GAS Web API dan mereturn result object ter-wrapper dengan method .get().
  *
- * @param {string} webAppUrl - URL Web App Apps Script.
- * @param {string} gsheetID - Spreadsheet ID.
- * @param {string} sheetName - Nama tab.
- * @param {number} columnIDRow - Baris ID Kolom.
- * @param {number} columnTitleRow - Baris Judul Kolom (Header Tabel).
- * @param {number} columnTitleDescriptionRow - Baris Deskripsi Judul.
- * @param {number} columnTypeRow - Baris Tipe Kolom.
- * @param {string} dataRange - Range data (misal: "A5:Z").
- * @param {string} rowIDColumn - Kolom tempat RowID disimpan (misal: "Z").
+ * @param {string} webAppUrl URL Web App Apps Script.
+ * @param {string} gsheetID Spreadsheet ID.
+ * @param {string} sheetName Nama tab.
+ * @param {number} columnIDRow Baris ID Kolom.
+ * @param {number} columnTitleRow Baris Judul Kolom (Header Tabel).
+ * @param {number} columnTitleDescriptionRow Baris Deskripsi Judul.
+ * @param {number} columnTypeRow Baris Tipe Kolom.
+ * @param {string} dataRange Range data (misal: "A5:Z").
+ * @param {string} rowIDColumn Kolom tempat RowID disimpan (misal: "Z").
  * @returns {Promise<Object>}
  */
 export async function fetchGSheetData(
@@ -24,6 +24,11 @@ export async function fetchGSheetData(
   rowIDColumn = ''
 ) {
   const url = new URL(webAppUrl);
+
+  // Ambil token dari sessionStorage
+  const token = sessionStorage.getItem("authToken") || "";
+
+  url.searchParams.append("token", token);
   url.searchParams.append("GSheetID", gsheetID);
   url.searchParams.append("sheetName", sheetName);
   url.searchParams.append("columnIDRow", columnIDRow);
@@ -35,9 +40,8 @@ export async function fetchGSheetData(
     url.searchParams.append("RowIDColumn", rowIDColumn);
   }
 
-
   console.log("rowIDColumn:", rowIDColumn);
-console.log("Request URL:", url.toString());
+  console.log("Request URL:", url.toString());
 
   try {
     const response = await fetch(url.toString(), {

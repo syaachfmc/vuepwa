@@ -26,14 +26,14 @@
 
 <script setup>
 import { ref } from 'vue';
-import DataTable from './DataTable.vue'; // Diperbaiki: sesuaikan path ke folder yang sama
+import DataTable from './DataTable.vue';
 
 const selectedData = ref('');
 const selectedRowID = ref('');
 const selectedDataGSheet = ref('');
 
 const config = ref({
-  webAppUrl: 'https://script.google.com/macros/s/AKfycbwbHySzlHbZilvbVXIftPTofF3zQ-wdgGC8huC0Bv0Vcckre3cXUagNoglYrOIyCiirsg/exec',
+  webAppUrl: 'https://script.google.com/macros/s/AKfycbwvyT0YNOAQLVydiESiBCq-j-kWqQ-95eSnzPI69kkdl8WiOS9fnT-cHbmriUIOgIws/exec',
   gsheetID: '1Gzo0l_7klJHcpOCXFsxQYlI75kWSjcP5w_GmgMASkb4',
   sheetName: 'data',
   columnIDRow: 1,
@@ -45,20 +45,6 @@ const config = ref({
   tableDateFormat: 'dd MMM yy'
 });
 
-const rowDataApiUrl = 'https://script.google.com/macros/s/AKfycbw_AtiTMHIDxBw0cwuBjdJ6Jc55pL8dm2WojJNPSoV_haUAXGCtuS7V48PvJcKObbfB4A/exec';
-
-const rowDataApiConfig = {
-  GSheetID: '1Gzo0l_7klJHcpOCXFsxQYlI75kWSjcP5w_GmgMASkb4',
-  sheetName: 'data',
-  columnIDRow: '1',
-  columnTitleRow: '2',
-  columnTitleDescriptionRow: '3',
-  columnTypeRow: '4',
-  dataRange: 'B5:Z100',
-  RowIDColumn: 'A',
-  columnIDs: ['1', '5', '8']
-};
-
 async function getSelectedDataGSheet(rowID) {
   if (!rowID) {
     selectedDataGSheet.value = '';
@@ -67,15 +53,31 @@ async function getSelectedDataGSheet(rowID) {
 
   selectedDataGSheet.value = 'Loading...';
 
+  // Ambil token secara realtime dari sessionStorage saat fungsi dipanggil
+  const token = sessionStorage.getItem("authToken") || "";
+
+  if (!token) {
+    selectedDataGSheet.value = 'Error: Token tidak ditemukan, silakan login ulang.';
+    return;
+  }
+
   try {
     const params = new URLSearchParams({
-      ...rowDataApiConfig,
+      token: token, // Token selalu terupdate
+      GSheetID: config.value.gsheetID,
+      sheetName: config.value.sheetName,
+      columnIDRow: String(config.value.columnIDRow),
+      columnTitleRow: String(config.value.columnTitleRow),
+      columnTitleDescriptionRow: String(config.value.columnTitleDescriptionRow),
+      columnTypeRow: String(config.value.columnTypeRow),
+      dataRange: 'B5:Z100',
+      RowIDColumn: config.value.RowIDColumn,
       RowID: String(rowID),
-      columnIDs: JSON.stringify(rowDataApiConfig.columnIDs)
+      columnIDs: JSON.stringify(['1', '5', '8'])
     });
 
     const response = await fetch(
-      `${rowDataApiUrl}?${params.toString()}`
+      `${config.value.webAppUrl}?${params.toString()}`
     );
 
     if (!response.ok) {
@@ -95,7 +97,7 @@ async function getSelectedDataGSheet(rowID) {
       .join('\r\n');
 
     if (!selectedDataGSheet.value) {
-      selectedDataGSheet.value = '';
+      selectedDataGSheet.value = 'Data kosong';
     }
   } catch (error) {
     console.error('Error mengambil data GAS kedua:', error);
