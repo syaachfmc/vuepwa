@@ -35,6 +35,8 @@ const selectedDataGSheet = ref('');
 
 const config = ref({
   webAppUrl: 'https://script.google.com/macros/s/AKfycbwbHySzlHbZilvbVXIftPTofF3zQ-wdgGC8huC0Bv0Vcckre3cXUagNoglYrOIyCiirsg/exec',
+  // script: https://script.google.com/home/projects/1f762BBpmWqXdgCRB2cY95BEEqlxMaCRy_iGZMyusKfUbniapUw3k77C8/edit
+
   gsheetID: '1Gzo0l_7klJHcpOCXFsxQYlI75kWSjcP5w_GmgMASkb4',
   sheetName: 'data',
   columnIDRow: 1,
@@ -48,6 +50,7 @@ const config = ref({
 
 // URL deployment GAS kedua: RowDataApi.gs
 const rowDataApiUrl = 'https://script.google.com/macros/s/AKfycbw_AtiTMHIDxBw0cwuBjdJ6Jc55pL8dm2WojJNPSoV_haUAXGCtuS7V48PvJcKObbfB4A/exec';
+// script : https://script.google.com/home/projects/1GsnoskhcZICr-tF6Rn-btgkBwv_9bc8TaxtIVmzORXej1iy4x0_0HlbQ/edit
 
 // Parameter request GAS kedua
 const rowDataApiConfig = {
