@@ -40,7 +40,7 @@ const config = ref({
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'B5:BW20',
+  dataRange: 'B5:BW2000',
   RowIDColumn: 'A',
   tableDateFormat: 'dd MMM yy'
 });
