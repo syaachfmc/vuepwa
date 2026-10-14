@@ -70,7 +70,7 @@ async function getSelectedDataGSheet(rowID) {
       columnTitleRow: String(config.value.columnTitleRow),
       columnTitleDescriptionRow: String(config.value.columnTitleDescriptionRow),
       columnTypeRow: String(config.value.columnTypeRow),
-      dataRange: 'B5:Z100',
+      dataRange: config.value.dataRange ,
       RowIDColumn: config.value.RowIDColumn,
       RowID: String(rowID),
       columnIDs: JSON.stringify(['1', '5', '8'])
@@ -91,7 +91,7 @@ async function getSelectedDataGSheet(rowID) {
     }
 
     selectedDataGSheet.value = (result.data || [])
-      .map(row => [row['1'], row['8']].filter(
+      .map(row => [row['1'], row['8'], row['5']].filter(
         value => value !== undefined && value !== null && value !== ''
       ).join(' '))
       .join('\r\n');
