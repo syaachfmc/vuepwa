@@ -40,9 +40,6 @@ export async function fetchGSheetData(
     url.searchParams.append("RowIDColumn", rowIDColumn);
   }
 
-  console.log("rowIDColumn:", rowIDColumn);
-  console.log("Request URL:", url.toString());
-
   try {
     const response = await fetch(url.toString(), {
       method: "GET",

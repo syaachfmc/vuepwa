@@ -71,7 +71,7 @@ async function getSelectedDataGSheet(rowID) {
       columnTitleDescriptionRow: String(config.value.columnTitleDescriptionRow),
       columnTypeRow: String(config.value.columnTypeRow),
       dataRange: config.value.dataRange ,
-      RowIDColumn: config.value.RowIDColumn,
+      RowIDColumn: String(config.value.RowIDColumn),
       RowID: String(rowID),
       columnIDs: JSON.stringify(['1', '5', '8'])
     });
