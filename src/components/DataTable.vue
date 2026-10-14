@@ -166,9 +166,14 @@ function buildColumns(result) {
         const description = result.columnDescriptions[index] || '';
         const type = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
+        const isFrozen = index === 0 || index === 2 || index === 2;
+
         const column = {
             title: String(title || columnID),
             field: columnID,
+
+            frozen: isFrozen, // <--- TAMBAHKAN DI SINI
+
             headerTooltip: description || String(title || columnID),
             headerFilter: showFilters.value ? 'input' : false,
             headerFilterPlaceholder: '',
@@ -796,19 +801,40 @@ onBeforeUnmount(() => {
 
 .data-table :deep(.tabulator-header-filter input) {
     background: v-bind('APP_COLORS.bgPrimaryGrad');
-    border-color: v-bind('APP_COLORS.borderDefault');        
+    border-color: v-bind('APP_COLORS.borderDefault');
     border-style: solid;
     border-width: 1px;
-    box-shadow: 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
+    box-shadow: 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal');
     outline: none;
 }
- 
+
 .data-table :deep(.tabulator-header-filter input:focus) {
     outline: none;
     border-style: solid;
     border-width: 1px;
-    box-shadow: inset 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal'); 
+    box-shadow: inset 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal');
 }
+
+/* Berikan background padat pada sel dan header yang di-freeze */
+.data-table :deep(.tabulator-cell.tabulator-frozen) {
+    background: v-bind('APP_COLORS.bgTableRowGrad') !important;
+}
+
+/* Background untuk header kolom yang di-freeze */
+.data-table :deep(.tabulator-col.tabulator-frozen) {
+    background: v-bind('APP_COLORS.buttonBg') !important;
+}
+
+/* Memastikan background tetap padat saat baris di-hover */
+.data-table :deep(.tabulator-row:hover .tabulator-cell.tabulator-frozen) {
+    background: v-bind('APP_COLORS.bgTableRowHovwer') !important;
+}
+
+/* Memastikan background tetap padat saat baris dipilih (selected) */
+.data-table :deep(.tabulator-row.tabulator-selected .tabulator-cell.tabulator-frozen) {
+    background: v-bind('APP_COLORS.bgTableRowSelected') !important;
+}
+
 
 @media (max-width: 600px) {
     .table-toolbar {
