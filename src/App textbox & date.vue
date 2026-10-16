@@ -206,6 +206,7 @@ function prosesData() {
   --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
 }
 
+
 .button-form-container{
   display: flex;
   flex-direction:row;
@@ -241,7 +242,7 @@ function prosesData() {
   gap: 6px;
   border: 1px;
   border-style: solid;
-  border-color: blue;
+  border-color: rgba(0, 0, 255, 0);
 }
 
 .data-preview {

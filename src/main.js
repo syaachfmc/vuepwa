@@ -1,6 +1,10 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
+// ICONS
+import AppIcon from './components/AppIcon.vue'
+
+
 // Styles lokal
 import './assets/styles/main.css'
 import './assets/styles/dirtyBadge.css'
@@ -19,3 +23,4 @@ const app = createApp(App)
 
 // Mount Aplikasi
 app.mount('#app')
+app.component('AppIcon', AppIcon)

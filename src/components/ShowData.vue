@@ -21,6 +21,7 @@
       :tableDateFormat="config.tableDateFormat"
       @row-selected="handleRowSelected"
     />
+    
   </main>
 </template>
 
@@ -40,7 +41,7 @@ const config = ref({
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'B5:BW2000',
+  dataRange: 'B5:BW200',
   RowIDColumn: 'A',
   tableDateFormat: 'dd MMM yy'
 });

@@ -1,25 +1,31 @@
 <template>
     <div class="data-table-container">
+        <!-- Container Tabulator -->
+        <div v-show="sheetData.status === 'success' && totalRows > 0" class="table-wrapper">
+            <div ref="tableElement" class="data-table"></div>
+        </div>
         <!-- Toolbar Table -->
         <div class="table-toolbar">
             <div class="table-info">
-                <span>Total Data: <strong>{{ totalRows }}</strong></span>
-                <span>Total Kolom: <strong>{{ totalColumns }}</strong></span>
+                <!-- <span>Total Data: <strong>{{ totalRows }}</strong></span>
+                <span>Total Kolom: <strong>{{ totalColumns }}</strong></span> -->
                 <span v-if="lastUpdated">
-                    Update: <strong>{{ lastUpdated }}</strong>
+                    Last Refresh:<strong>{{ lastUpdated }}</strong>
                 </span>
             </div>
 
             <div class="table-actions">
                 <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..."
-                    :disabled="loading || sheetData.status !== 'success'" />
+                    :disabled="loading || sheetData.status !== 'success'" 
+                />
 
                 <button type="button" class="filter-button" @click="toggleFilters">
-                    {{ showFilters ? '✖ Hide Filter' : '🔍 Show Filter' }}
+                    <AppIcon :name="showFilters ? 'funnel-x' : 'funnel'" :size="12" />
                 </button>
 
                 <button type="button" class="filter-button" @click="clearAllFilters">
-                    🧹 Clear Filter
+                    <AppIcon name="rotate-ccw" :size="12" />
+                     Clear Filter
                 </button>
 
                 <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap">
@@ -52,10 +58,7 @@
             Tidak ada data untuk ditampilkan.
         </div>
 
-        <!-- Container Tabulator -->
-        <div v-show="sheetData.status === 'success' && totalRows > 0" class="table-wrapper">
-            <div ref="tableElement" class="data-table"></div>
-        </div>
+
     </div>
 </template>
 
@@ -72,6 +75,7 @@ import {
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { fetchGSheetData } from './DataTable.js';
 import { APP_COLORS } from '../constants/colors.js';
+import AppIcon from './AppIcon.vue';
 
 // ==========================================
 // Props, Emits & Reaktivitas Utama
@@ -401,7 +405,7 @@ async function renderTable() {
             columns,
             selectableRows: 1,
             layout: 'fitDataStretch',
-            height: '600px',
+            height: '100%',
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
             movableColumns: true,
@@ -587,40 +591,49 @@ onBeforeUnmount(() => {
     color: #333;
 }
 
+.table-info {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
 .table-toolbar {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
 }
 
-.table-info {
+.table-info span {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 16px;
-    font-size: 13px;
-    color: #555;
+    gap: 2px;
+    font-size: 10px;
+    color: v-bind('APP_COLORS.textSecondary');
+    margin-top: 2px;
 }
 
 .table-info strong {
-    color: #222;
+    color: v-bind('APP_COLORS.textPrimary');
+    font-size: 10px;
 }
 
 .table-actions {
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
+    gap: 4px;
+    align-items: stretch;
+    justify-content: flex-end;
+    height: 10px;
+
+
 }
 
 .table-search {
     box-sizing: border-box;
     width: 220px;
     max-width: 100%;
-    padding: 8px 10px;
+
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 13px;
@@ -633,7 +646,7 @@ onBeforeUnmount(() => {
 }
 
 .refresh-button {
-    padding: 8px 14px;
+
     border: 1px solid #1a73e8;
     border-radius: 4px;
     background: #1a73e8;
@@ -652,12 +665,12 @@ onBeforeUnmount(() => {
 }
 
 .filter-button {
-    padding: 8px 14px;
+
     border: 1px solid #ccc;
     border-radius: 4px;
     background: #fff;
     color: #333;
-    font-size: 13px;
+    font-size: 10px;
     cursor: pointer;
 }
 
@@ -671,10 +684,19 @@ onBeforeUnmount(() => {
     color: #1a73e8;
 }
 
-.table-wrapper,
+
 .data-table {
     width: 100%;
     min-width: 0;
+    border: 1px solid v-bind('APP_COLORS.borderDefault');
+    border-radius: 3px;
+
+}
+
+.table-wrapper {
+    width: 100%;
+    min-width: 0;
+    height: 200px;
 }
 
 .loading,
@@ -793,6 +815,10 @@ onBeforeUnmount(() => {
     height: auto;
     white-space: normal;
     background: transparent !important;
+    border: 1px dotted v-bind('APP_COLORS.borderDefault');
+    color: v-bind('APP_COLORS.textPrimary');
+
+
 }
 
 .data-table :deep(.tabulator-col-content) {

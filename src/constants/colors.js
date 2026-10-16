@@ -5,18 +5,18 @@ export const APP_COLORS = {
   // --- WARNA NETRAL & DASAR ---
   bgPrimary: 'rgb(255, 255, 255)',
  
-  bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
+  bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%, rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
   bgPrimaryGradB: 'linear-gradient(180deg,rgba(242, 242, 242, 1) 0%, rgb(248, 248, 248) 25%, rgba(248, 248, 248, 1) 76%, rgba(227, 227, 227, 1) 100%)',
 
 
 
   bgDisabled: 'rgb(200, 200, 200)',
-  textPrimary: 'rgb(0, 0, 0)',
+  textPrimary: 'rgb(241, 11, 11)',
   textSecondary: 'rgba(118, 118, 118, 0.71)',
   textDisabled: 'rgb(25, 25, 25)',
 
   // --- WARNA BORDER ---
-  borderDefault: 'rgba(204, 204, 204, 1)',
+  borderDefault: 'rgba(198, 199, 219, 0.82)',
   borderHover: 'rgba(119, 119, 119, 1)',
   borderFocus: 'rgba(119, 119, 119, 1)',
   borderError: 'rgba(220, 53, 69, 1)',
