@@ -23,5 +23,6 @@ import Login from "./components/Login.vue";
 </script>
 
 <template>
+    <login/>
     <SideBarTable/>     
 </template>
