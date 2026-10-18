@@ -1,13 +1,8 @@
 <template>
-    <!-- 1. PINDAHKAN SVG KE BAGIAN ATAS AGAR SELALU TERSEDIA DI DOM -->
+    <!-- 1. SVG ClipPath (Tetap di atas) -->
     <svg width="0" height="0" style="position: absolute; pointer-events: none;">
         <defs>
             <clipPath id="trapesium-rounded" clipPathUnits="objectBoundingBox">
-                <!-- 
-                  Atas: Lebih lebar (Dimulai dari X:0.02 sampai X:0.98)
-                  Bawah: Lebih sempit (Dimulai dari X:0.18 sampai X:0.82)
-                  Q: Membuat sudut tumpul melengkung
-                -->
                 <path d="M 0.02,0 
                          H 0.98 
                          Q 1,0 0.97,0.08 
@@ -31,10 +26,10 @@
         <!-- BODY -->
         <div class="layout-body" :class="{ 'sidebar-full': isSidebarFullWidth }">
 
-            <!-- SIDE BAR -->
-            <aside class="SideBar" :style="sidebarStyle">
+            <!-- SIDE BAR (DIV-2 & DIV-5 Tempat Tabulator) -->
+            <aside class="SideBar" ref="sidebarRef" :style="sidebarStyle">
                 <div class="sidebar-content">
-                    SideBar
+                    <SideBarTable />
                 </div>
             </aside>
 
@@ -93,21 +88,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { APP_COLORS } from '../constants/colors.js'
+import SideBarTable from '../components/SideBarTable.vue'
 
 // ========================================
-// SIDEBAR SETTINGS
+// REFS & LAYOUT SETTINGS
 // ========================================
-const defaultSidebarWidth = 240
-const minSidebarWidth = 60
-const maxSidebarWidth = 600
+const sidebarRef = ref(null)
+const defaultSidebarWidth = 320 // Disesuaikan agar Tabulator cukup ruang awal
+const minSidebarWidth = 150
+const maxSidebarWidth = 800
 
 const sidebarWidth = ref(defaultSidebarWidth)
 const previousSidebarWidth = ref(defaultSidebarWidth)
 
 const isSidebarFullWidth = ref(false)
 const isResizing = ref(false)
+
+let resizeObserver = null
 
 // ========================================
 // TABS
@@ -142,7 +141,7 @@ const sidebarStyle = computed(() => {
 })
 
 // ========================================
-// RESIZE SIDEBAR
+// RESIZE SIDEBAR & TABULATOR REDRAW
 // ========================================
 let startX = 0
 let startWidth = 0
@@ -187,9 +186,6 @@ function stopResize() {
     window.removeEventListener('pointercancel', stopResize)
 }
 
-// ========================================
-// DOUBLE-CLICK: FULL WIDTH TOGGLE
-// ========================================
 function toggleSidebarFullWidth() {
     stopResize()
 
@@ -203,10 +199,23 @@ function toggleSidebarFullWidth() {
 }
 
 // ========================================
-// CLEANUP
+// OBSERVER UNTUK TABULATOR AUTORESIZE
 // ========================================
+onMounted(() => {
+    if (sidebarRef.value) {
+        resizeObserver = new ResizeObserver(() => {
+            // Memicu event custom agar komponen SideBarTable/Tabulator melakukan redraw
+            window.dispatchEvent(new Event('sidebar-resized'))
+        })
+        resizeObserver.observe(sidebarRef.value)
+    }
+})
+
 onBeforeUnmount(() => {
     stopResize()
+    if (resizeObserver && sidebarRef.value) {
+        resizeObserver.unobserve(sidebarRef.value)
+    }
 })
 </script>
 
@@ -261,7 +270,7 @@ onBeforeUnmount(() => {
 }
 
 /* ========================================
-   SIDE BAR
+   SIDE BAR (MEMBANGKITKAN AUTO FIT TABULATOR)
 ======================================== */
 .SideBar {
     position: relative;
@@ -270,19 +279,23 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
     min-width: 0;
     height: 100%;
-    overflow: auto;
+    /* Overflow diubah ke hidden agar scrollbar ditangani internal oleh Tabulator */
+    overflow: hidden;
     border: 1px solid v-bind('APP_COLORS.borderDefault');
     border-radius: 6px;
     background: v-bind('APP_COLORS.bgPrimaryGrad');
-    transition: width 0.12s ease;
+    transition: width 0.05s ease-out;
 }
 
 .sidebar-content {
     display: flex;
     flex: 1;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
     min-height: 0;
+    min-width: 0;
+    overflow: hidden;
 }
 
 /* ========================================
@@ -291,8 +304,8 @@ onBeforeUnmount(() => {
 .resize-handle {
     position: relative;
     z-index: 10;
-    flex: 0 0 5px;
-    margin: 0;
+    flex: 0 0 6px;
+    margin: 0 1px;
     cursor: col-resize;
     touch-action: none;
     display: flex;
@@ -332,7 +345,7 @@ onBeforeUnmount(() => {
 
 .MainContent {
     display: flex;
-    flex: 1 1 0%; /* Mengalah dan mengurangi tinggi secara fleksibel */
+    flex: 1 1 0%;
     align-items: center;
     justify-content: center;
     min-height: 0;
@@ -344,24 +357,34 @@ onBeforeUnmount(() => {
 }
 
 /* ========================================
-   CONTENT TABS
+   CONTENT TABS & SCROLLBAR
 ======================================== */
 .ContentTabs {
     display: flex;
-    flex: 0 0 auto; /* Memberikan ruang fleksibel untuk tab + scrollbar horizontal */
+    flex: 0 0 auto;
     align-items: stretch;
     gap: 0;
     min-width: 0;
     overflow-x: auto;
+    overflow-y: hidden;
     filter: drop-shadow(0px 4px 6px v-bind('APP_COLORS.shadowColorNormal'));
-    padding-bottom: 2px;
+    padding-bottom: 4px;
+}
+
+/* Kustomisasi Scrollbar Horizontal pada Tabs */
+.ContentTabs::-webkit-scrollbar {
+    height: 5px;
+}
+.ContentTabs::-webkit-scrollbar-thumb {
+    background: v-bind('APP_COLORS.borderDefault');
+    border-radius: 3px;
 }
 
 .content-tab {
     position: relative;
     isolation: isolate;
     flex: 0 0 145px;
-    height: 32px; /* Menjaga tinggi tab tetap konsisten 32px di atas scrollbar */
+    height: 32px;
     margin-right: -35px;
     padding: 0 12px;
     border: none;
@@ -428,7 +451,7 @@ onBeforeUnmount(() => {
 }
 
 /* ========================================
-   RESIZING
+   RESIZING STATE
 ======================================== */
 .is-resizing .SideBar {
     transition: none;

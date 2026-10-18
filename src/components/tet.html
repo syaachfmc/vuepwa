@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Single Page Application Layout</title>
+  
+  <!-- CSS Tabulator -->
+  <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+  
+  <style>
+    /* Reset & Base Layout */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    /* Pembungkus Utama App */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      gap: 8px;
+    }
+
+    /* Style umum untuk Box / DIV */
+    .box {
+      border: 1px solid #4a6984;
+      background-color: #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* DIV-1: Tinggi Tetap (Header) */
+    #div-1 {
+      height: 50px;
+      min-height: 50px;
+      width: 100%;
+    }
+
+    /* DIV-4: Tinggi Tetap (Footer) */
+    #div-4 {
+      height: 40px;
+      min-height: 40px;
+      width: 100%;
+    }
+
+    /* Middle Section (Antara DIV-1 dan DIV-4) */
+    .middle-container {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+    }
+
+    /* DIV-2: Panel Kiri Flexible */
+    #div-2 {
+      width: 320px;
+      min-width: 200px;
+      max-width: 80%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 10px;
+      background-color: #e5e5e5;
+      border: 1px solid #4a6984;
+      overflow: hidden;
+    }
+
+    /* Resizer Handle antara DIV-2 dan DIV-3 */
+    .resizer {
+      width: 8px;
+      cursor: col-resize;
+      background-color: transparent;
+      transition: background-color 0.2s;
+      z-index: 10;
+      margin: 0 2px;
+    }
+
+    .resizer:hover, .resizer.resizing {
+      background-color: #4a6984;
+    }
+
+    /* DIV-3: Panel Kanan Flex */
+    #div-3 {
+      flex: 1;
+      height: 100%;
+      min-width: 150px;
+    }
+
+    /* DIV-5: Area Tabel Tabulator */
+    #div-5 {
+      flex: 1;
+      min-height: 150px;
+      width: 100%;
+      border: 1px solid #4a6984;
+      background-color: #e5e5e5;
+      overflow: hidden; /* Kontrol scroll diserahkan penuh ke Tabulator */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Kontainer Tabulator */
+    #example-table {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* DIV-6: Area komponen bawah di DIV-2 */
+    #div-6 {
+      height: auto;
+      width: 100%;
+      border: 1px solid #4a6984;
+      background-color: #e5e5e5;
+      padding: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .div6-item {
+      background-color: #ffffff;
+      border: 1px solid #a0a0a0;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: normal;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- DIV-1 -->
+    <div id="div-1" class="box">DIV-1</div>
+
+    <!-- Middle Area -->
+    <div class="middle-container">
+      
+      <!-- DIV-2 -->
+      <div id="div-2">
+        <!-- DIV-5 (Kontainer Tabel) -->
+        <div id="div-5">
+          <div id="example-table"></div>
+        </div>
+
+        <!-- DIV-6 -->
+        <div id="div-6">
+          <span style="font-weight: bold; width: 100%; font-size: 12px;">DIV-6 (Item Wrap):</span>
+          <div class="div6-item">Komponen A</div>
+          <div class="div6-item">Komponen B</div>
+          <div class="div6-item">Komponen C</div>
+          <div class="div6-item">Komponen D</div>
+        </div>
+      </div>
+
+      <!-- Handle Resizer -->
+      <div class="resizer" id="drag-handle"></div>
+
+      <!-- DIV-3 -->
+      <div id="div-3" class="box">DIV-3</div>
+
+    </div>
+
+    <!-- DIV-4 -->
+    <div id="div-4" class="box">DIV-4</div>
+  </div>
+
+  <!-- JavaScript Tabulator -->
+  <script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
+
+  <script>
+    // Contoh Data dengan banyak properti/kolom
+    const tableData = [
+      { id: 1, name: "Oli Bob", age: "12", gender: "male", rating: 1, col5: "Data 1", col6: "Detail A", col7: "Status 1", col8: "Catatan X" },
+      { id: 2, name: "Mary May", age: "14", gender: "female", rating: 2, col5: "Data 2", col6: "Detail B", col7: "Status 2", col8: "Catatan Y" },
+      { id: 3, name: "Christine Lobowski", age: "42", gender: "female", rating: 5, col5: "Data 3", col6: "Detail C", col7: "Status 3", col8: "Catatan Z" },
+      { id: 4, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+      { id: 5, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+      { id: 6, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+      { id: 7, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+      { id: 8, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+      { id: 9, name: "Brendon Philips", age: "125", gender: "male", rating: 1, col5: "Data 4", col6: "Detail D", col7: "Status 4", col8: "Catatan W" },
+    ];
+
+    const table = new Tabulator("#example-table", {
+      data: tableData,
+      layout: "fitDataFill", // Mengizinkan scroll horizontal jika kolom melebihi lebar DIV-5
+      height: "100%", // Scrollbar vertikal otomatis jika baris banyak
+      columns: [
+        { title: "ID", field: "id", width: 80 },
+        { title: "Nama Lengkap", field: "name", width: 150 },
+        { title: "Usia", field: "age", width: 80 },
+        { title: "Gender", field: "gender", width: 100 },
+        { title: "Rating", field: "rating", width: 90 },
+        { title: "Kolom 5", field: "col5", width: 120 },
+        { title: "Kolom 6", field: "col6", width: 140 },
+        { title: "Kolom 7", field: "col7", width: 120 },
+        { title: "Kolom 8", field: "col8", width: 150 },
+      ],
+    });
+
+    // Handle Resize DIV-2
+    const resizer = document.getElementById('drag-handle');
+    const leftDiv = document.getElementById('div-2');
+
+    let x = 0;
+    let leftWidth = 0;
+
+    const mouseDownHandler = function (e) {
+      x = e.clientX;
+      leftWidth = leftDiv.getBoundingClientRect().width;
+
+      resizer.classList.add('resizing');
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = function (e) {
+      const dx = e.clientX - x;
+      const newWidth = leftWidth + dx;
+      leftDiv.style.width = `${newWidth}px`;
+
+      if (table) {
+        table.redraw(true);
+      }
+    };
+
+    const mouseUpHandler = function () {
+      resizer.classList.remove('resizing');
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    resizer.addEventListener('mousedown', mouseDownHandler);
+
+    // Observer untuk mendeteksi perubahan ukuran kontainer DIV-5
+    const resizeObserver = new ResizeObserver(() => {
+      if (table) {
+        table.redraw(true);
+      }
+    });
+
+    resizeObserver.observe(document.getElementById('div-5'));
+  </script>
+</body>
+</html>

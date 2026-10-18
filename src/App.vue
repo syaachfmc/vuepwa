@@ -1,4 +1,4 @@
-<!-- <script setup>
+<script setup>
 import AppLayouts from "./Layouts/AppLayouts.vue";
 </script>
 
@@ -12,17 +12,18 @@ body {
     font-family: Arial, sans-serif;
     color: #1f2937;
 }
-</style> -->
+</style>
 
-
+<!-- 
 <script setup>
     import { login } from "./api/auth";
-import AppIcon from "./components/AppIcon.vue";
-import Login from "./components/Login.vue";
+    import AppIcon from "./components/AppIcon.vue";
+    import Login from "./components/Login.vue";
     import SideBarTable from './components/SideBarTable.vue';
 </script>
 
 <template>
-    
-    <SideBarTable/>     
+    <login/>
+<SideBarTable />
 </template>
+--->

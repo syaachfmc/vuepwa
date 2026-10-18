@@ -23,7 +23,7 @@ const config = ref({
     columnTitleRow: 2,
     columnTitleDescriptionRow: 3,
     columnTypeRow: 4,
-    dataRange: 'B5:BW200',
+    dataRange: 'B5:z200',
     RowIDColumn: 'A',
     tableDateFormat: 'dd MMM yy'
 });
@@ -36,7 +36,6 @@ async function getSelectedDataGSheet(rowID) {
 
     selectedDataGSheet.value = 'Loading...';
 
-    // Ambil token secara realtime dari sessionStorage saat fungsi dipanggil
     const token = sessionStorage.getItem("authToken") || "";
 
     if (!token) {
@@ -46,7 +45,7 @@ async function getSelectedDataGSheet(rowID) {
 
     try {
         const params = new URLSearchParams({
-            token: token, // Token selalu terupdate
+            token: token,
             GSheetID: config.value.gsheetID,
             sheetName: config.value.sheetName,
             columnIDRow: String(config.value.columnIDRow),
@@ -97,13 +96,16 @@ function handleRowSelected(payload) {
 </script>
 
 <style scoped>
-
-
 .app-container {
-    font-family: Arial, sans-serif;
-    padding: 0px;
-    max-width: 1200px;
-    margin: 0 ;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
 h1 {

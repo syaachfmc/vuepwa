@@ -4,61 +4,57 @@
         <div v-show="sheetData.status === 'success' && totalRows > 0" class="table-wrapper">
             <div ref="tableElement" class="data-table"></div>
         </div>
+
         <!-- Toolbar Table -->
         <div class="table-toolbar">
             <div class="table-info">
-                <!-- <span>Total Data: <strong>{{ totalRows }}</strong></span>
-                <span>Total Kolom: <strong>{{ totalColumns }}</strong></span> -->
                 <span v-if="lastUpdated">
-                    Last Refresh:<strong>{{ lastUpdated }}</strong>
+                    Last Refresh: <strong>{{ lastUpdated }}</strong>
                 </span>
             </div>
 
             <div class="table-actions">
-                <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..."
-                    :disabled="loading || sheetData.status !== 'success'" 
-                />
+                <!-- Status Loading -->
+                <div v-if="loading" class="loading">
+                    Loading data...
+                </div>
 
-                <button type="button" class="filter-button" @click="toggleFilters">
+                <!-- Status Error -->
+                <div v-else-if="sheetData.status === 'error'" class="error">
+                    {{ sheetData.error }}
+                    <button type="button" class="refresh-button" @click="loadData">
+                        Coba Lagi
+                    </button>
+                </div>
+
+                <!-- Status Empty -->
+                <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="empty-state">
+                    Tidak ada data untuk ditampilkan.
+                </div>
+
+                <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..."
+                    :disabled="loading || sheetData.status !== 'success'" />
+
+                <button type="button" class="filter-button" @click="toggleFilters"
+                    :title="showFilters ? 'Hide column filter' : 'Show column filter'">
                     <AppIcon :name="showFilters ? 'funnel-x' : 'funnel'" :size="12" />
                 </button>
 
-                <button type="button" class="filter-button" @click="clearAllFilters">
+                <button type="button" class="filter-button" @click="clearAllFilters" title="Clear filter">
                     <AppIcon name="rotate-ccw" :size="12" />
-                     Clear Filter
                 </button>
 
-                <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap">
-                    {{ wrapText ? '↕ Wrap: ON' : '↔ Wrap: OFF' }}
+                <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap"
+                    :title="wrapText ? `Don't wrap text in data cell` : `Wrap text in data cell`">
+                    {{ wrapText ? '↕' : '↔' }}
                 </button>
 
-                <button type="button" class="refresh-button" :disabled="loading" @click="loadData">
-                    {{ loading ? 'Memuat...' : 'Refresh' }}
+                <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
+                    :title="loading ? 'Loading...' : 'Refresh'">
+                    <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
                 </button>
             </div>
         </div>
-
-        <!-- Status Loading -->
-        <div v-if="loading" class="loading">
-            Memuat data Google Sheet...
-        </div>
-
-        <!-- Status Error -->
-        <div v-else-if="sheetData.status === 'error'" class="error">
-            <strong>Gagal memuat data</strong>
-            <p>{{ sheetData.error }}</p>
-
-            <button type="button" class="refresh-button" @click="loadData">
-                Coba Lagi
-            </button>
-        </div>
-
-        <!-- Status Empty -->
-        <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="empty-state">
-            Tidak ada data untuk ditampilkan.
-        </div>
-
-
     </div>
 </template>
 
@@ -98,7 +94,6 @@ const searchText = ref('');
 const lastUpdated = ref('');
 const tableElement = ref(null);
 const showFilters = ref(false);
-
 const wrapText = ref(false);
 
 const sheetData = ref({
@@ -119,8 +114,14 @@ const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 // ==========================================
-// Method Interaksi UI
+// Method Interaksi UI & Resize Listener
 // ==========================================
+
+function handleSidebarResize() {
+    if (table) {
+        table.redraw(true);
+    }
+}
 
 function toggleWrap() {
     wrapText.value = !wrapText.value;
@@ -170,14 +171,12 @@ function buildColumns(result) {
         const description = result.columnDescriptions[index] || '';
         const type = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
-        const isFrozen = index === 0 || index === 2 || index === 2;
+        const isFrozen = index === 0 || index === 2;
 
         const column = {
             title: String(title || columnID),
             field: columnID,
-
-            frozen: isFrozen, // <--- TAMBAHKAN DI SINI
-
+            frozen: isFrozen,
             headerTooltip: description || String(title || columnID),
             headerFilter: showFilters.value ? 'input' : false,
             headerFilterPlaceholder: '',
@@ -404,7 +403,7 @@ async function renderTable() {
             data,
             columns,
             selectableRows: 1,
-            layout: 'fitDataStretch',
+            layout: 'fitDataFill',
             height: '100%',
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
@@ -444,14 +443,12 @@ async function renderTable() {
             applySearch();
         });
 
-        // Event listener saat baris pada tabel diklik
         table.on('rowClick', (e, row) => {
             const rowData = row.getData();
             const firstColumnID = sheetData.value.columnIDs[4];
             const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
             const rowID = rowData.__rowID || '';
 
-            // Emit payload berisi object { value, rowID }
             emit('row-selected', {
                 value: firstColumnValue,
                 rowID: rowID
@@ -574,10 +571,12 @@ watch(
 );
 
 onMounted(() => {
+    window.addEventListener('sidebar-resized', handleSidebarResize);
     loadData();
 });
 
 onBeforeUnmount(() => {
+    window.removeEventListener('sidebar-resized', handleSidebarResize);
     requestSequence++;
     destroyTable();
 });
@@ -585,21 +584,43 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .data-table-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.table-wrapper {
+    flex: 1 1 auto;
     width: 100%;
     min-width: 0;
-    font-family: Arial, sans-serif;
-    color: #333;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border: 1px solid v-bind('APP_COLORS.borderDefault');
+    border-radius: 3px;
+}
+
+.table-toolbar {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 4px 0;
 }
 
 .table-info {
     width: 100%;
     display: flex;
     justify-content: flex-end;
-}
-
-.table-toolbar {
-    display: flex;
-    flex-wrap: wrap;
 }
 
 .table-info span {
@@ -609,7 +630,7 @@ onBeforeUnmount(() => {
     gap: 2px;
     font-size: 10px;
     color: v-bind('APP_COLORS.textSecondary');
-    margin-top: 2px;
+    margin: 4px;
 }
 
 .table-info strong {
@@ -622,21 +643,18 @@ onBeforeUnmount(() => {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    align-items: stretch;
+    align-items: center;
     justify-content: flex-end;
-    height: 10px;
-
-
 }
 
 .table-search {
     box-sizing: border-box;
-    width: 220px;
+    width: 160px;
     max-width: 100%;
-
+    padding: 2px 6px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 12px;
     outline: none;
 }
 
@@ -646,12 +664,12 @@ onBeforeUnmount(() => {
 }
 
 .refresh-button {
-
+    padding: 2px 8px;
     border: 1px solid #1a73e8;
     border-radius: 4px;
     background: #1a73e8;
     color: #fff;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -665,7 +683,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-button {
-
+    padding: 2px 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     background: #fff;
@@ -684,36 +702,26 @@ onBeforeUnmount(() => {
     color: #1a73e8;
 }
 
-
-.data-table {
-    width: 100%;
-    min-width: 0;
-    border: 1px solid v-bind('APP_COLORS.borderDefault');
-    border-radius: 3px;
-
-}
-
-.table-wrapper {
-    width: 100%;
-    min-width: 0;
-    height: 200px;
-}
-
 .loading,
 .empty-state {
-    padding: 24px;
+    flex: 1;
     text-align: center;
     color: #666;
     border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: 12px;
+    padding: 4px;
 }
 
 .error {
-    padding: 16px;
+    flex: 1;
+    text-align: center;
     color: #b42318;
     background: #fff4f2;
     border: 1px solid #f1b5ae;
     border-radius: 4px;
+    font-size: 12px;
+    padding: 4px;
 }
 
 .error p {
@@ -817,8 +825,6 @@ onBeforeUnmount(() => {
     background: transparent !important;
     border: 1px dotted v-bind('APP_COLORS.borderDefault');
     color: v-bind('APP_COLORS.textPrimary');
-
-
 }
 
 .data-table :deep(.tabulator-col-content) {
@@ -841,31 +847,25 @@ onBeforeUnmount(() => {
     box-shadow: inset 0px 2px 4px 0px v-bind('APP_COLORS.shadowColorNormal');
 }
 
-/* Berikan background padat pada sel dan header yang di-freeze */
 .data-table :deep(.tabulator-cell.tabulator-frozen) {
     background: v-bind('APP_COLORS.bgTableRowGrad') !important;
 }
 
-/* Background untuk header kolom yang di-freeze */
 .data-table :deep(.tabulator-col.tabulator-frozen) {
     background: v-bind('APP_COLORS.buttonBg') !important;
 }
 
-/* Memastikan background tetap padat saat baris di-hover */
 .data-table :deep(.tabulator-row:hover .tabulator-cell.tabulator-frozen) {
     background: v-bind('APP_COLORS.bgTableRowHovwer') !important;
 }
 
-/* Memastikan background tetap padat saat baris dipilih (selected) */
 .data-table :deep(.tabulator-row.tabulator-selected .tabulator-cell.tabulator-frozen) {
     background: v-bind('APP_COLORS.bgTableRowSelected') !important;
 }
 
-
 @media (max-width: 600px) {
     .table-toolbar {
         align-items: stretch;
-        flex-direction: column;
     }
 
     .table-actions {
