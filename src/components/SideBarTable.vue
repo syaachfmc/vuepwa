@@ -26,7 +26,7 @@ const selectedDataGSheet = ref('');
 
 const config = ref({
     webAppUrl: 'https://script.google.com/macros/s/AKfycbwvyT0YNOAQLVydiESiBCq-j-kWqQ-95eSnzPI69kkdl8WiOS9fnT-cHbmriUIOgIws/exec',
-    gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
+    gsheetID:  '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
     sheetName: 'Data',
     columnIDRow: 1,
     columnTitleRow: 2,

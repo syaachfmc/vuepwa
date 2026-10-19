@@ -14,9 +14,12 @@
             </div>
 
             <div class="table-actions">
-                <!-- Area Status: Menampilkan Loading, Error, atau Empty -->
-                <div v-if="loading" class="status-box loading">
-                    Loading data...
+                <!-- Area Status: Menampilkan Loading Progress Bar, Error, atau Empty -->
+                <div v-if="loading" class="status-box loading-container">
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-fill" :style="{ width: progressPercent + '%' }"></div>
+                    </div>
+                    <span class="progress-text">Memuat data... {{ progressPercent }}%</span>
                 </div>
 
                 <div v-else-if="sheetData.status === 'error'" class="status-box error">
@@ -93,6 +96,9 @@ const props = defineProps({
 const emit = defineEmits(['row-selected', 'relogin']);
 
 const loading = ref(false);
+const progressPercent = ref(0);
+let progressInterval = null;
+
 const searchText = ref('');
 const lastUpdated = ref('');
 const tableElement = ref(null);
@@ -504,12 +510,33 @@ function applySearch() {
 }
 
 // ==========================================
-// Fetching Data API
+// Fetching Data API & Progress Handlers
 // ==========================================
+
+function startProgressSimulation() {
+    stopProgressSimulation();
+    progressPercent.value = 5;
+
+    progressInterval = setInterval(() => {
+        if (progressPercent.value < 90) {
+            // Naik perlahan secara linier/bervariasi sampai 90%
+            const increment = Math.floor(Math.random() * 5) + 3;
+            progressPercent.value = Math.min(progressPercent.value + increment, 90);
+        }
+    }, 200);
+}
+
+function stopProgressSimulation() {
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+}
 
 async function loadData() {
     const currentRequest = ++requestSequence;
     loading.value = true;
+    startProgressSimulation();
 
     try {
         const config = props.config;
@@ -546,6 +573,7 @@ async function loadData() {
             return;
         }
 
+        progressPercent.value = 100;
         sheetData.value = result;
 
         lastUpdated.value = new Date().toLocaleString('id-ID');
@@ -568,7 +596,10 @@ async function loadData() {
         destroyTable();
     } finally {
         if (currentRequest === requestSequence) {
-            loading.value = false;
+            stopProgressSimulation();
+            setTimeout(() => {
+                loading.value = false;
+            }, 150);
         }
     }
 }
@@ -604,6 +635,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener('sidebar-resized', handleSidebarResize);
     requestSequence++;
+    stopProgressSimulation();
     destroyTable();
 });
 </script>
@@ -744,7 +776,39 @@ onBeforeUnmount(() => {
     color: #1a73e8;
 }
 
-.loading,
+/* Container status loading dengan Progress Bar Gradasi Biru */
+.loading-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    border: 1px solid #b3d4fc;
+    border-radius: 4px;
+    background: #f0f7ff;
+}
+
+.progress-bar-wrapper {
+    flex: 1;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4285f4 0%, #1a73e8 50%, #0d47a1 100%);
+    transition: width 0.2s ease-in-out;
+}
+
+.progress-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1a73e8;
+    white-space: nowrap;
+}
+
 .empty-state {
     flex: 1;
     text-align: center;
