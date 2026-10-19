@@ -83,7 +83,7 @@
   import Button from '../Button.vue'
   import Textbox from '../textbox.vue'
   
-  import Dropdown from '../Dropdown.vue'
+  import Dropdown from '../dropdown.vue'
   
   // ---- DATE & STYLES
   import { VueDatePicker } from '@vuepic/vue-datepicker'
