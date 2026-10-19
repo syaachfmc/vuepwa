@@ -14,8 +14,8 @@ body {
 }
 </style>
 
-<!-- 
-<script setup>
+
+<!-- <script setup>
     import { login } from "./api/auth";
     import AppIcon from "./components/AppIcon.vue";
     import Login from "./components/Login.vue";
@@ -26,4 +26,4 @@ body {
     <login/>
 <SideBarTable />
 </template>
---->
+- -->

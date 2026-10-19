@@ -14,45 +14,45 @@
             </div>
 
             <div class="table-actions">
-                <!-- Status Loading -->
-                <div v-if="loading" class="loading">
+                <!-- Area Status: Menampilkan Loading, Error, atau Empty -->
+                <div v-if="loading" class="status-box loading">
                     Loading data...
                 </div>
 
-                <!-- Status Error -->
-                <div v-else-if="sheetData.status === 'error'" class="error">
-                    {{ sheetData.error }}
+                <div v-else-if="sheetData.status === 'error'" class="status-box error">
+                    <span class="error-message">{{ sheetData.error }}</span>
                     <button type="button" class="refresh-button" @click="loadData">
                         Coba Lagi
                     </button>
                 </div>
 
-                <!-- Status Empty -->
-                <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="empty-state">
+                <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="status-box empty-state">
                     Tidak ada data untuk ditampilkan.
                 </div>
 
-                <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..."
-                    :disabled="loading || sheetData.status !== 'success'" />
+                <!-- Area Kontrol: Hanya tampil jika data sukses dan totalRows > 0 -->
+                <div v-else class="action-controls">
+                    <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..." />
 
-                <button type="button" class="filter-button" @click="toggleFilters"
-                    :title="showFilters ? 'Hide column filter' : 'Show column filter'">
-                    <AppIcon :name="showFilters ? 'funnel-x' : 'funnel'" :size="12" />
-                </button>
+                    <button type="button" class="filter-button" @click="toggleFilters"
+                        :title="showFilters ? 'Hide column filter' : 'Show column filter'">
+                        <AppIcon :name="showFilters ? 'funnel-x' : 'funnel'" :size="12" />
+                    </button>
 
-                <button type="button" class="filter-button" @click="clearAllFilters" title="Clear filter">
-                    <AppIcon name="rotate-ccw" :size="12" />
-                </button>
+                    <button type="button" class="filter-button" @click="clearAllFilters" title="Clear filter">
+                        <AppIcon name="rotate-ccw" :size="12" />
+                    </button>
 
-                <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap"
-                    :title="wrapText ? `Don't wrap text in data cell` : `Wrap text in data cell`">
-                    {{ wrapText ? '↕' : '↔' }}
-                </button>
+                    <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap"
+                        :title="wrapText ? `Don't wrap text in data cell` : `Wrap text in data cell`">
+                        {{ wrapText ? '↕' : '↔' }}
+                    </button>
 
-                <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
-                    :title="loading ? 'Loading...' : 'Refresh'">
-                    <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
-                </button>
+                    <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
+                        :title="loading ? 'Loading...' : 'Refresh'">
+                        <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -404,7 +404,11 @@ async function renderTable() {
             columns,
             selectableRows: 1,
             layout: 'fitDataFill',
-            height: '100%',
+            // --- TAMBAHKAN / OPTIMALKAN OPSI INI ---
+            height: "100%",              // Memaksa tinggi pas dengan container
+            renderVertical: "virtual",   // Memaksa Tabulator hanya merender baris yang tampak di viewport
+            renderVerticalBuffer: 20,   // Buffer pixel atas-bawah saat scroll agar smooth
+            // --------------------------------------
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
             movableColumns: true,
@@ -594,10 +598,12 @@ onBeforeUnmount(() => {
 }
 
 .table-wrapper {
-    flex: 1 1 auto;
+    flex: 1 1 0%;
     width: 100%;
     min-width: 0;
+    height: 100%;
     min-height: 0;
+    /* PENTING */
     overflow: hidden;
 }
 

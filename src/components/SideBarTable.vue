@@ -23,7 +23,7 @@ const config = ref({
     columnTitleRow: 2,
     columnTitleDescriptionRow: 3,
     columnTypeRow: 4,
-    dataRange: 'B5:z200',
+    dataRange: 'B5:BW87477',
     RowIDColumn: 'A',
     tableDateFormat: 'dd MMM yy'
 });
@@ -69,7 +69,7 @@ async function getSelectedDataGSheet(rowID) {
         const result = await response.json();
 
         if (result.status !== 'success') {
-            throw new Error(result.error || 'Gagal mengambil data GAS.');
+            throw new Error(result.error || 'Gagal mengambil data GAS.'  );
         }
 
         selectedDataGSheet.value = (result.data || [])
@@ -82,7 +82,7 @@ async function getSelectedDataGSheet(rowID) {
             selectedDataGSheet.value = 'Data kosong';
         }
     } catch (error) {
-        console.error('Error mengambil data GAS kedua:', error);
+        console.error('Error mengambil data GAS kedua: ' + '(' + config.value.dataRange + ')', error);
         selectedDataGSheet.value = `Error: ${error.message}`;
     }
 }
@@ -90,7 +90,7 @@ async function getSelectedDataGSheet(rowID) {
 function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
-
+    console.log(selectedRowID.value);
     getSelectedDataGSheet(selectedRowID.value);
 }
 </script>
