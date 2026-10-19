@@ -81,7 +81,7 @@
   <script setup>
   import { ref, computed } from 'vue'
   import Button from '../Button.vue'
-  import Textbox from '../Textbox.vue'
+  import Textbox from '../textbox.vue'
   
   import Dropdown from '../Dropdown.vue'
   
