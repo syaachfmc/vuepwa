@@ -14,7 +14,6 @@ import Textbox from '../textbox.vue'
 
 <style scoped>
  
- 
 
 
 .form-container {
