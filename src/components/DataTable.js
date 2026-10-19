@@ -10,6 +10,8 @@
  * @param {number} columnTypeRow Baris Tipe Kolom.
  * @param {string} dataRange Range data (misal: "A5:Z").
  * @param {string} rowIDColumn Kolom tempat RowID disimpan (misal: "Z").
+ * @param {string} projectID ProjectID untuk filter (misal: "25-1808" atau "*").
+ * @param {string} projectIDColumn Kolom tempat ProjectID berada (misal: "B").
  * @returns {Promise<Object>}
  */
 export async function fetchGSheetData(
@@ -21,7 +23,9 @@ export async function fetchGSheetData(
   columnTitleDescriptionRow = 3,
   columnTypeRow = 4,
   dataRange = 'A5:Z',
-  rowIDColumn = ''
+  rowIDColumn = '',
+  projectID = '',
+  projectIDColumn = ''
 ) {
   const url = new URL(webAppUrl);
 
@@ -38,6 +42,12 @@ export async function fetchGSheetData(
   url.searchParams.append("dataRange", dataRange);
   if (rowIDColumn) {
     url.searchParams.append("RowIDColumn", rowIDColumn);
+  }
+  if (projectID !== undefined && projectID !== null && projectID !== '') {
+    url.searchParams.append("ProjectID", projectID);
+  }
+  if (projectIDColumn) {
+    url.searchParams.append("ProjectIDColumn", projectIDColumn);
   }
 
   try {

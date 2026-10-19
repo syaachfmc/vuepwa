@@ -1,3 +1,25 @@
+<!-- <script setup>
+import SideBarTable from "./components/SideBarTable.vue";
+</script>
+
+<template>
+  <SideBarTable />
+</template>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+}
+</style>
+
+ -->
+
+
+
+
+
 <script setup>
 import AppLayouts from "./Layouts/AppLayouts.vue";
 </script>

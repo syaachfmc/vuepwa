@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { login, validateSession } from "../api/auth.js";
-import Dashboard from "./Dashboard.vue";
+
+const emit = defineEmits(["login-success"]);
 
 // State Otentikasi & Aplikasi
 const token = ref(sessionStorage.getItem("authToken") || "");
@@ -36,17 +37,15 @@ async function handleLogin() {
     // Reset form
     username.value = "";
     password.value = "";
+
+    // Beritahu parent (SideBarTable) bahwa login sukses
+    emit("login-success", { token: result.token, user: result.user });
   } catch (error) {
     console.error(error);
     errorMessage.value = "Gagal menghubungi server.";
   } finally {
     loading.value = false;
   }
-}
-
-function handleLogoutSuccess() {
-  token.value = "";
-  user.value = null;
 }
 
 // Cek sesi otomatis saat komponen dipasang
@@ -61,6 +60,7 @@ onMounted(async () => {
 
     if (result.success) {
       user.value = result.user;
+      emit("login-success", { token: token.value, user: result.user });
     } else {
       sessionStorage.removeItem("authToken");
       token.value = "";
@@ -78,8 +78,8 @@ onMounted(async () => {
   <!-- 1. Kondisi Memeriksa Sesi -->
   <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
 
-  <!-- 2. Form Login (jika belum login/user null) -->
-  <main v-else-if="!user" class="container">
+  <!-- 2. Form Login -->
+  <main v-else class="container">
     <section class="card">
       <h1>Login</h1>
       <p>Masukkan username dan password.</p>
@@ -112,14 +112,6 @@ onMounted(async () => {
       </form>
     </section>
   </main>
-
-  <!-- 3. Tampilkan Dashboard.vue jika user sudah terverifikasi -->
-  <Dashboard
-    v-else
-    :user="user"
-    :token="token"
-    @logout-success="handleLogoutSuccess"
-  />
 </template>
 
 <style scoped>

@@ -24,6 +24,9 @@
                     <button type="button" class="refresh-button" @click="loadData">
                         Coba Lagi
                     </button>
+                    <button type="button" class="relogin-button" @click="handleRelogin">
+                        Relogin
+                    </button>
                 </div>
 
                 <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="status-box empty-state">
@@ -87,7 +90,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['row-selected']);
+const emit = defineEmits(['row-selected', 'relogin']);
 
 const loading = ref(false);
 const searchText = ref('');
@@ -116,6 +119,11 @@ const totalColumns = computed(() => sheetData.value.columnTitles.length);
 // ==========================================
 // Method Interaksi UI & Resize Listener
 // ==========================================
+
+function handleRelogin() {
+    sessionStorage.removeItem("authToken");
+    emit('relogin');
+}
 
 function handleSidebarResize() {
     if (table) {
@@ -166,12 +174,16 @@ function clearAllFilters() {
 // ==========================================
 
 function buildColumns(result) {
+    const frozenIndexes = Array.isArray(props.config.FrozenColumnIndex) 
+        ? props.config.FrozenColumnIndex 
+        : [];
+
     return result.columnTitles.map((title, index) => {
         const columnID = result.columnIDs[index] || `col_${index + 1}`;
         const description = result.columnDescriptions[index] || '';
         const type = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
-        const isFrozen = index === 0 || index === 2;
+        const isFrozen = frozenIndexes.includes(index);
 
         const column = {
             title: String(title || columnID),
@@ -404,11 +416,9 @@ async function renderTable() {
             columns,
             selectableRows: 1,
             layout: 'fitDataFill',
-            // --- TAMBAHKAN / OPTIMALKAN OPSI INI ---
             height: "100%",              // Memaksa tinggi pas dengan container
             renderVertical: "virtual",   // Memaksa Tabulator hanya merender baris yang tampak di viewport
             renderVerticalBuffer: 20,   // Buffer pixel atas-bawah saat scroll agar smooth
-            // --------------------------------------
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
             movableColumns: true,
@@ -503,7 +513,9 @@ async function loadData() {
             config.columnTitleDescriptionRow ?? 3,
             config.columnTypeRow ?? 4,
             config.dataRange ?? 'A5:Z',
-            config.RowIDColumn ?? ''
+            config.RowIDColumn ?? '',
+            config.ProjectID ?? '',
+            config.ProjectIDColumn ?? ''
         );
 
         if (currentRequest !== requestSequence) return;
@@ -603,7 +615,6 @@ onBeforeUnmount(() => {
     min-width: 0;
     height: 100%;
     min-height: 0;
-    /* PENTING */
     overflow: hidden;
 }
 
@@ -686,6 +697,21 @@ onBeforeUnmount(() => {
 .refresh-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.relogin-button {
+    padding: 2px 8px;
+    border: 1px solid #d93025;
+    border-radius: 4px;
+    background: #d93025;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.relogin-button:hover {
+    background: #a50e0e;
 }
 
 .filter-button {

@@ -1,15 +1,24 @@
 <template>
     <main class="app-container">
+        <!-- Tampilkan Login jika pengguna belum terotentikasi / melakukan relogin -->
+        <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+
+        <!-- Tampilkan DataTable jika pengguna sudah terotentikasi -->
         <DataTable 
+            v-else
             :config="config" 
             :tableDateFormat="config.tableDateFormat" 
-            @row-selected="handleRowSelected" />
+            @row-selected="handleRowSelected"
+            @relogin="handleRelogin" />
     </main>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import DataTable from './DataTable.vue';
+import Login from './Login.vue';
+
+const isLoggedIn = ref(Boolean(sessionStorage.getItem("authToken")));
 
 const selectedData = ref('');
 const selectedRowID = ref('');
@@ -25,8 +34,20 @@ const config = ref({
     columnTypeRow: 4,
     dataRange: 'B5:BY',
     RowIDColumn: 'A',
+    ProjectID: '25-1808',
+    ProjectIDColumn: 'B',
+    FrozenColumnIndex: [0, 2],
     tableDateFormat: 'dd MMM yy'
 });
+
+function handleLoginSuccess() {
+    isLoggedIn.value = true;
+}
+
+function handleRelogin() {
+    sessionStorage.removeItem("authToken");
+    isLoggedIn.value = false;
+}
 
 async function getSelectedDataGSheet(rowID) {
     if (!rowID) {
@@ -69,7 +90,7 @@ async function getSelectedDataGSheet(rowID) {
         const result = await response.json();
 
         if (result.status !== 'success') {
-            throw new Error(result.error || 'Gagal mengambil data GAS.'  );
+            throw new Error(result.error || 'Gagal mengambil data GAS.');
         }
 
         selectedDataGSheet.value = (result.data || [])
