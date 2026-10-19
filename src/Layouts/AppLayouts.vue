@@ -43,7 +43,10 @@
             <!-- MAIN AREA -->
             <main v-if="!isSidebarFullWidth" class="main-area">
                 <section class="MainContent">
-                    <POInformation/>
+                    <!-- KeepAlive menjaga state komponen agar tidak di-reset saat berpindah tab -->
+                    <KeepAlive>
+                        <component :is="activeComponent" :key="activeTab" />
+                    </KeepAlive>
                 </section>
 
                 <nav class="ContentTabs">
@@ -88,10 +91,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import { APP_COLORS } from '../constants/colors.js'
 import SideBarTable from '../components/SideBarTable.vue'
-import POInformation from '../components/SSRPages/POInformation.vue'
+import POInformation from '../components/SSRPages/PO.vue'
+import Shipment from '../components/SSRPages/Shipment.vue'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -112,17 +116,19 @@ let resizeObserver = null
 // ========================================
 // TABS
 // ========================================
+// Dynamic components dikemas dengan markRaw untuk mencegah overhead reaksi Vue
 const tabs = ref([
-    { id: 1, label: 'INI APA' },
-    { id: 2, label: 'INI APA' },
-    { id: 3, label: 'INI APA' },
-    { id: 4, label: 'INI APA' },
-    { id: 5, label: 'INI APA' },
-    { id: 6, label: 'INI APA' },
-    { id: 7, label: 'INI APA' },
+    { id: 1, label: 'Shipment', component: markRaw(Shipment) },
+    { id: 2, label: 'PO', component: markRaw(POInformation) },
 ])
 
-const activeTab = ref(3)
+const activeTab = ref(1)
+
+// Computed untuk memilih komponen aktif berdasarkan tab
+const activeComponent = computed(() => {
+    const currentTab = tabs.value.find(tab => tab.id === activeTab.value)
+    return currentTab ? currentTab.component : markRaw(Shipment)
+})
 
 // ========================================
 // SIDEBAR STYLE
@@ -346,9 +352,7 @@ onBeforeUnmount(() => {
 
 .MainContent {
     display: flex;
-    flex: 1 1 0%;
-    align-items: center;
-    justify-content: center;
+    flex: 1 1 0%; 
     min-height: 0;
     min-width: 0;
     overflow: auto;
@@ -468,8 +472,6 @@ onBeforeUnmount(() => {
     user-select: none !important;
     transition: none !important;
 }
-
-
 
 /* ========================================
    RESPONSIVE
