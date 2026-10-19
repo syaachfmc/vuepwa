@@ -112,6 +112,7 @@ const sheetData = ref({
 
 let table = null;
 let requestSequence = 0;
+let resizeAnimationFrame = null;
 
 const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
@@ -127,7 +128,13 @@ function handleRelogin() {
 
 function handleSidebarResize() {
     if (table) {
-        table.redraw(true);
+        if (resizeAnimationFrame) {
+            cancelAnimationFrame(resizeAnimationFrame);
+        }
+        resizeAnimationFrame = requestAnimationFrame(() => {
+            // Gunakan redraw biasa (tanpa param true) agar tidak memaksa kalkulasi ulang seluruh sel
+            table.redraw();
+        });
     }
 }
 
@@ -136,7 +143,7 @@ function toggleWrap() {
 
     if (table) {
         table.getRows().forEach(row => row.reformat());
-        table.redraw(true);
+        table.redraw();
     }
 }
 
@@ -178,89 +185,98 @@ function buildColumns(result) {
         ? props.config.FrozenColumnIndex 
         : [];
 
-    return result.columnTitles.map((title, index) => {
-        const columnID = result.columnIDs[index] || `col_${index + 1}`;
-        const description = result.columnDescriptions[index] || '';
-        const type = String(result.columnTypes[index] || 'string').trim().toLowerCase();
+    return result.columnTitles
+        .map((title, index) => {
+            const rawType = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
-        const isFrozen = frozenIndexes.includes(index);
-
-        const column = {
-            title: String(title || columnID),
-            field: columnID,
-            frozen: isFrozen,
-            headerTooltip: description || String(title || columnID),
-            headerFilter: showFilters.value ? 'input' : false,
-            headerFilterPlaceholder: '',
-            headerFilterFunc: 'like',
-            headerSort: true,
-            sorter: isDateColumn(result, index, type)
-                ? sortDateValues
-                : getSorter(type),
-            headerHozAlign: 'center',
-            maxWidth: 500,
-            widthGrow: 0,
-            tooltip: true,
-            headerWordWrap: true,
-            formatter: function (cell) {
-                const value = cell.getValue() ?? '';
-                const displayValue = type === 'date'
-                    ? formatDateValue(value, props.tableDateFormat)
-                    : value;
-
-                const div = document.createElement('div');
-                div.className = 'cell-scroll';
-                div.textContent = String(displayValue);
-
-                div.classList.toggle('wrap-text', wrapText.value);
-                div.classList.toggle('nowrap-text', !wrapText.value);
-
-                return div;
+            // Jika tipe data mengandung kata "hidden", kolom tidak ditampilkan
+            if (rawType.includes('hidden')) {
+                return null;
             }
-        };
 
-        if (type === 'link') {
-            column.hozAlign = 'center';
-            column.width = 70;
-            column.minWidth = 70;
-            column.widthGrow = 0;
-            column.headerSort = false;
-            column.headerFilter = false;
+            const columnID = result.columnIDs[index] || `col_${index + 1}`;
+            const description = result.columnDescriptions[index] || '';
+            const type = rawType.replace('hidden', '').trim() || 'string';
 
-            column.formatter = function (cell) {
-                const url = String(cell.getValue() ?? '').trim();
+            const isFrozen = frozenIndexes.includes(index);
 
-                if (!url) return '';
+            const column = {
+                title: String(title || columnID),
+                field: columnID,
+                frozen: isFrozen,
+                headerTooltip: description || String(title || columnID),
+                headerFilter: showFilters.value ? 'input' : false,
+                headerFilterPlaceholder: '',
+                headerFilterFunc: 'like',
+                headerSort: true,
+                sorter: isDateColumn(result, index, type)
+                    ? sortDateValues
+                    : getSorter(type),
+                headerHozAlign: 'center',
+                maxWidth: 500,
+                widthGrow: 0,
+                tooltip: true,
+                headerWordWrap: true,
+                formatter: function (cell) {
+                    const value = cell.getValue() ?? '';
+                    const displayValue = type === 'date'
+                        ? formatDateValue(value, props.tableDateFormat)
+                        : value;
 
-                try {
-                    const parsedURL = new URL(url);
-                    if (!['http:', 'https:'].includes(parsedURL.protocol)) {
+                    const div = document.createElement('div');
+                    div.className = 'cell-scroll';
+                    div.textContent = String(displayValue);
+
+                    div.classList.toggle('wrap-text', wrapText.value);
+                    div.classList.toggle('nowrap-text', !wrapText.value);
+
+                    return div;
+                }
+            };
+
+            if (type === 'link') {
+                column.hozAlign = 'center';
+                column.width = 70;
+                column.minWidth = 70;
+                column.widthGrow = 0;
+                column.headerSort = false;
+                column.headerFilter = false;
+
+                column.formatter = function (cell) {
+                    const url = String(cell.getValue() ?? '').trim();
+
+                    if (!url) return '';
+
+                    try {
+                        const parsedURL = new URL(url);
+                        if (!['http:', 'https:'].includes(parsedURL.protocol)) {
+                            return '';
+                        }
+                    } catch {
                         return '';
                     }
-                } catch {
-                    return '';
-                }
 
-                const safeURL = url
-                    .replace(/&/g, '&amp;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
+                    const safeURL = url
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
 
-                return `
-                    <a
-                        href="${safeURL}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Buka link"
-                        style="text-decoration:none;font-size:18px;"
-                    >📁</a>
-                `;
-            };
-        }
+                    return `
+                        <a
+                            href="${safeURL}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Buka link"
+                            style="text-decoration:none;font-size:18px;"
+                        >📁</a>
+                    `;
+                };
+            }
 
-        return column;
-    });
+            return column;
+        })
+        .filter(col => col !== null); // Filter out kolom hidden
 }
 
 function getSorter(type) {
@@ -418,7 +434,7 @@ async function renderTable() {
             layout: 'fitDataFill',
             height: "100%",              // Memaksa tinggi pas dengan container
             renderVertical: "virtual",   // Memaksa Tabulator hanya merender baris yang tampak di viewport
-            renderVerticalBuffer: 20,   // Buffer pixel atas-bawah saat scroll agar smooth
+            renderVerticalBuffer: 20,    // Buffer pixel atas-bawah saat scroll agar smooth
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
             movableColumns: true,
@@ -593,6 +609,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('sidebar-resized', handleSidebarResize);
+    if (resizeAnimationFrame) {
+        cancelAnimationFrame(resizeAnimationFrame);
+    }
     requestSequence++;
     destroyTable();
 });
