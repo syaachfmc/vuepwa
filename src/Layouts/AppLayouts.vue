@@ -461,6 +461,15 @@ onBeforeUnmount(() => {
     cursor: col-resize;
 }
 
+/* Matikan pointer-events pada isi sidebar saat drag berlangsung */
+.app-layout.is-resizing .SideBar {
+    pointer-events: none !important;
+    user-select: none !important;
+    transition: none !important;
+}
+
+
+
 /* ========================================
    RESPONSIVE
 ======================================== */

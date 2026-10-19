@@ -112,7 +112,6 @@ const sheetData = ref({
 
 let table = null;
 let requestSequence = 0;
-let resizeAnimationFrame = null;
 
 const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
@@ -127,14 +126,9 @@ function handleRelogin() {
 }
 
 function handleSidebarResize() {
+    // Dipanggil dari AppLayouts.vue HANYA ketika pointerup (drag selesai)
     if (table) {
-        if (resizeAnimationFrame) {
-            cancelAnimationFrame(resizeAnimationFrame);
-        }
-        resizeAnimationFrame = requestAnimationFrame(() => {
-            // Gunakan redraw biasa (tanpa param true) agar tidak memaksa kalkulasi ulang seluruh sel
-            table.redraw();
-        });
+        table.redraw(true);
     }
 }
 
@@ -189,7 +183,6 @@ function buildColumns(result) {
         .map((title, index) => {
             const rawType = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
-            // Jika tipe data mengandung kata "hidden", kolom tidak ditampilkan
             if (rawType.includes('hidden')) {
                 return null;
             }
@@ -276,7 +269,7 @@ function buildColumns(result) {
 
             return column;
         })
-        .filter(col => col !== null); // Filter out kolom hidden
+        .filter(col => col !== null);
 }
 
 function getSorter(type) {
@@ -431,10 +424,11 @@ async function renderTable() {
             data,
             columns,
             selectableRows: 1,
-            layout: 'fitDataFill',
-            height: "100%",              // Memaksa tinggi pas dengan container
-            renderVertical: "virtual",   // Memaksa Tabulator hanya merender baris yang tampak di viewport
-            renderVerticalBuffer: 20,    // Buffer pixel atas-bawah saat scroll agar smooth
+            layout: 'fitData',          // Diubah dari fitDataFill agar kalkulasi jauh lebih cepat
+            autoResize: false,            // Matikan autoResize internal Tabulator agar tidak bentrok
+            height: "100%",
+            renderVertical: "virtual",
+            renderVerticalBuffer: 20,
             index: '__rowIndex',
             placeholder: 'Tidak ada data',
             movableColumns: true,
@@ -609,9 +603,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('sidebar-resized', handleSidebarResize);
-    if (resizeAnimationFrame) {
-        cancelAnimationFrame(resizeAnimationFrame);
-    }
     requestSequence++;
     destroyTable();
 });
