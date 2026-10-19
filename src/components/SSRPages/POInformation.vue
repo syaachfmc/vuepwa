@@ -13,12 +13,12 @@
   
       <div class="form-group">
         <label>TextBox Nama Aku:</label>
-        <TextBox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
+        <Textbox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
       </div>
   
       <div class="form-group">
         <label>TextBox Nama Aku:</label>
-        <TextBox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
+        <Textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
       </div>
   
   
@@ -31,12 +31,12 @@
   
       <div class="form-group">
         <label>TextBox Nama Mu (Readonly/Disabled):</label>
-        <TextBox ref="textboxAku2Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="false" />
+        <Textbox ref="textboxAku2Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="false" />
       </div>
   
       <div class="form-group">
         <label>TextBox Nama Mu (Error):</label>
-        <TextBox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
+        <Textbox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
           :error="isRoleError" errorMessage="ini error message" />
       </div>
   
@@ -81,7 +81,8 @@
   <script setup>
   import { ref, computed } from 'vue'
   import Button from '../Button.vue'
-  import TextBox from '../Textbox.vue'
+  import Textbox from '../Textbox.vue'
+  
   import Dropdown from '../Dropdown.vue'
   
   // ---- DATE & STYLES
