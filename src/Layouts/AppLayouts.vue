@@ -43,7 +43,7 @@
             <!-- MAIN AREA -->
             <main v-if="!isSidebarFullWidth" class="main-area">
                 <section class="MainContent">
-                    MainContent
+                    <POInformation/>
                 </section>
 
                 <nav class="ContentTabs">
@@ -91,6 +91,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { APP_COLORS } from '../constants/colors.js'
 import SideBarTable from '../components/SideBarTable.vue'
+import POInformation from '../components/SSRPages/POInformation.vue'
 
 // ========================================
 // REFS & LAYOUT SETTINGS

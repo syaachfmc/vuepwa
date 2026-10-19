@@ -1,29 +1,17 @@
 <template>
   <div class="form-container">
-    
+
     <div class="button-form-container">
-      <Button
-        label="Simpan"
-        @click="simpanData"
-      />
+      <Button label="Simpan" @click="simpanData" />
 
-      <Button
-        label="Reset"
-        size="small"
-        @click="resetData"
-      />
+      <Button label="Reset" size="small" @click="resetData" />
 
-      <Button
-        label="Proses"
-        size="large"
-        :loading="sedangProses"
-        @click="prosesData"
-      />
-      
-      
-     </div> 
-      
-      <div class="form-group">
+      <Button label="Proses" size="large" :loading="sedangProses" @click="prosesData" />
+
+
+    </div>
+
+    <div class="form-group">
       <label>TextBox Nama Aku:</label>
       <TextBox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
     </div>
@@ -37,7 +25,8 @@
 
     <div class="form-group">
       <label>Dropdown Pilihan Kategori:</label>
-      <Dropdown ref="dropdownKategoriRef" v-model="form.kategori" :options="opsiKategori" placeholder="Pilih Kategori" />
+      <Dropdown ref="dropdownKategoriRef" v-model="form.kategori" :options="opsiKategori"
+        placeholder="Pilih Kategori" />
     </div>
 
     <div class="form-group">
@@ -47,12 +36,14 @@
 
     <div class="form-group">
       <label>TextBox Nama Mu (Error):</label>
-      <TextBox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true" :error="isRoleError" errorMessage="ini error message" />
+      <TextBox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
+        :error="isRoleError" errorMessage="ini error message" />
     </div>
 
     <div class="form-group">
       <label>Dropdown Role (Validasi Error):</label>
-      <Dropdown ref="dropdownRoleRef" v-model="form.role" :options="opsiRole" placeholder="Pilih Role" :error="isRoleError" errorMessage="Role harus 'Admin'" :editable="true" />
+      <Dropdown ref="dropdownRoleRef" v-model="form.role" :options="opsiRole" placeholder="Pilih Role"
+        :error="isRoleError" errorMessage="Role harus 'Admin'" :editable="true" />
     </div>
 
     <div class="form-group">
@@ -60,24 +51,14 @@
       <div class="datepicker-wrapper">
         <!-- Dirty Badge otomatis via isDirty('date1') -->
         <span v-if="isDirty('date1')" class="dirty-badge" title="Data telah diubah"></span>
-        <VueDatePicker
-          v-model="form.date1"
-          :formats="{ input: 'dd MMM yyyy' }"
-          placeholder="Pilih Tanggal"
-          :enable-time-picker="true"
-          auto-apply
-        />
+        <VueDatePicker v-model="form.date1" :formats="{ input: 'dd MMM yyyy' }" placeholder="Pilih Tanggal"
+          :enable-time-picker="true" auto-apply />
       </div>
       <div class="datepicker-wrapper">
         <!-- Dirty Badge otomatis via isDirty('date2') -->
         <span v-if="isDirty('date2')" class="dirty-badge" title="Data telah diubah"></span>
-        <VueDatePicker
-          v-model="form.date2"
-          :formats="{ input: 'dd MMM yyyy' }"
-          placeholder="Pilih Tanggal"
-          :enable-time-picker="false"
-          auto-apply
-        />
+        <VueDatePicker v-model="form.date2" :formats="{ input: 'dd MMM yyyy' }" placeholder="Pilih Tanggal"
+          :enable-time-picker="false" auto-apply />
       </div>
     </div>
 
@@ -134,7 +115,7 @@ const opsiKategori = ref([
   { label: 'Elektronik', value: 'elektronik' },
   { label: 'Pakaian', value: 'pakaian' },
   { label: 'Majjjjjjjj jjjjjjjjjjjj jjjjj jjjjjj jjjjjjjjj jjjjjjjj  jjjj jjjjjjkanan', value: 'makanan' },
-  
+
 ])
 
 const opsiRole = ref([
@@ -191,7 +172,7 @@ function resetData() {
 function prosesData() {
   console.log('Proses data')
 }
- 
+
 
 </script>
 
@@ -207,14 +188,14 @@ function prosesData() {
 }
 
 
-.button-form-container{
+.button-form-container {
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
   gap: 12px;
-   
+
   max-width: 200px;
-  flex-wrap:nowrap;
- 
+  flex-wrap: nowrap;
+
   border: 1px;
   border-style: solid;
   padding: 5px;
@@ -226,8 +207,9 @@ function prosesData() {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex-direction: row; /* Diubah dari column ke row agar berjejer ke kanan */
-  flex-wrap:wrap;
+  flex-direction: row;
+  /* Diubah dari column ke row agar berjejer ke kanan */
+  flex-wrap: wrap;
   overflow-x: auto;
   border: 1px;
   border-style: solid;
@@ -237,8 +219,8 @@ function prosesData() {
 .form-group {
   display: flex;
   flex-direction: column;
-  
- 
+
+
   gap: 6px;
   border: 1px;
   border-style: solid;
@@ -253,6 +235,6 @@ function prosesData() {
   background-color: #f5f5f5;
   border-radius: 4px;
   overflow: auto;
-  min-width: 200px; 
+  min-width: 200px;
 }
 </style>
