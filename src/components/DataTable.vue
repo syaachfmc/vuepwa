@@ -78,6 +78,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { fetchGSheetData } from './DataTable.js';
 import { APP_COLORS } from '../constants/colors.js';
 import AppIcon from './AppIcon.vue';
+import { shipmentStore } from '../stores/shipmentStore.js';
 
 // ==========================================
 // Props, Emits & Reaktivitas Utama
@@ -185,7 +186,9 @@ function buildColumns(result) {
         ? props.config.FrozenColumnIndex 
         : [];
 
-    return result.columnTitles
+    const generatedColumns = [];
+
+    const tabulatorCols = result.columnTitles
         .map((title, index) => {
             const rawType = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
@@ -196,6 +199,12 @@ function buildColumns(result) {
             const columnID = result.columnIDs[index] || `col_${index + 1}`;
             const description = result.columnDescriptions[index] || '';
             const type = rawType.replace('hidden', '').trim() || 'string';
+
+            // Simpan informasi kolom untuk Form (Shipment.vue)
+            generatedColumns.push({
+                id: columnID,
+                title: String(title || columnID)
+            });
 
             const isFrozen = frozenIndexes.includes(index);
 
@@ -276,6 +285,11 @@ function buildColumns(result) {
             return column;
         })
         .filter(col => col !== null);
+
+    // Update daftar kolom global di store menggunakan .value
+    shipmentStore.columns.value = generatedColumns;
+
+    return tabulatorCols;
 }
 
 function getSorter(type) {
@@ -475,6 +489,10 @@ async function renderTable() {
 
         table.on('rowClick', (e, row) => {
             const rowData = row.getData();
+            
+            // Simpan seluruh data baris ke store global menggunakan .value
+            shipmentStore.selectedRow.value = { ...rowData };
+
             const firstColumnID = sheetData.value.columnIDs[4];
             const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
             const rowID = rowData.__rowID || '';

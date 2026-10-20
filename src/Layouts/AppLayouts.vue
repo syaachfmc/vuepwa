@@ -42,6 +42,10 @@
 
             <!-- MAIN AREA -->
             <main v-if="!isSidebarFullWidth" class="main-area">
+                <div class="ShipmentNo">
+                    <label for="col_2">{{ shipmentColumnTitle }}</label>
+                    <Textbox id="col_2" v-model="shipmentStore.selectedRow.value['2']" />
+                </div>
                 <section class="MainContent">
                     <!-- KeepAlive menjaga state komponen agar tidak di-reset saat berpindah tab -->
                     <KeepAlive>
@@ -96,6 +100,8 @@ import { APP_COLORS } from '../constants/colors.js'
 import SideBarTable from '../components/SideBarTable.vue'
 import POInformation from '../components/SSRPages/PO.vue'
 import Shipment from '../components/SSRPages/Shipment.vue'
+import { shipmentStore } from '../stores/shipmentStore.js'
+import Textbox from '../components/textbox.vue'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -112,6 +118,12 @@ const isSidebarFullWidth = ref(false)
 const isResizing = ref(false)
 
 let resizeObserver = null
+
+// Computed untuk mengambil Judul Kolom dengan ID '2' secara dinamis dari Store
+const shipmentColumnTitle = computed(() => {
+    const col = shipmentStore.columns.value.find(c => String(c.id) === '2')
+    return col ? col.title : 'Shipment No'
+})
 
 // ========================================
 // TABS
@@ -263,6 +275,17 @@ onBeforeUnmount(() => {
 }
 
 /* ========================================
+   SHIPMENT NO CONTAINER
+======================================== */
+.ShipmentNo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+}
+
+/* ========================================
    MAIN BODY
 ======================================== */
 .layout-body {
@@ -352,7 +375,7 @@ onBeforeUnmount(() => {
 
 .MainContent {
     display: flex;
-    flex: 1 1 0%; 
+    flex: 1 1 0%;
     min-height: 0;
     min-width: 0;
     overflow: auto;
@@ -380,6 +403,7 @@ onBeforeUnmount(() => {
 .ContentTabs::-webkit-scrollbar {
     height: 5px;
 }
+
 .ContentTabs::-webkit-scrollbar-thumb {
     background: v-bind('APP_COLORS.borderDefault');
     border-radius: 3px;
