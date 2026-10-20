@@ -1,14 +1,14 @@
 <template>
   <div class="form-container">
     <div 
-      v-for="column in shipmentStore.columns.value" 
+      v-for="column in SelectedRowStore.columns.value" 
       :key="column.id" 
       class="form-group"
     >
       <label :for="column.id">{{ column.title }}</label>
       <Textbox 
         :id="column.id" 
-        v-model="shipmentStore.selectedRow.value[column.id]" 
+        v-model="SelectedRowStore.selectedRow.value[column.id]" 
       />
     </div>
   </div>
@@ -16,7 +16,7 @@
 
 <script setup>
 import Textbox from '../textbox.vue'
-import { shipmentStore } from '../../stores/shipmentStore.js'
+import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 </script>
 
 <style scoped>

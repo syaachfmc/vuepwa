@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-export const shipmentStore = {
+export const SelectedRowStore = {
   columns: ref([]),
   selectedRow: ref({})
 }

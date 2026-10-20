@@ -21,7 +21,7 @@ body {
 
 
  <script setup>
- import AppLayouts from "./Layouts/AppLayouts.vue";
+ import AppLayouts from "./Layouts/SSRLayouts.vue";
  </script>
  
  <template>
@@ -31,8 +31,7 @@ body {
  <style>
  body {
      margin: 0;
-     font-family: Arial, sans-serif;
-     color: #1f2937;
+ 
  }
  </style>
 

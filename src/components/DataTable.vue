@@ -78,7 +78,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { fetchGSheetData } from './DataTable.js';
 import { APP_COLORS } from '../constants/colors.js';
 import AppIcon from './AppIcon.vue';
-import { shipmentStore } from '../stores/shipmentStore.js';
+import { SelectedRowStore } from '../stores/selectedRowStore.js';
 
 // ==========================================
 // Props, Emits & Reaktivitas Utama
@@ -287,7 +287,7 @@ function buildColumns(result) {
         .filter(col => col !== null);
 
     // Update daftar kolom global di store menggunakan .value
-    shipmentStore.columns.value = generatedColumns;
+    SelectedRowStore.columns.value = generatedColumns;
 
     return tabulatorCols;
 }
@@ -491,7 +491,7 @@ async function renderTable() {
             const rowData = row.getData();
             
             // Simpan seluruh data baris ke store global menggunakan .value
-            shipmentStore.selectedRow.value = { ...rowData };
+            SelectedRowStore.selectedRow.value = { ...rowData };
 
             const firstColumnID = sheetData.value.columnIDs[4];
             const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';

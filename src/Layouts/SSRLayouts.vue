@@ -43,8 +43,13 @@
             <!-- MAIN AREA -->
             <main v-if="!isSidebarFullWidth" class="main-area">
                 <div class="ShipmentNo">
-                    <label for="col_2">{{ shipmentColumnTitle }}</label>
-                    <Textbox id="col_2" v-model="shipmentStore.selectedRow.value['2']" />
+                    <label for="col_2">{{ shipmentColumnTitle }}:</label>
+                    <label id="col_2" class="shipment-no-title">
+                        {{ SelectedRowStore.selectedRow.value['2'] || '-' }}
+                    </label>
+                    <label id="col_9" class="shipment-desc-title">
+                        {{ SelectedRowStore.selectedRow.value['9'] || '-' }}
+                    </label>                    
                 </div>
                 <section class="MainContent">
                     <!-- KeepAlive menjaga state komponen agar tidak di-reset saat berpindah tab -->
@@ -100,8 +105,7 @@ import { APP_COLORS } from '../constants/colors.js'
 import SideBarTable from '../components/SideBarTable.vue'
 import POInformation from '../components/SSRPages/PO.vue'
 import Shipment from '../components/SSRPages/Shipment.vue'
-import { shipmentStore } from '../stores/shipmentStore.js'
-import Textbox from '../components/textbox.vue'
+import { SelectedRowStore } from '../stores/selectedRowStore.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -121,7 +125,7 @@ let resizeObserver = null
 
 // Computed untuk mengambil Judul Kolom dengan ID '2' secara dinamis dari Store
 const shipmentColumnTitle = computed(() => {
-    const col = shipmentStore.columns.value.find(c => String(c.id) === '2')
+    const col = SelectedRowStore.columns.value.find(c => String(c.id) === '2')
     return col ? col.title : 'Shipment No'
 })
 
@@ -284,6 +288,20 @@ onBeforeUnmount(() => {
     padding: 6px 12px;
     margin-bottom: 4px;
 }
+
+.shipment-no-title {
+    font-weight: bold;
+    font-size: 150%;
+    color:  v-bind('APP_COLORS.textPrimaryAksen');
+}
+
+.shipment-desc-title{ 
+    font-size: 120%;
+    font-style: italic;
+    color:  v-bind('APP_COLORS.textPrimaryAksen');    
+}
+
+
 
 /* ========================================
    MAIN BODY
