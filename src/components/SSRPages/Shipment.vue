@@ -2,22 +2,23 @@
   <div class="shipment-page">
     <div class="form-container">
       <!-- Textbox biasa dengan pengecekan dirty otomatis -->
-      <DataText id="9" type="text" :is-dirty="isDirty('9')" />
+      <DataField id="9" type="text" :is-dirty="isDirty('9')" />
 
       <!-- DatePicker tanpa jam -->
-      <DataText id="2" type="text" :is-dirty="isDirty('2')" />
+      <DataField id="2" type="text" :is-dirty="isDirty('2')" />
 
       <!-- DatePicker dengan jam -->
-      <DataText id="5" type="date" :enable-time="true" :is-dirty="isDirty('5')" />
+      <DataField id="5" type="date" :enable-time="true" :is-dirty="isDirty('5')" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { watch, ref, nextTick } from 'vue'
-import DataText from '../DataField.vue'
+import DataField from '../DataField.vue'
 import { SelectedRowStore } from '../../stores/SelectedRowStore.js'
 import { useFormTracker } from '../../useFormTracker.js'
+import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
 // Flag untuk mencegah watcher 'form' menyalin data saat pergantian row terjadi
 const isSwitchingRow = ref(false)
@@ -27,22 +28,26 @@ const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
   SelectedRowStore.selectedRow.value
 )
 
-// Pantau perubahan pada store untuk memperbarui data form saat baris diklik di DataTable
+// Pantau ref SelectedRowStore.selectedRow secara langsung
 watch(
-  () => SelectedRowStore.selectedRow.value,
+  SelectedRowStore.selectedRow,
   async (newRow) => {
+    console.log('ini watch selectedRow', newRow)
+
     if (newRow && Object.keys(newRow).length > 0) {
       isSwitchingRow.value = true
-      
-      // Salin data row baru dan jadikan sebagai snapshot original yang baru
+
       commitOriginal(newRow)
-      
+
       await nextTick()
       isSwitchingRow.value = false
     }
   },
   { deep: true, immediate: true }
 )
+
+
+
 
 // Sinkronkan perubahan dari form tracker kembali ke store agar bind dua arah tetap berjalan
 watch(
