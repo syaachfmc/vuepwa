@@ -16,7 +16,7 @@
 <script setup>
 import { watch, ref, nextTick } from 'vue'
 import DataField from '../DataField.vue'
-import { SelectedRowStore } from '../../stores/SelectedRowStore.js'
+import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../useFormTracker.js'
 import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
