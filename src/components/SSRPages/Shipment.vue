@@ -5,12 +5,12 @@
       <DataField id="2" type="text" :reset-key="resetKey" />
       <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
 
-      <!-- DataField Dropdown dengan properti options dari Column ID 16 -->
+      <!-- Menggunakan fungsi helper langsung dengan ID kolom -->
       <DataField 
         id="16" 
         type="dropdown" 
         :reset-key="resetKey" 
-        :options="vendorOptions" 
+        :options="getDataListFromColumn('16')" 
         :editable="true"
       />
     </div>
@@ -23,36 +23,19 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onMounted } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import DataField from '../DataField.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import { TableStore } from '../../stores/tableStore.js'
-import { useFormTracker } from '../../useFormTracker.js'
+import { useFormTracker } from '../../composables/useFormTracker.js'
+import { useTableHelpers } from '../../composables/useTableHelpers.js'
+
+// Import helper
+const { getDataListFromColumn } = useTableHelpers()
 
 const isSwitchingRow = ref(false)
 const resetKey = ref(0)
-
-// State penampung opsi dropdown Vendor Name
-const vendorOptions = ref([])
-
-// Fungsi untuk mengambil opsi dari Column ID 16 (Vendor Name)
-function updateVendorOptions() {  
-  vendorOptions.value = TableStore.getUniqueColumnOptions('16')
-}
-
-onMounted(() => {
-  updateVendorOptions()
-})
-
-// Watcher dengan immediate: true agar opsi langsung diambil begitu data tersedia
-watch(
-  () => TableStore.tableData.value,
-  () => {
-    updateVendorOptions()
-  },
-  { deep: true, immediate: true }
-)
-
+ 
 // Inisialisasi Tracker & Handler
 const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
   SelectedRowStore.selectedRow.value
@@ -101,7 +84,6 @@ function handleReset() {
   resetKey.value++
 }
 </script>
-
 <style scoped>
 .shipment-page {
   display: flex;
