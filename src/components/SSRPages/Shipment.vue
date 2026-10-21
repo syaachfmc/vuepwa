@@ -18,7 +18,7 @@ import { watch, ref, nextTick } from 'vue'
 import DataField from '../DataField.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../useFormTracker.js'
-import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
+ 
 
 // Flag untuk mencegah watcher 'form' menyalin data saat pergantian row terjadi
 const isSwitchingRow = ref(false)
@@ -30,14 +30,15 @@ const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
 
 // Pantau ref SelectedRowStore.selectedRow secara langsung
 watch(
-  SelectedRowStore.selectedRow,
+  () => SelectedRowStore.selectedRow.value,
   async (newRow) => {
-    console.log('ini watch selectedRow', newRow)
+    console.log('ini watch selectedRow')
 
     if (newRow && Object.keys(newRow).length > 0) {
       isSwitchingRow.value = true
 
-      commitOriginal(newRow)
+      // Panggil commitOriginal tanpa mengoper Object data sebagai componentRefs
+      commitOriginal([], newRow)
 
       await nextTick()
       isSwitchingRow.value = false

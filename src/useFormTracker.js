@@ -1,10 +1,10 @@
-import { reactive, computed } from 'vue'
+// useFormTracker.js
+import { reactive } from 'vue'
 
 export function useFormTracker(initialData = {}) {
   const formData = reactive({ ...initialData })
   const initialValues = reactive({ ...initialData })
 
-  // Pengecekan status dirty per field (termasuk tipe Date)
   const isDirty = (field) => {
     const current = formData[field]
     const initial = initialValues[field]
@@ -18,15 +18,25 @@ export function useFormTracker(initialData = {}) {
     return current !== initial
   }
 
-  // Commit nilai baru sebagai nilai asli
-  const commitOriginal = (componentRefs = []) => {
-    // 1. Update snapshot data awal
-    Object.keys(formData).forEach((key) => {
-      initialValues[key] = formData[key]
-    })
+  // Parameter dibuat default array & divalidasi dengan Array.isArray
+  const commitOriginal = (componentRefs = [], newData = null) => {
 
-    // 2. Panggil resetOriginalValue() pada refs komponen custom
-    componentRefs.forEach((compRef) => {
+    console.log("commitOriginal terpanggil")
+    // Jika parameter pertama adalah object data (seperti newRow), update formData & initialValues
+    const dataToCommit = (newData || (Array.isArray(componentRefs) ? null : componentRefs)) || formData
+
+    if (dataToCommit && typeof dataToCommit === 'object' && !Array.isArray(dataToCommit)) {
+      Object.assign(formData, dataToCommit)
+      Object.assign(initialValues, dataToCommit)
+    } else {
+      Object.keys(formData).forEach((key) => {
+        initialValues[key] = formData[key]
+      })
+    }
+
+    // Pastikan componentRefs benar-benar array sebelum looping
+    const refsArray = Array.isArray(componentRefs) ? componentRefs : []
+    refsArray.forEach((compRef) => {
       if (compRef?.value?.resetOriginalValue) {
         compRef.value.resetOriginalValue()
       }
