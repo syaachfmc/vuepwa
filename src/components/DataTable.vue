@@ -182,8 +182,8 @@ function clearAllFilters() {
 // ==========================================
 
 function buildColumns(result) {
-    const frozenIndexes = Array.isArray(props.config.FrozenColumnIndex) 
-        ? props.config.FrozenColumnIndex 
+    const frozenIndexes = Array.isArray(props.config.FrozenColumnIndex)
+        ? props.config.FrozenColumnIndex
         : [];
 
     const generatedColumns = [];
@@ -489,7 +489,7 @@ async function renderTable() {
 
         table.on('rowClick', (e, row) => {
             const rowData = row.getData();
-            
+
             // Simpan seluruh data baris ke store global menggunakan .value
             SelectedRowStore.selectedRow.value = { ...rowData };
 
