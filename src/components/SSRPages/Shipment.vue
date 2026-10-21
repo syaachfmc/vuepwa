@@ -1,14 +1,16 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      <!-- Textbox biasa dengan pengecekan dirty otomatis -->
-      <DataField id="9" type="text" :is-dirty="isDirty('9')" />
+      <!-- Meneruskan resetKey tanpa :is-dirty eksternal -->
+      <DataField id="9" type="text" :reset-key="resetKey" />
+      <DataField id="2" type="text" :reset-key="resetKey" />
+      <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
+    </div>
 
-      <!-- DatePicker tanpa jam -->
-      <DataField id="2" type="text" :is-dirty="isDirty('2')" />
-
-      <!-- DatePicker dengan jam -->
-      <DataField id="5" type="date" :enable-time="true" :is-dirty="isDirty('5')" />
+    <!-- Tombol aksi opsional -->
+    <div class="action-buttons">
+      <button @click="handleSave">Simpan</button>
+      <button @click="handleReset">Reset</button>
     </div>
   </div>
 </template>
@@ -18,10 +20,12 @@ import { watch, ref, nextTick } from 'vue'
 import DataField from '../DataField.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../useFormTracker.js'
- 
 
 // Flag untuk mencegah watcher 'form' menyalin data saat pergantian row terjadi
 const isSwitchingRow = ref(false)
+
+// State resetKey untuk pemicu pembaharuan baseline pada Textbox/DatePicker
+const resetKey = ref(0)
 
 // Inisialisasi useFormTracker
 const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
@@ -32,23 +36,23 @@ const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
 watch(
   () => SelectedRowStore.selectedRow.value,
   async (newRow) => {
-    console.log('ini watch selectedRow')
+    
 
     if (newRow && Object.keys(newRow).length > 0) {
       isSwitchingRow.value = true
 
-      // Panggil commitOriginal tanpa mengoper Object data sebagai componentRefs
+      // Panggil commitOriginal dari form tracker
       commitOriginal([], newRow)
+
+      // Naikkan resetKey agar DataField -> Textbox/DatePicker mereset initialValue internalnya
+      resetKey.value++
 
       await nextTick()
       isSwitchingRow.value = false
     }
   },
-  { deep: true, immediate: true }
+  { deep: false, immediate: true }
 )
-
-
-
 
 // Sinkronkan perubahan dari form tracker kembali ke store agar bind dua arah tetap berjalan
 watch(
@@ -64,14 +68,33 @@ watch(
 
 // Handler saat menyimpan data
 function handleSave() {
-  commitOriginal()
-  console.log('Data Shipment tersimpan:', SelectedRowStore.selectedRow.value)
+  const currentData = SelectedRowStore.selectedRow.value
+
+  if (currentData) {
+    // Oper data terbaru saat ini agar commitOriginal tidak menerima null
+    commitOriginal([], currentData)
+
+    // Perbarui baseline komponen anak (Textbox & DatePicker)
+    resetKey.value++
+
+    console.log('Data Shipment tersimpan:', currentData[2])
+  }
 }
 
-// Handler saat mereset data ke kondisi awal saat baris diklik
+// Handler saat mereset data ke kondisi awal
 function handleReset() {
+  // 1. Kembalikan data internal tracker ke nilai awal
   resetToOriginal()
+
+  // 2. Salin data awal kembali ke SelectedRowStore agar v-model di input ikut berubah
+  if (SelectedRowStore.selectedRow.value) {
+    Object.assign(SelectedRowStore.selectedRow.value, form)
+  }
+
+  // 3. Pemicu agar Textbox & DatePicker mereset baseline & menyembunyikan dirty badge
+  resetKey.value++
 }
+
 </script>
 
 <style scoped>

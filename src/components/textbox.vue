@@ -1,4 +1,4 @@
-```vue
+ 
 <template>
     <div class="textbox-wrapper" v-if="visible">
         <!-- Indikator ketika nilai berbeda dari nilai awal -->
@@ -612,4 +612,3 @@ defineExpose({
     margin-top: 4px;
 }
 </style>
-```

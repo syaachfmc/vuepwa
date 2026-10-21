@@ -2,8 +2,8 @@
 import { reactive } from 'vue'
 
 export function useFormTracker(initialData = {}) {
-  const formData = reactive({ ...initialData })
-  const initialValues = reactive({ ...initialData })
+  const formData = reactive({ ...(initialData || {}) })
+  const initialValues = reactive({ ...(initialData || {}) })
 
   const isDirty = (field) => {
     const current = formData[field]
@@ -20,14 +20,15 @@ export function useFormTracker(initialData = {}) {
 
   // Parameter dibuat default array & divalidasi dengan Array.isArray
   const commitOriginal = (componentRefs = [], newData = null) => {
+    // Menggunakan optional chaining agar tidak crash saat newData bernilai null
+ 
 
-    console.log("commitOriginal terpanggil")
-    // Jika parameter pertama adalah object data (seperti newRow), update formData & initialValues
+    // Tentukan objek data yang akan dicommit
     const dataToCommit = (newData || (Array.isArray(componentRefs) ? null : componentRefs)) || formData
 
     if (dataToCommit && typeof dataToCommit === 'object' && !Array.isArray(dataToCommit)) {
       Object.assign(formData, dataToCommit)
-      Object.assign(initialValues, dataToCommit)
+      Object.assign(initialValues, JSON.parse(JSON.stringify(dataToCommit)))
     } else {
       Object.keys(formData).forEach((key) => {
         initialValues[key] = formData[key]
@@ -43,9 +44,15 @@ export function useFormTracker(initialData = {}) {
     })
   }
 
+  const resetToOriginal = () => {
+    console.log(initialValues['2'])
+    Object.assign(formData, initialValues)
+  }
+
   return {
     form: formData,
     isDirty,
-    commitOriginal
+    commitOriginal,
+    resetToOriginal
   }
 }

@@ -8,11 +8,11 @@
 </script> -->
 
   <script setup>
- import AppLayouts from "./Layouts/SSRLayouts.vue";
+ import SSRLayouts from "./Layouts/SSRLayouts.vue";
  </script>
  
  <template>
-     <AppLayouts />
+     <SSRLayouts />
  </template>
  
  <style>
