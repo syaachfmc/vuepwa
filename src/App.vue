@@ -10,7 +10,7 @@
   <script setup>
   import {ref} from 'vue'
  import SSRLayouts from "./Layouts/SSRLayouts.vue";
- import Dropdown from "./components/Dropdown.vue";
+ import Dropdown from "./components/dropdown.vue";
 
  const ab=ref([1,2])
  </script>
