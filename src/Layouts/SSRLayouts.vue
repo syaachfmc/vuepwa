@@ -103,7 +103,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import { APP_COLORS } from '../constants/colors.js'
 import SideBarTable from '../components/SideBarTable.vue'
-// import POInformation from '../components/SSRPages/PO.vue'
+import POInformation from '../components/SSRPages/PO.vue'
 import Shipment from '../components/SSRPages/Shipment.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
 
@@ -135,7 +135,7 @@ const shipmentColumnTitle = computed(() => {
 // Dynamic components dikemas dengan markRaw untuk mencegah overhead reaksi Vue
 const tabs = ref([
     { id: 1, label: 'Shipment', component: markRaw(Shipment) },
-    // { id: 2, label: 'PO', component: markRaw(POInformation) },
+    { id: 2, label: 'PO', component: markRaw(POInformation) },
 ])
 
 const activeTab = ref(1)

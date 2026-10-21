@@ -19,6 +19,16 @@
       :reset-key="resetKey"
     />
 
+    <!-- Render Dropdown jika type === 'dropdown' -->
+    <Dropdown
+      v-else-if="type === 'dropdown'"
+      :id="`col_${id}`"
+      v-model="SelectedRowStore.selectedRow.value[String(id)]"
+      :options="options"
+      :editable="editable"
+      :reset-key="resetKey"
+    />
+
     <!-- Fallback type lain -->
     <input 
       v-else
@@ -34,6 +44,7 @@
 import { computed } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
+import Dropdown from './Dropdown.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
 
 const props = defineProps({
@@ -49,7 +60,16 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // Ditambahkan untuk meneruskan resetKey dari parent/form utama
+  // Opsi pilihan untuk dropdown
+  options: {
+    type: Array,
+    default: () => []
+  },
+  editable: {
+    type: Boolean,
+    default: false
+  },
+  // Meneruskan resetKey dari parent utama
   resetKey: {
     type: [String, Number],
     default: 0

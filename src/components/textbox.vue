@@ -94,7 +94,7 @@ const props = defineProps({
     background: {
         type: Object,
         default: () => ({
-            color: APP_COLORS.bgPrimary
+            background: APP_COLORS.bgPrimary
         })
     },
 
