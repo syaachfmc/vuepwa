@@ -44,7 +44,7 @@
 import { computed } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
-import Dropdown from './Dropdown.vue'
+import Dropdown from './dropdown.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
 
 const props = defineProps({

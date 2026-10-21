@@ -82,7 +82,7 @@
 import { ref, computed } from 'vue'
 import Button from './components/Button.vue'
 import TextBox from './components/Textbox.vue'
-import Dropdown from './components/Dropdown.vue'
+import Dropdown from './components/dropdown.vue'
 
 // ---- DATE & STYLES
 import { VueDatePicker } from '@vuepic/vue-datepicker'
