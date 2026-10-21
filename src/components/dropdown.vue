@@ -51,7 +51,7 @@
             height="12"
             viewBox="0 0 24 24"
             fill="none"
-            :stroke="themeColors.textPrimary"
+            :stroke="themeColors.textPrimary || '#333333'"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -59,40 +59,6 @@
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </button>
-  
-        <ul
-          v-if="isOpen && enabled"
-          ref="optionsListRef"
-          class="custom-options-list"
-          :style="optionsListStyle"
-        >
-          <li
-            v-for="(option, index) in displayOptions"
-            :key="index"
-            :ref="el => optionRefs[index] = el"
-            :class="[
-              'custom-option-item',
-              {
-                'is-disabled': option.disabled,
-                'is-active': index === focusedIndex,
-                'is-selected': option.value === modelValue
-              }
-            ]"
-            :style="optionStyle"
-            @mousedown.prevent="selectOption(option)"
-            @mouseenter="focusedIndex = index"
-          >
-            {{ option.label }}
-          </li>
-  
-          <li
-            v-if="displayOptions.length === 0"
-            class="custom-option-empty"
-            :style="optionStyle"
-          >
-            Tidak ada opsi
-          </li>
-        </ul>
       </div>
   
       <!-- MODE 2: Non-Editable -->
@@ -131,7 +97,7 @@
               height="12"
               viewBox="0 0 24 24"
               fill="none"
-              :stroke="themeColors.textPrimary"
+              :stroke="themeColors.textPrimary || '#333333'"
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -140,15 +106,18 @@
             </svg>
           </span>
         </div>
+      </div>
   
+      <!-- FLOATING OPTIONS LIST -->
+      <Teleport to="body">
         <ul
           v-if="isOpen && enabled"
           ref="optionsListRef"
           class="custom-options-list"
-          :style="optionsListStyle"
+          :style="floatingListStyle"
         >
           <li
-            v-for="(option, index) in normalizedOptions"
+            v-for="(option, index) in (editable ? displayOptions : normalizedOptions)"
             :key="index"
             :ref="el => optionRefs[index] = el"
             :class="[
@@ -165,8 +134,16 @@
           >
             {{ option.label }}
           </li>
+  
+          <li
+            v-if="editable && displayOptions.length === 0"
+            class="custom-option-empty"
+            :style="optionStyle"
+          >
+            Tidak ada opsi
+          </li>
         </ul>
-      </div>
+      </Teleport>
   
       <span v-if="error && errorMessage" class="error-text">
         {{ errorMessage }}
@@ -217,19 +194,19 @@
         size: 'inherit',
         weight: 400,
         style: 'normal',
-        color: APP_COLORS.textPrimary
+        color: APP_COLORS?.textPrimary || '#333333'
       })
     },
     background: {
       type: Object,
       default: () => ({
-        color: APP_COLORS.bgPrimary
+        color: APP_COLORS?.bgPrimary || '#ffffff'
       })
     },
     border: {
       type: Object,
       default: () => ({
-        color: APP_COLORS.borderDefault,
+        color: APP_COLORS?.borderDefault || '#cccccc',
         width: '1px',
         style: 'solid',
         radius: '4px'
@@ -239,7 +216,7 @@
       type: Object,
       default: () => ({
         normal: {
-          color: APP_COLORS.shadowColorNormal,
+          color: APP_COLORS?.shadowColorNormal || 'rgba(0,0,0,0.05)',
           offsetX: '0px',
           offsetY: '2px',
           blur: '4px',
@@ -247,23 +224,23 @@
           inset: false
         },
         hover: {
-          color: APP_COLORS.shadowColorHover,
+          color: APP_COLORS?.shadowColorHover || 'rgba(0,0,0,0.1)',
           offsetX: '0px',
           offsetY: '2px',
           blur: '4px',
           spread: '0px',
-          inset: true
+          inset: false
         },
         focus: {
-          color: APP_COLORS.shadowColorFocus,
+          color: APP_COLORS?.shadowColorFocus || 'rgba(0,123,255,0.25)',
           offsetX: '0px',
-          offsetY: '2px',
-          blur: '4px',
-          spread: '1px',
-          inset: true
+          offsetY: '0px',
+          blur: '0px',
+          spread: '2px',
+          inset: false
         },
         error: {
-          color: APP_COLORS.shadowColorError,
+          color: APP_COLORS?.shadowColorError || 'rgba(220,53,69,0.25)',
           offsetX: '0px',
           offsetY: '2px',
           blur: '4px',
@@ -271,19 +248,19 @@
           inset: false
         },
         errorHover: {
-          color: APP_COLORS.shadowColorErrorHover,
+          color: APP_COLORS?.shadowColorErrorHover || 'rgba(220,53,69,0.35)',
           offsetX: '0px',
           offsetY: '2px',
           blur: '4px',
           spread: '1px',
-          inset: true
+          inset: false
         }
       })
     },
     hover: {
       type: Object,
       default: () => ({
-        borderColor: APP_COLORS.borderHover,
+        borderColor: APP_COLORS?.borderHover || '#999999',
         backgroundColor: null,
         color: null
       })
@@ -291,7 +268,7 @@
     focus: {
       type: Object,
       default: () => ({
-        borderColor: APP_COLORS.borderFocus,
+        borderColor: APP_COLORS?.borderFocus || '#007bff',
         backgroundColor: null,
         color: null
       })
@@ -331,7 +308,6 @@
       type: String,
       default: 'pointer'
     },
-    // Reset key ditambahkan agar sinkron dengan pergantian row
     resetKey: {
       type: [String, Number],
       default: 0
@@ -347,7 +323,7 @@
     'click'
   ])
   
-  const themeColors = APP_COLORS
+  const themeColors = APP_COLORS || {}
   
   const wrapperRef = ref(null)
   const selectRef = ref(null)
@@ -363,6 +339,21 @@
   
   const initialValue = ref('')
   
+  const dropdownRect = ref({ top: 0, left: 0, width: 0, height: 0 })
+  
+  function updateDropdownRect() {
+    const targetEl = props.editable ? inputRef.value : selectRef.value
+    if (targetEl) {
+      const rect = targetEl.getBoundingClientRect()
+      dropdownRect.value = {
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height
+      }
+    }
+  }
+  
   onMounted(() => {
     initialValue.value = props.modelValue
     document.addEventListener('click', handleClickOutside)
@@ -370,9 +361,10 @@
   
   onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside)
+    window.removeEventListener('scroll', updateDropdownRect, true)
+    window.removeEventListener('resize', updateDropdownRect)
   })
   
-  // Merekam baseline ulang setiap kali resetKey diperbarui dari parent
   watch(
     () => props.resetKey,
     () => {
@@ -382,10 +374,10 @@
   )
   
   function handleClickOutside(event) {
-    if (
-      wrapperRef.value &&
-      !wrapperRef.value.contains(event.target)
-    ) {
+    const isClickOnOptions = optionsListRef.value && optionsListRef.value.contains(event.target)
+    const isClickOnWrapper = wrapperRef.value && wrapperRef.value.contains(event.target)
+  
+    if (!isClickOnWrapper && !isClickOnOptions) {
       isOpen.value = false
       isFiltering.value = false
       focusedIndex.value = -1
@@ -440,8 +432,8 @@
     fontWeight: props.font.weight ?? 400,
     fontStyle: props.font.style || 'normal',
     color: !selectedLabel.value
-      ? APP_COLORS.textSecondary
-      : (props.font.color || APP_COLORS.textPrimary)
+      ? (APP_COLORS?.textSecondary || '#888888')
+      : (props.font.color || APP_COLORS?.textPrimary || '#333333')
   }))
   
   const optionStyle = computed(() => ({
@@ -456,6 +448,15 @@
     fontSize: props.font.size || '14px'
   }))
   
+  const floatingListStyle = computed(() => ({
+    ...optionsListStyle.value,
+    position: 'absolute',
+    top: `${dropdownRect.value.top + dropdownRect.value.height + 2}px`,
+    left: `${dropdownRect.value.left}px`,
+    width: `${dropdownRect.value.width}px`,
+    zIndex: 9999
+  }))
+  
   watch(displayOptions, () => {
     focusedIndex.value = -1
     optionRefs.value = []
@@ -464,20 +465,28 @@
   watch(isOpen, newVal => {
     if (!newVal) {
       focusedIndex.value = -1
+      window.removeEventListener('scroll', updateDropdownRect, true)
+      window.removeEventListener('resize', updateDropdownRect)
     } else {
-      const list = props.editable
-        ? displayOptions.value
-        : normalizedOptions.value
+      nextTick(() => {
+        updateDropdownRect()
+        window.addEventListener('scroll', updateDropdownRect, true)
+        window.addEventListener('resize', updateDropdownRect)
   
-      const currentIndex = list.findIndex(
-        opt => opt.value === props.modelValue
-      )
+        const list = props.editable
+          ? displayOptions.value
+          : normalizedOptions.value
   
-      focusedIndex.value = currentIndex >= 0
-        ? currentIndex
-        : (list.length > 0 ? 0 : -1)
+        const currentIndex = list.findIndex(
+          opt => opt.value === props.modelValue
+        )
   
-      scrollToFocusedOption()
+        focusedIndex.value = currentIndex >= 0
+          ? currentIndex
+          : (list.length > 0 ? 0 : -1)
+  
+        scrollToFocusedOption()
+      })
     }
   })
   
@@ -564,7 +573,6 @@
   
       focusedIndex.value =
         (focusedIndex.value - 1 + length) % length
-  
       scrollToFocusedOption()
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
@@ -594,7 +602,7 @@
   }
   
   function makeShadow(shadow = {}) {
-    const color = shadow.color || APP_COLORS.shadowColorNormal
+    const color = shadow.color || APP_COLORS?.shadowColorNormal || 'rgba(0,0,0,0.1)'
     const offsetX = shadow.offsetX || '0px'
     const offsetY = shadow.offsetY || '2px'
     const blur = shadow.blur || '4px'
@@ -613,14 +621,14 @@
     const focus = props.focus || {}
     const text = props.text || {}
   
-    let currentColor = font.color || APP_COLORS.textPrimary
-    let currentBackground = APP_COLORS.bgPrimaryGrad
-    let currentBorderColor =
-      border.color || APP_COLORS.borderDefault
+    let currentColor = font.color || APP_COLORS?.textPrimary || '#333333'
+    // Pastikan background mempunyai nilai valid (Fallback ke #ffffff)
+    let currentBackground = props.background?.color || APP_COLORS?.bgPrimary || '#ffffff'
+    let currentBorderColor = border.color || APP_COLORS?.borderDefault || '#cccccc'
     let currentShadow = makeShadow(shadow.normal || {})
   
     if (props.error) {
-      currentBorderColor = APP_COLORS.borderError
+      currentBorderColor = APP_COLORS?.borderError || '#dc3545'
   
       if (shadow.error) {
         currentShadow = makeShadow(shadow.error)
@@ -628,7 +636,7 @@
     }
   
     if (!props.enabled) {
-      currentBackground = APP_COLORS.bgDisabled
+      currentBackground = APP_COLORS?.bgDisabled || '#e9ecef'
     }
   
     if (isHovered.value && props.enabled) {
@@ -677,7 +685,7 @@
       fontWeight: font.weight,
       fontStyle: font.style,
       color: currentColor,
-      background: currentBackground,
+      backgroundColor: currentBackground,
       borderColor: currentBorderColor,
       borderWidth: border.width,
       borderStyle: border.style,
@@ -814,24 +822,14 @@
   
   <style scoped>
   .dropdown-wrapper {
-    --bg-primary: v-bind('APP_COLORS.bgPrimary');
-    --bg-disabled: v-bind('APP_COLORS.bgDisabled');
-    --text-primary: v-bind('APP_COLORS.textPrimary');
-    --text-secondary: v-bind('APP_COLORS.textSecondary');
-    --text-disabled: v-bind('APP_COLORS.textDisabled');
-    --border-error: v-bind('APP_COLORS.borderError');
-    --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
-    --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
-    --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
-    --option-list-bg: v-bind('APP_COLORS.optionListBg');
-    --option-list-border: v-bind('APP_COLORS.optionListBorder');
-    --option-hover-bg: v-bind('APP_COLORS.optionHoverBg');
-    --option-hover-text: v-bind('APP_COLORS.optionHoverText');
-  
     position: relative;
     display: inline-flex;
     flex-direction: column;
     width: fit-content;
+
+    --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
+    --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
+    --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
   }
   
   .dropdown {
@@ -856,10 +854,6 @@
     user-select: none;
   }
   
-  .dropdown-non-editable.is-placeholder .dropdown-selected-text {
-    color: var(--text-secondary);
-  }
-  
   .dropdown-selected-text {
     display: block;
     flex: 1;
@@ -875,10 +869,6 @@
     align-items: center;
     justify-content: center;
     margin-left: 4px;
-  }
-  
-  .dropdown-editable {
-    background-image: inherit;
   }
   
   .dropdown-arrow-btn {
@@ -901,52 +891,51 @@
     opacity: 0.5;
   }
   
+  /* LIST CONTAINER (BACKGROUND PUTIH & BORDER) */
   .custom-options-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin: 2px 0 0;
+    margin: 0;
     padding: 4px 0;
     list-style: none;
-    background-color: var(--option-list-bg);
-    border: 1px solid var(--option-list-border);
-    border-radius: 4px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff; /* Default background solid */
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     max-height: 180px;
     overflow-y: auto;
-    z-index: 1000;
     box-sizing: border-box;
   }
   
+  /* ITEM LIST */
   .custom-option-item {
-    padding: 6px 10px;
-    color: var(--text-primary);
+    padding: 6px 12px;
+    color: #333333;
     cursor: pointer;
-    transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
+    background-color: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
   
+  /* HOVER & ACTIVE STATE */
   .custom-option-item:hover,
   .custom-option-item.is-active {
-    background-color: var(--option-hover-bg) !important;
-    color: var(--option-hover-text) !important;
+    background-color: #e0f2fe !important; /* Warna biru muda terang saat kursor di-hover */
+    color: #0369a1 !important;
   }
   
+  /* ITEM TERPILIH */
   .custom-option-item.is-selected {
     font-weight: 600;
+    background-color: #f1f5f9;
   }
   
   .custom-option-item.is-disabled {
-    color: var(--text-disabled);
+    color: #a1a1aa;
     cursor: not-allowed;
     background-color: transparent !important;
   }
   
   .custom-option-empty {
-    padding: 6px 10px;
-    color: var(--text-secondary);
+    padding: 8px 12px;
+    color: #71717a;
     text-align: center;
   }
   
@@ -956,11 +945,11 @@
   }
   
   .dropdown-error {
-    border-color: var(--border-error) !important;
+    border-color: #dc3545 !important;
   }
   
   .error-text {
-    color: var(--border-error);
+    color: #dc3545;
     font-size: 12px;
     margin-top: 4px;
   }

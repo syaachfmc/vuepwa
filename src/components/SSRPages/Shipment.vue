@@ -11,6 +11,7 @@
         type="dropdown" 
         :reset-key="resetKey" 
         :options="vendorOptions" 
+        :editable="true"
       />
     </div>
 
@@ -34,30 +35,23 @@ const resetKey = ref(0)
 // State penampung opsi dropdown Vendor Name
 const vendorOptions = ref([])
 
-// Fungsi untuk mengambil/memperbarui opsi dari Column ID 16 (Vendor Name)
+// Fungsi untuk mengambil opsi dari Column ID 16 (Vendor Name)
 function updateVendorOptions() {  
-  console.log("getUniqueColumnOptions",TableStore.getUniqueColumnOptions('16'));
   vendorOptions.value = TableStore.getUniqueColumnOptions('16')
 }
 
 onMounted(() => {
-  // Ambil opsi pertama kali saat komponen dimuat
   updateVendorOptions()
 })
 
- 
-
-// Pantau perubahan data tabel secara fleksibel (Ref vs Plain Object)
+// Watcher dengan immediate: true agar opsi langsung diambil begitu data tersedia
 watch(
-  () => TableStore.tableData?.value || TableStore.tableData,
-  (newData) => {
-    if (newData && newData.length > 0) {
-      updateVendorOptions()
-    }
+  () => TableStore.tableData.value,
+  () => {
+    updateVendorOptions()
   },
-  { deep: true, immediate: true } // immediate: true dipanggil langsung saat watcher dibuat
+  { deep: true, immediate: true }
 )
-
 
 // Inisialisasi Tracker & Handler
 const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
