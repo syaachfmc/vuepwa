@@ -21,6 +21,9 @@
         <!-- TOP BAR -->
         <header class="TopBar">
             TopBar
+            <button @click="handleLogout" :disabled="loading" class="btn-logout">
+                {{ loading ? "Memproses..." : "Logout" }}
+            </button>
         </header>
 
         <!-- BODY -->
@@ -49,7 +52,7 @@
                     </label>
                     <label id="col_9" class="shipment-desc-title">
                         {{ SelectedRowStore.selectedRow.value['9'] || '-' }}
-                    </label>                    
+                    </label>
                 </div>
                 <section class="MainContent">
                     <!-- KeepAlive menjaga state komponen agar tidak di-reset saat berpindah tab -->
@@ -107,6 +110,7 @@ import POInformation from '../components/SSRPages/PO.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
 import Shipment from '../components/SSRPages/Shipment.vue'
 import Dates from '../components/SSRPages/Dates.vue'
+import { logout } from '../api/auth.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -243,7 +247,43 @@ onBeforeUnmount(() => {
         resizeObserver.unobserve(sidebarRef.value)
     }
 })
+
+// ----------HANDLE LOGOUT-------------
+
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true
+  },
+  token: {
+    type: String,
+    required: true
+  }
+});
+const emit = defineEmits(["logout-success"]);
+const loading = ref(false);
+const errorMessage = ref("");
+
+async function handleLogout() {
+  loading.value = true;
+  errorMessage.value = "";
+
+  try {
+    if (props.token) {
+      await logout(props.token);
+    }
+  } catch (error) {
+    console.error("Logout server gagal:", error);
+  } finally {
+    sessionStorage.removeItem("authToken");
+    loading.value = false;
+    emit("logout-success");
+  }
+}
+
 </script>
+
+<!-- --------------------------------------------------------------------------------->
 
 <style scoped>
 /* ========================================
@@ -295,13 +335,13 @@ onBeforeUnmount(() => {
 .shipment-no-title {
     font-weight: bold;
     font-size: 150%;
-    color:  v-bind('APP_COLORS.textPrimaryAksen');
+    color: v-bind('APP_COLORS.textPrimaryAksen');
 }
 
-.shipment-desc-title{ 
+.shipment-desc-title {
     font-size: 120%;
     font-style: italic;
-    color:  v-bind('APP_COLORS.textPrimaryAksen');    
+    color: v-bind('APP_COLORS.textPrimaryAksen');
 }
 
 

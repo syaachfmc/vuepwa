@@ -109,8 +109,9 @@ const columnTitle = computed(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 180px;
+  margin-bottom: 10px;
 }
 
 .custom-input {

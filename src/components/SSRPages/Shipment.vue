@@ -1,9 +1,10 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      
-      <DataField id="9" type="text" :reset-key="resetKey" :size="{width: '600px',height: '32px'}" />
+      <div>
       <DataField id="2" type="text" :reset-key="resetKey" />
+      <DataField id="9" type="text" :reset-key="resetKey" :size="{width: '600px',height: '32px'}" />
+    </div>
       <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
 
       <!-- Menggunakan fungsi helper langsung dengan ID kolom -->

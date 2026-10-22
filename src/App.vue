@@ -1,46 +1,82 @@
-<!-- 
+
 <template>
-  <textbox :isDirty="'true'"/>
+  <div>
+    <Login
+      v-if="currentView === 'login'"
+      @login-success="handleLoginSuccess"
+      @close="handleClose"
+    />
+
+    <SSRLayouts
+      v-else-if="currentView === 'ssr-layouts'"
+      :user="user"
+      :token="token"
+      @logout-success="handleLogoutSuccess"
+    />
+  </div>
 </template>
 
 <script setup>
-  import textbox from './components/textbox.vue';
-</script> -->
+import { ref } from "vue";
+import Login from "./components/Login.vue";
+import SSRLayouts from "./Layouts/SSRLayouts.vue";
 
-  <script setup>
-  import {ref} from 'vue'
- import SSRLayouts from "./Layouts/SSRLayouts.vue";
- import Dropdown from "./components/dropdown.vue";
+// Pulihkan sesi saat halaman di-refresh
+const token = ref(sessionStorage.getItem("authToken") || "");
 
- const ab=ref([1,2])
- </script>
- 
- <template>
-     <SSRLayouts />
-     <!-- <Dropdown
-     v-model="w"
-     :options="ab"
-     />
+let savedUser = null;
 
-     <div class="form-group">
-      <label>Dropdown Role (Validasi Error):</label>
-      <Dropdown
-        ref="dropdownRoleRef"
-        v-model="formrole"
-        :options="ab"
-        placeholder="Pilih Role"
-        :error="isRoleError"
-        errorMessage="Role harus 'Admin'"
-        :editable="true"
-      />
-    </div> -->
+try {
+  savedUser = JSON.parse(
+    sessionStorage.getItem("authUser") || "null"
+  );
+} catch {
+  savedUser = null;
+}
 
+const user = ref(savedUser);
 
- </template>
- 
- <style>
- body {
-     margin: 0;
- 
- }
- </style> 
+// Tentukan tampilan awal
+const currentView = ref(
+  token.value && user.value ? "ssr-layouts" : "login"
+);
+
+// Login berhasil
+function handleLoginSuccess(data) {
+  token.value = data.token;
+  user.value = data.user;
+
+  sessionStorage.setItem("authToken", data.token);
+  sessionStorage.setItem("authUser", JSON.stringify(data.user));
+
+  console.log("Login sukses");
+
+  currentView.value = "ssr-layouts";
+}
+
+// Logout berhasil
+function handleLogoutSuccess() {
+  token.value = "";
+  user.value = null;
+
+  sessionStorage.removeItem("authToken");
+  sessionStorage.removeItem("authUser");
+
+  currentView.value = "login";
+}
+
+// Login ditutup
+function handleClose() {
+  currentView.value = "home";
+}
+</script>
+
+<style>
+body {
+  margin: 0;
+}
+
+.myParents {
+  background: grey;
+}
+</style>

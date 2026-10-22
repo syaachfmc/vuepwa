@@ -2,7 +2,8 @@
 import { ref, onMounted } from "vue";
 import { login, validateSession } from "../api/auth.js";
 
-const emit = defineEmits(["login-success"]);
+// Tambahkan emit 'close'
+const emit = defineEmits(["login-success", "close"]);
 
 // State Otentikasi & Aplikasi
 const token = ref(sessionStorage.getItem("authToken") || "");
@@ -15,7 +16,11 @@ const password = ref("");
 const loading = ref(false);
 const errorMessage = ref("");
 
-// --- Handlers / Akses API ---
+// --- Handlers ---
+
+function handleClose() {
+  emit("close");
+}
 
 async function handleLogin() {
   errorMessage.value = "";
@@ -29,16 +34,13 @@ async function handleLogin() {
       return;
     }
 
-    // Simpan token ke sessionStorage dan update state
     sessionStorage.setItem("authToken", result.token);
     token.value = result.token;
     user.value = result.user;
 
-    // Reset form
     username.value = "";
     password.value = "";
 
-    // Beritahu parent (SideBarTable) bahwa login sukses
     emit("login-success", { token: result.token, user: result.user });
   } catch (error) {
     console.error(error);
@@ -48,7 +50,6 @@ async function handleLogin() {
   }
 }
 
-// Cek sesi otomatis saat komponen dipasang
 onMounted(async () => {
   if (!token.value) {
     checkingSession.value = false;
@@ -75,12 +76,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- 1. Kondisi Memeriksa Sesi -->
-  <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
+  <!-- Klik area backdrop akan memicu handleClose -->
+  <div class="modal-overlay" @click.self="handleClose">
+    <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
 
-  <!-- 2. Form Login -->
-  <main v-else class="container">
-    <section class="card">
+    <div v-else class="card">
+      <!-- Tombol Close (X) -->
+      <button type="button" class="close-btn" @click="handleClose" aria-label="Tutup">
+        &times;
+      </button>
+
       <h1>Login</h1>
       <p>Masukkan username dan password.</p>
 
@@ -106,38 +111,73 @@ onMounted(async () => {
           {{ errorMessage }}
         </p>
 
-        <button type="submit" :disabled="loading">
+        <button type="submit" class="submit-btn" :disabled="loading">
           {{ loading ? "Memproses..." : "Login" }}
         </button>
       </form>
-    </section>
-  </main>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 .status-message {
   padding: 20px;
   text-align: center;
-}
-
-/* Style Form Login */
-.container {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: #f3f4f6;
-  box-sizing: border-box;
+  background: white;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .card {
+  position: relative;
   width: 100%;
   max-width: 400px;
   padding: 28px;
-  background: white;
+  
   border-radius: 12px;
-  box-shadow: 0 4px 18px #00000012;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
+  background: var(--color-bgPrimaryGrad);
+  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal);
+}
+
+/* Style tombol close X */
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: auto;
+  margin: 0;
+}
+
+.close-btn:hover {
+  color: #111827;
+  background: #f3f4f6;
 }
 
 h1 {
@@ -158,7 +198,7 @@ input {
   font-size: 16px;
 }
 
-button {
+.submit-btn {
   width: 100%;
   margin-top: 20px;
   padding: 12px;
@@ -170,12 +210,13 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+.submit-btn:disabled {
   opacity: 0.6;
   cursor: wait;
 }
 
 .error {
   color: #dc2626;
+  margin-top: 10px;
 }
 </style>
