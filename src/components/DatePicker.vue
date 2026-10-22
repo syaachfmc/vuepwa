@@ -3,14 +3,8 @@
     <!-- Dirty Badge muncul otomatis jika nilai berubah dari nilai awal -->
     <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
-    <VueDatePicker
-      v-model="internalValue"
-      :teleport="teleport"
-      :formats="formats"
-      :placeholder="placeholder"
-      :enable-time-picker="enableTimePicker"
-      :auto-apply="autoApply"
-    />
+    <VueDatePicker v-model="internalValue" :teleport="teleport" :formats="formats" :placeholder="placeholder"
+      :enable-time-picker="enableTimePicker" :auto-apply="autoApply" />
   </div>
 </template>
 
@@ -118,4 +112,6 @@ defineExpose({
   --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
   --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
 }
+
+ 
 </style>

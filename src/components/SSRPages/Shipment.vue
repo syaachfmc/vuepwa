@@ -10,7 +10,7 @@
         id="16" 
         type="dropdown" 
         :reset-key="resetKey" 
-        :options="getDataListFromColumn('16')" 
+        :options="getDataListFromColumn('4')" 
         :editable="true"
       />
     </div>
@@ -26,7 +26,7 @@
 import { watch, ref, nextTick } from 'vue'
 import DataField from '../DataField.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
-import { TableStore } from '../../stores/tableStore.js'
+
 import { useFormTracker } from '../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../composables/useTableHelpers.js'
 
