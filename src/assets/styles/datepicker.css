@@ -49,7 +49,7 @@
    background: var(--color-bgPrimaryGrad);
 
    --dp-background-color: #ffffff;
-   --dp-text-color: #212121;
+   --dp-text-color:  var(--color-textPrimary);
    --dp-hover-color: #f3f3f3;
    --dp-hover-text-color: #212121;
    --dp-hover-icon-color: #959595;
@@ -81,4 +81,9 @@
 .dp--button-bottom {
    display: none;
 
+}
+
+
+.tabulator-col-resize-handle{
+   border-color: red;
 }

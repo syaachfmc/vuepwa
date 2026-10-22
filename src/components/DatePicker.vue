@@ -3,8 +3,15 @@
     <!-- Dirty Badge muncul otomatis jika nilai berubah dari nilai awal -->
     <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
-    <VueDatePicker v-model="internalValue" :teleport="teleport" :formats="formats" :placeholder="placeholder"
-      :enable-time-picker="enableTimePicker" :auto-apply="autoApply" />
+    <VueDatePicker 
+      v-model="internalValue" 
+      :teleport="teleport" 
+      :formats="formats" 
+      :placeholder="placeholder"
+      :enable-time-picker="enableTimePicker" 
+      :auto-apply="autoApply" 
+      :text-input="true"
+      />
   </div>
 </template>
 
