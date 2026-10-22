@@ -1,30 +1,26 @@
- 
 <template>
     <div class="textbox-wrapper" v-if="visible">
         <!-- Indikator ketika nilai berbeda dari nilai awal -->
-        <span
-            v-if="isDirty"
-            class="dirty-badge"
-            title="Data telah diubah"
-        ></span>
+        <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
-        <input
-            ref="inputRef"
-            :type="type"
-            :value="modelValue"
-            :name="name"
-            :placeholder="placeholder"
-            :disabled="!enabled"
-            :readonly="readOnly"
-            :maxlength="maxlength"
-            :minlength="minlength"
-            :required="required"
-            :autocomplete="autocomplete"
-            :inputmode="inputMode"
-            :min="min"
-            :max="max"
-            :pattern="pattern"
+        <textarea v-if="multiline" ref="inputRef" :value="modelValue" :name="name" :placeholder="placeholder"
+            :disabled="!enabled" :readonly="readOnly" :maxlength="maxlength" :minlength="minlength" :required="required"
             :class="[
+                'textbox',
+                'textbox-multiline',
+                {
+                    'textbox-error': error,
+                    'textbox-disabled': !enabled,
+                    'textbox-readonly': readOnly,
+                    'textbox-dirty': isDirty
+                }
+            ]" :style="textboxStyle" rows="1" @input="onInput" @change="onChange" @focus="onFocus" @blur="onBlur"
+            @keydown="onKeydown" @keyup="onKeyup" @click="onClick" @mouseenter="onMouseEnter"
+            @mouseleave="onMouseLeave" />
+
+        <input v-else ref="inputRef" :type="type" :value="modelValue" :name="name" :placeholder="placeholder"
+            :disabled="!enabled" :readonly="readOnly" :maxlength="maxlength" :minlength="minlength" :required="required"
+            :autocomplete="autocomplete" :inputmode="inputMode" :min="min" :max="max" :pattern="pattern" :class="[
                 'textbox',
                 {
                     'textbox-error': error,
@@ -32,23 +28,10 @@
                     'textbox-readonly': readOnly,
                     'textbox-dirty': isDirty
                 }
-            ]"
-            :style="textboxStyle"
-            @input="onInput"
-            @change="onChange"
-            @focus="onFocus"
-            @blur="onBlur"
-            @keydown="onKeydown"
-            @keyup="onKeyup"
-            @click="onClick"
-            @mouseenter="onMouseEnter"
-            @mouseleave="onMouseLeave"
-        />
+            ]" :style="textboxStyle" @input="onInput" @change="onChange" @focus="onFocus" @blur="onBlur" @keydown="onKeydown"
+            @keyup="onKeyup" @click="onClick" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" />
 
-        <span
-            v-if="error && errorMessage"
-            class="error-text"
-        >
+        <span v-if="error && errorMessage" class="error-text">
             {{ errorMessage }}
         </span>
     </div>
@@ -70,6 +53,11 @@ const props = defineProps({
     name: {
         type: String,
         default: ''
+    },
+
+    multiline: {
+        type: Boolean,
+        default: false
     },
 
     size: {

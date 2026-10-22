@@ -1,41 +1,46 @@
 <template>
   <div class="form-group">
-    <label :for="`col_${id}`">{{ columnTitle }}</label>
-    
-    <!-- Render Textbox jika type === 'text' -->
-    <Textbox 
-      v-if="type === 'text'"
-      :id="`col_${id}`" 
-      v-model="SelectedRowStore.selectedRow.value[String(id)]" 
+    <label v-if="columnTitle" :for="`col_${id}`">{{ columnTitle }}</label>
+
+    <!-- Render Textbox jika type === 'text' atau 'number' -->
+    <Textbox
+      v-if="type === 'text' || type === 'number'"
+      :id="`col_${id}`"
+      v-model="modelValue"
+      :type="type === 'number' ? 'number' : 'text'"
       :reset-key="resetKey"
+      v-bind="$attrs"
     />
 
     <!-- Render DatePicker jika type === 'date' atau 'datetime' -->
     <DatePicker
       v-else-if="type === 'date' || type === 'datetime'"
       :id="`col_${id}`"
-      v-model="SelectedRowStore.selectedRow.value[String(id)]"
+      v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'"
       :reset-key="resetKey"
+      v-bind="$attrs"
     />
 
     <!-- Render Dropdown jika type === 'dropdown' -->
     <Dropdown
       v-else-if="type === 'dropdown'"
       :id="`col_${id}`"
-      v-model="SelectedRowStore.selectedRow.value[String(id)]"
+      v-model="modelValue"
       :options="options"
       :editable="editable"
       :reset-key="resetKey"
+      v-bind="$attrs"
     />
 
     <!-- Fallback type lain -->
-    <input 
+    <input
       v-else
-      type="text"
       :id="`col_${id}`"
-      v-model="SelectedRowStore.selectedRow.value[String(id)]"
+      v-model="modelValue"
+      :type="type"
       class="custom-input"
+      v-bind="$attrs"
     />
   </div>
 </template>
@@ -46,6 +51,11 @@ import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
+
+// Mencegah attribute otomatis menempel pada root element (.form-group)
+defineOptions({
+  inheritAttrs: false
+})
 
 const props = defineProps({
   id: {
@@ -60,7 +70,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // Opsi pilihan untuk dropdown
   options: {
     type: Array,
     default: () => []
@@ -69,16 +78,29 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  // Meneruskan resetKey dari parent utama
   resetKey: {
     type: [String, Number],
     default: 0
   }
 })
 
-// Cari judul kolom otomatis berdasarkan ID
+// Computed 2-way binding ke store agar reaktif dan sintaks lebih bersih
+const modelValue = computed({
+  get() {
+    return SelectedRowStore.selectedRow.value?.[String(props.id)] ?? ''
+  },
+  set(val) {
+    if (SelectedRowStore.selectedRow.value) {
+      SelectedRowStore.selectedRow.value[String(props.id)] = val
+    }
+  }
+})
+
+// Cari judul kolom otomatis berdasarkan ID dari store
 const columnTitle = computed(() => {
-  const col = SelectedRowStore.columns.value.find(c => String(c.id) === String(props.id))
+  const col = SelectedRowStore.columns.value?.find(
+    c => String(c.id) === String(props.id)
+  )
   return col ? col.title : ''
 })
 </script>

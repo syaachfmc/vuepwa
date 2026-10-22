@@ -8,7 +8,7 @@ export const APP_COLORS = {
   bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%, rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
   bgPrimaryGradB: 'linear-gradient(180deg,rgba(242, 242, 242, 1) 0%, rgb(248, 248, 248) 25%, rgba(248, 248, 248, 1) 76%, rgba(227, 227, 227, 1) 100%)',
   bgDisabled: 'rgb(200, 200, 200)',
-  textPrimary: 'rgba(49, 49, 49, 0.77)',
+  textPrimary: 'rgba(0, 255, 21, 0.77)',
   textSecondary: 'rgba(118, 118, 118, 0.71)',
   textDisabled: 'rgb(25, 25, 25)',
   
@@ -59,14 +59,14 @@ buttonShadow: 'rgba(0, 0, 0, 0.1)',
 buttonShadowHover: 'rgba(0, 0, 0, 0.15)',
 buttonShadowFocus: 'rgba(0, 0, 0, 0.25)',
 
-//-----TABLE
 
-bgTableRowGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
-bgTableRowHovwer: 'linear-gradient(180deg, rgb(229, 229, 229) 10%,  rgb(220, 220, 220) 90%)',
-bgTableRowSelected: 'linear-gradient(180deg, rgb(199, 199, 199) 10%,  rgb(176, 176, 176) 90%)',
-txtTableRowSelected: 'rgb(6, 6, 6)',
-  
-
+bgGradNormal: 'linear-gradient(180deg, rgb(255, 255, 255) 10%,  rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
+bgGradHover: 'linear-gradient(180deg, rgb(229, 229, 229) 10%,  rgb(220, 220, 220) 90%)',
+bgGradSelected: 'linear-gradient(180deg, rgb(199, 199, 199) 10%,  rgb(176, 176, 176) 90%)',
+ 
+bgGradTextHover: 'rgb(0, 81, 231)',
+bgGradTextSelected: 'rgb(0, 204, 255)',
 
 };
  
+APP_COLORS.bgGradTextNormal=APP_COLORS.textPrimary

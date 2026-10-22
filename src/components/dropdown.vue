@@ -948,15 +948,15 @@ defineExpose({
 /* ITEM TERPILIH */
 .custom-option-item.is-selected {
   font-weight: 600;
-  background-color: #b3b5b7 !important;
-  color: #ffffff !important;
+  background:  v-bind('APP_COLORS.bgGradSelected') !important ;
+  color:  v-bind('APP_COLORS.bgGradTextSelected') !important ;
 }
 
 /* HOVER & ACTIVE STATE */
 .custom-option-item:hover,
 .custom-option-item.is-active {
-  background-color: #f3f3f3 !important;
-  color: #000000 !important;
+  background:  v-bind('APP_COLORS.bgGradHover') !important ;
+  color:  v-bind('APP_COLORS.bgGradTextHover') !important ;
 }
 
 

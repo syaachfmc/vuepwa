@@ -894,15 +894,19 @@
   .data-table :deep(.tabulator-row.tabulator-row-odd) {
     height: auto;
     min-height: 0;
-    background: v-bind('APP_COLORS.bgTableRowGrad');
+    background: v-bind('APP_COLORS.bgGradNormal');
+    color:  v-bind('APP_COLORS.bgGradTextNormal');
   }
   
   .data-table :deep(.tabulator-row:hover) {
-    background: v-bind('APP_COLORS.bgTableRowHovwer');
+    background: v-bind('APP_COLORS.bgGradHover');
+    color:  v-bind('APP_COLORS.bgGradTextHover');
+    
   }
   
   .data-table :deep(.tabulator-row.tabulator-selected) {
-    background: v-bind('APP_COLORS.bgTableRowSelected');
+    background: v-bind('APP_COLORS.bgGradSelected');
+    color:  v-bind('APP_COLORS.bgGradTextSelected')
   }
   
   .data-table :deep(.tabulator-cell) {
@@ -910,7 +914,7 @@
     white-space: normal;
     background: transparent !important;
     border: 1px dotted v-bind('APP_COLORS.borderDefault');
-    color: v-bind('APP_COLORS.textPrimary');
+    
   }
   
   .data-table :deep(.tabulator-col-content) {
@@ -934,7 +938,8 @@
   }
   
   .data-table :deep(.tabulator-cell.tabulator-frozen) {
-    background: v-bind('APP_COLORS.bgTableRowGrad') !important;
+    background: v-bind('APP_COLORS.bgGradNormal') !important;
+    color:  v-bind('APP_COLORS.bgGradTextNormal') !important;
   }
   
   .data-table :deep(.tabulator-col.tabulator-frozen) {
@@ -942,11 +947,13 @@
   }
   
   .data-table :deep(.tabulator-row:hover .tabulator-cell.tabulator-frozen) {
-    background: v-bind('APP_COLORS.bgTableRowHovwer') !important;
+    background: v-bind('APP_COLORS.bgGradHover') !important;
+    color:  v-bind('APP_COLORS.bgGradTextHover') !important;
   }
   
   .data-table :deep(.tabulator-row.tabulator-selected .tabulator-cell.tabulator-frozen) {
-    background: v-bind('APP_COLORS.bgTableRowSelected') !important;
+    background: v-bind('APP_COLORS.bgGradSelected') !important;
+    color:  v-bind('APP_COLORS.bgGradTextSelected') !important;
   }
   
   @media (max-width: 600px) {
