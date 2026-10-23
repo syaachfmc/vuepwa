@@ -46,7 +46,7 @@
             <!-- MAIN AREA -->
             <main v-if="!isSidebarFullWidth" class="main-area">
                 <div class="ShipmentNo">
-                    <label for="col_2">{{ shipmentColumnTitle }}:</label>
+                    <label for="col_2" class="label">{{ shipmentColumnTitle }}:</label>
                     <label id="col_2" class="shipment-no-title">
                         {{ SelectedRowStore.selectedRow.value['2'] || '-' }}
                     </label>
@@ -331,7 +331,7 @@ async function handleLogout() {
     padding: 6px 12px;
     margin-bottom: 4px;
 }
-
+ 
 .shipment-no-title {
     font-weight: bold;
     font-size: 150%;

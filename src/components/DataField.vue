@@ -1,6 +1,6 @@
 <template>
   <div class="form-group">
-    <label v-if="columnTitle" :for="`col_${id}`">{{ columnTitle }}</label>
+    <label v-if="columnTitle" :for="`col_${id}`" class="label">{{ columnTitle }}</label>
 
     <!-- Render Textbox jika type === 'text' atau 'number' -->
     <Textbox
@@ -51,6 +51,7 @@ import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
+import { APP_COLORS } from '../constants/colors.js'
 
 // Mencegah attribute otomatis menempel pada root element (.form-group)
 defineOptions({
@@ -119,4 +120,5 @@ const columnTitle = computed(() => {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
 </style>

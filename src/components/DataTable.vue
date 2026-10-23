@@ -36,7 +36,7 @@
           <div v-else class="action-controls">
             <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..." />
   
-            <button type="button" class="filter-button" @click="toggleFilters"
+            <button type="button" class="filter-button" :class="{ 'filter-active': showFilters }" @click="toggleFilters"
               :title="showFilters ? 'Hide column filter' : 'Show column filter'">
               <AppIcon :name="showFilters ? 'funnel-x' : 'funnel'" :size="12" />
             </button>
@@ -47,7 +47,8 @@
   
             <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap"
               :title="wrapText ? `Don't wrap text in data cell` : `Wrap text in data cell`">
-              {{ wrapText ? '↕' : '↔' }}
+              <AppIcon :name="!wrapText ? 'WrapText' : 'Text'" :size="12" />
+              
             </button>
   
             <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
@@ -753,7 +754,13 @@
   
   .filter-button.wrap-active {
     border-color: #1a73e8;
-    background: #e8f0fe;
+    background: #e8f1fe;
+    color: #1a73e8;
+  }
+
+  .filter-button.filter-active {
+    border-color: #1a73e8;
+    background: #e8f1fe;
     color: #1a73e8;
   }
   

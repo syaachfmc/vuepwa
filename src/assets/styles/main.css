@@ -4,6 +4,13 @@
   font-size: 14px;
   font-weight: 400;
   font-style: normal;
+  color: rgba(0, 17, 63, 0.884);
+
+  .label  {
+    color: var(--color-textPrimaryAksen);
+    font-style: italic;
+
+  }
   
 }
 

@@ -38,14 +38,8 @@ const iconComponent = computed(() => {
 </script>
 
 <template>
-  <component
-    :is="iconComponent"
-    v-if="iconComponent"
-    :size="size"
-    :stroke-width="strokeWidth"
-    :color="color"
-    class="app-icon"
-  />
+  <component :is="iconComponent" v-if="iconComponent" :size="size" :stroke-width="strokeWidth" :color="color"
+    class="app-icon" />
   <span v-else class="icon-missing">?</span>
 </template>
 
@@ -55,6 +49,7 @@ const iconComponent = computed(() => {
   vertical-align: middle;
   flex-shrink: 0;
 }
+
 .icon-missing {
   color: red;
   font-weight: bold;

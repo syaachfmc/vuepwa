@@ -8,12 +8,12 @@ export const APP_COLORS = {
   bgPrimaryGrad: 'linear-gradient(180deg, rgb(255, 255, 255) 10%, rgb(250, 250, 250) 90%, rgb(240, 240, 240) 100%)',
   bgPrimaryGradB: 'linear-gradient(180deg,rgba(242, 242, 242, 1) 0%, rgb(248, 248, 248) 25%, rgba(248, 248, 248, 1) 76%, rgba(227, 227, 227, 1) 100%)',
   bgDisabled: 'rgb(200, 200, 200)',
-  textPrimary: 'rgba(59, 59, 59, 0.86)',
+  textPrimary: 'rgba(0, 30, 39, 0.86)',
   textSecondary: 'rgba(118, 118, 118, 0.71)',
   textDisabled: 'rgb(25, 25, 25)',
   
   // --- WARNA AKSEN ---
-  textPrimaryAksen: 'rgb(94, 148, 206)',
+  textPrimaryAksen: 'rgb(247, 0, 255)',
 
 
   // --- WARNA BORDER ---
