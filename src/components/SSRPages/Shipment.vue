@@ -96,7 +96,7 @@ function handleReset() {
 
 .form-container {
   display: flex;
-  flex-direction: row;
+  flex-direction:column;
   flex-wrap: wrap;
   gap: 12px;
   overflow-x: auto;
