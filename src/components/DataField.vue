@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { computed, useAttrs } from 'vue'
+import { computed  } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'

@@ -1,7 +1,7 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
+      <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey"   />
       <DataField id="7" type="date" :enable-time="true" :reset-key="resetKey" />
 
     </div>
