@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'
@@ -61,8 +61,9 @@ const props = defineProps({
   },
   tooltips: {
     type: String,
-    default: ''
+    default: undefined
   },
+
   noLabel: {
     type: Boolean,
     default: false
@@ -92,12 +93,20 @@ const columnTitle = computed(() => {
 
 // Cari judul kolom tooltips otomatis berdasarkan ID dari store
 const columnTooltips = computed(() => {
+  // Jika tooltips diberikan, gunakan nilainya.
+  // String kosong berarti tooltip dinonaktifkan.
+  if (props.tooltips !== undefined) {
+    return props.tooltips
+  }
+
+  // Jika tidak diberikan, ambil tooltip dari data store.
   const col = SelectedRowStore.columns.value?.find(
     c => String(c.id) === String(props.id)
   )
 
-  return col?.tooltips || props.tooltips || ''
+  return col?.tooltips || ''
 })
+
 
 </script>
 

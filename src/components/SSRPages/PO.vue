@@ -13,7 +13,7 @@
 
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <Textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
+      <Textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" multiline />
     </div>
 
     <div class="form-group">
