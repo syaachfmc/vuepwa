@@ -11,6 +11,7 @@
       :enable-time-picker="enableTimePicker" 
       :auto-apply="autoApply" 
       :text-input="true"
+      :clearable="true"
       />
   </div>
 </template>

@@ -87,3 +87,10 @@
 .tabulator-col-resize-handle{
    border-color: red;
 }
+
+
+.dp--input-icons{
+   padding: 0px;
+   margin-left: 10px;
+   margin-right: 10px;
+}

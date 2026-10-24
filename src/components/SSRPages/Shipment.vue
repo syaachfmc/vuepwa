@@ -2,7 +2,7 @@
   <div class="shipment-page">
     <div class="form-container">
       <div>
-      <DataField id="2" type="text" :reset-key="resetKey" flat readOnly tooltips  />
+      <DataField id="2" type="text" :reset-key="resetKey" flat readOnly />
       <DataField id="9" type="text" :reset-key="resetKey" :size="{width: '600px',height: '32px'}" />
     </div>
       <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
