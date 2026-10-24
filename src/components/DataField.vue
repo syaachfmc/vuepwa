@@ -50,8 +50,9 @@ import { computed } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'
+ 
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
-import { APP_COLORS } from '../constants/colors.js'
+ 
 
 // Mencegah attribute otomatis menempel pada root element (.form-group)
 defineOptions({
@@ -115,10 +116,5 @@ const columnTitle = computed(() => {
   margin-bottom: 10px;
 }
 
-.custom-input {
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
+ 
 </style>
