@@ -1,47 +1,23 @@
 <template>
   <div class="form-group">
-    <label v-if="columnTitle" :for="`col_${id}`" class="label">{{ columnTitle }}</label>
+    <label v-if="columnTitle && !noLabel" :for="`col_${id}`" class="label" :title=columnTooltips>
+      {{ columnTitle }}
+    </label>
 
     <!-- Render Textbox jika type === 'text' atau 'number' -->
-    <Textbox
-      v-if="type === 'text' || type === 'number'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :type="type === 'number' ? 'number' : 'text'"
-      :reset-key="resetKey"
-      v-bind="$attrs"
-    />
+    <Textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
+      :type="type === 'number' ? 'number' : 'text'" :reset-key="resetKey" v-bind="$attrs" />
 
     <!-- Render DatePicker jika type === 'date' atau 'datetime' -->
-    <DatePicker
-      v-else-if="type === 'date' || type === 'datetime'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :enable-time-picker="enableTime || type === 'datetime'"
-      :reset-key="resetKey"
-      v-bind="$attrs"
-    />
+    <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
+      :enable-time-picker="enableTime || type === 'datetime'" :reset-key="resetKey" v-bind="$attrs" />
 
     <!-- Render Dropdown jika type === 'dropdown' -->
-    <Dropdown
-      v-else-if="type === 'dropdown'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :options="options"
-      :editable="editable"
-      :reset-key="resetKey"
-      v-bind="$attrs"
-    />
+    <Dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue" :options="options"
+      :editable="editable" :reset-key="resetKey" v-bind="$attrs" />
 
     <!-- Fallback type lain -->
-    <input
-      v-else
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :type="type"
-      class="custom-input"
-      v-bind="$attrs"
-    />
+    <input v-else :id="`col_${id}`" v-model="modelValue" :type="type" class="custom-input" v-bind="$attrs" />
   </div>
 </template>
 
@@ -50,9 +26,8 @@ import { computed } from 'vue'
 import Textbox from './textbox.vue'
 import DatePicker from './DatePicker.vue'
 import Dropdown from './dropdown.vue'
- 
+
 import { SelectedRowStore } from '../stores/selectedRowStore.js'
- 
 
 // Mencegah attribute otomatis menempel pada root element (.form-group)
 defineOptions({
@@ -83,6 +58,14 @@ const props = defineProps({
   resetKey: {
     type: [String, Number],
     default: 0
+  },
+  tooltips: {
+    type: String,
+    default: ''
+  },
+  noLabel: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -105,6 +88,17 @@ const columnTitle = computed(() => {
   )
   return col ? col.title : ''
 })
+
+
+// Cari judul kolom tooltips otomatis berdasarkan ID dari store
+const columnTooltips = computed(() => {
+  const col = SelectedRowStore.columns.value?.find(
+    c => String(c.id) === String(props.id)
+  )
+
+  return col?.tooltips || props.tooltips || ''
+})
+
 </script>
 
 <style scoped>
@@ -115,6 +109,4 @@ const columnTitle = computed(() => {
   min-width: 180px;
   margin-bottom: 10px;
 }
-
- 
 </style>

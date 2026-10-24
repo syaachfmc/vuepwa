@@ -180,12 +180,13 @@
         }
   
         const columnID = result.columnIDs[index] || `col_${index + 1}`;
-        const description = result.columnDescriptions[index] || '';
+        const tooltips = result.columnDescriptions[index] || '';
         const type = rawType.replace('hidden', '').trim() || 'string';
   
         generatedColumns.push({
           id: columnID,
-          title: String(title || columnID)
+          title: String(title || columnID),
+          tooltips: String(tooltips || title || columnID)
         });
   
         const isFrozen = frozenIndexes.includes(index);
@@ -194,7 +195,7 @@
           title: String(title || columnID),
           field: columnID,
           frozen: isFrozen,
-          headerTooltip: description || String(title || columnID),
+          headerTooltip: tooltips || String(title || columnID),
           headerFilter: showFilters.value ? 'input' : false,
           headerFilterPlaceholder: '',
           headerFilterFunc: 'like',
