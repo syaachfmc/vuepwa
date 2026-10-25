@@ -1,4 +1,4 @@
-```vue
+ 
 <template>
   <div class="form-group">
     <label
@@ -262,4 +262,4 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 </style>
-```
+ 

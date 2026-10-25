@@ -413,6 +413,8 @@
       table = new Tabulator(tableElement.value, {
         data,
         columns,
+
+        
         selectableRows: 1,
         layout: 'fitData',
         autoResize: false,
@@ -982,4 +984,29 @@
       gap: 8px 12px;
     }
   }
+
+  :global(.custom-tooltip) {
+  position: fixed;
+  z-index: 99999;
+
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 7px 10px;
+
+  color: #222;
+  background: #fff;
+
+  border: 1px solid #ccc;
+  border-radius: 5px;
+
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.5;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
+  pointer-events: none;
+}
   </style>
