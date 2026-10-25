@@ -1,4 +1,3 @@
- 
 <template>
   <div class="form-group">
     <label
@@ -56,15 +55,17 @@
 
   <!-- Tooltip di luar parent agar tidak terpotong overflow -->
   <Teleport to="body">
-    <div
-      v-if="tooltipVisible && columnTooltips"
-      ref="tooltipElement"
-      class="custom-tooltip"
-      :style="tooltipStyle"
-      role="tooltip"
-    >
-      {{ columnTooltips }}
-    </div>
+    <Transition name="split-vertical">
+      <div
+        v-if="tooltipVisible && columnTooltips"
+        ref="tooltipElement"
+        class="custom-tooltip"
+        :style="tooltipStyle"
+        role="tooltip"
+      >
+        {{ columnTooltips }}
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -124,6 +125,8 @@ const tooltipStyle = ref({
   top: '0px'
 })
 
+let tooltipTimer = null
+
 // Binding ke store
 const modelValue = computed({
   get() {
@@ -160,51 +163,56 @@ const columnTooltips = computed(() => {
 })
 
 // Hitung posisi tooltip berdasarkan posisi label
-async function showTooltip() {
+function showTooltip() {
   if (!columnTooltips.value || !labelElement.value) return
 
-  tooltipVisible.value = true
-  await nextTick()
+  clearTimeout(tooltipTimer)
 
-  if (!labelElement.value || !tooltipElement.value) return
+  tooltipTimer = setTimeout(async () => {
+    tooltipVisible.value = true
+    await nextTick()
 
-  const labelRect = labelElement.value.getBoundingClientRect()
-  const tooltipRect = tooltipElement.value.getBoundingClientRect()
+    if (!labelElement.value || !tooltipElement.value) return
 
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  const margin = 8
-  const gap = 6
+    const labelRect = labelElement.value.getBoundingClientRect()
+    const tooltipRect = tooltipElement.value.getBoundingClientRect()
 
-  // Posisi horizontal agar tooltip tetap di dalam viewport
-  const left = Math.max(
-    margin,
-    Math.min(
-      labelRect.left,
-      viewportWidth - tooltipRect.width - margin
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const margin = 8
+    const gap = 6
+
+    // Posisi horizontal agar tooltip tetap di dalam viewport
+    const left = Math.max(
+      margin,
+      Math.min(
+        labelRect.left,
+        viewportWidth - tooltipRect.width - margin
+      )
     )
-  )
 
-  // Utamakan di atas label, pindah ke bawah jika tidak cukup ruang
-  let top = labelRect.top - tooltipRect.height - gap
+    // Utamakan di atas label, pindah ke bawah jika tidak cukup ruang
+    let top = labelRect.top - tooltipRect.height - gap
 
-  if (top < margin) {
-    top = labelRect.bottom + gap
-  }
+    if (top < margin) {
+      top = labelRect.bottom + gap
+    }
 
-  // Batasi posisi vertikal jika ruang layar terbatas
-  top = Math.max(
-    margin,
-    Math.min(top, viewportHeight - tooltipRect.height - margin)
-  )
+    // Batasi posisi vertikal jika ruang layar terbatas
+    top = Math.max(
+      margin,
+      Math.min(top, viewportHeight - tooltipRect.height - margin)
+    )
 
-  tooltipStyle.value = {
-    left: `${left}px`,
-    top: `${top}px`
-  }
+    tooltipStyle.value = {
+      left: `${left}px`,
+      top: `${top}px`
+    }
+  }, 300)
 }
 
 function hideTooltip() {
+  clearTimeout(tooltipTimer)
   tooltipVisible.value = false
 }
 
@@ -217,6 +225,7 @@ window.addEventListener('scroll', handleViewportChange, true)
 window.addEventListener('resize', handleViewportChange)
 
 onBeforeUnmount(() => {
+  clearTimeout(tooltipTimer)
   window.removeEventListener('scroll', handleViewportChange, true)
   window.removeEventListener('resize', handleViewportChange)
 })
@@ -247,7 +256,6 @@ onBeforeUnmount(() => {
 
   color: #222;
   background: #fff;
-
   border: 1px solid #ccc;
   border-radius: 5px;
 
@@ -261,5 +269,23 @@ onBeforeUnmount(() => {
   box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
   pointer-events: none;
 }
+
+/* --- Animasi Split Vertical Out --- */
+.split-vertical-enter-active,
+.split-vertical-leave-active {
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+  transform-origin: center center;
+}
+
+.split-vertical-enter-from,
+.split-vertical-leave-to {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.split-vertical-enter-to,
+.split-vertical-leave-from {
+  opacity: 1;
+  transform: scaleX(1);
+}
 </style>
- 

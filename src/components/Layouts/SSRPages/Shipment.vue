@@ -1,21 +1,25 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      <div>
-       
-      <DataField id="2" type="text" :reset-key="resetKey" flat readOnly />
-      <DataField id="9" type="text" :reset-key="resetKey" :size="{width: '600px',height: '32px'}" multiline />
-    </div>
+      <div class="divrow">
+        <DataField id="2" type="text" :reset-key="resetKey" :font="{weight:'800'}"  />
+        <DataField id="5" type="date" :reset-key="resetKey"   />
+        <DataField id="3" type="text" :reset-key="resetKey"   />
+        <DataField id="4" type="text" :reset-key="resetKey"   />                        
+      </div>
+      <div class="divrow">
+        <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '810px', height: '32px' }" multiline />
+      </div>
+      <div class="divrow">
+        <DataField id="12" type="text" :reset-key="resetKey"   />
+        <DataField id="13" type="text" :reset-key="resetKey"   />
+        <DataField id="15" type="text" :reset-key="resetKey"   />
+        
+      </div>      
       <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
 
       <!-- Menggunakan fungsi helper langsung dengan ID kolom -->
-      <DataField 
-        id="16" 
-        type="dropdown" 
-        :reset-key="resetKey" 
-        :options="getDataListFromColumn('4')" 
-        :editable="true"
-      />
+      <DataField id="16" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('4')" :editable="true" />
     </div>
 
     <div class="action-buttons">
@@ -33,14 +37,14 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
- 
+
 
 // Import helper
 const { getDataListFromColumn } = useTableHelpers()
 
 const isSwitchingRow = ref(false)
 const resetKey = ref(0)
- 
+
 // Inisialisasi Tracker & Handler
 const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
   SelectedRowStore.selectedRow.value
@@ -99,7 +103,7 @@ function handleReset() {
 
 .form-container {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 12px;
   overflow-x: auto;
@@ -115,5 +119,15 @@ function handleReset() {
 .action-buttons button {
   padding: 6px 12px;
   cursor: pointer;
+}
+
+.divcolumn {
+  display: flex;
+  flex-direction: column;
+}
+.divrow {
+  display: flex;
+  flex-direction:row;
+  gap: 10px;
 }
 </style>
