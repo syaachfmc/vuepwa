@@ -35,7 +35,7 @@
 </template>
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
-import { APP_COLORS } from '../constants/colors.js'
+import { APP_COLORS } from '../../constants/colors.js'
 // --------------------------------------------------
 // PROPS
 // --------------------------------------------------

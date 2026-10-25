@@ -20,9 +20,9 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import '../assets/styles/datepicker.css'
-import '../assets/styles/dirtyBadge.css'
-import { APP_COLORS } from '../constants/colors.js'
+import '../../assets/styles/datepicker.css'
+import '../../assets/styles/dirtyBadge.css'
+import { APP_COLORS } from '../../constants/colors.js'
 
 const props = defineProps({
   modelValue: {

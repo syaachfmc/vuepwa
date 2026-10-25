@@ -18,8 +18,8 @@
 
 <script setup>
 import { ref } from "vue";
-import Login from "./components/Login.vue";
-import SSRLayouts from "./Layouts/SSRLayouts.vue";
+import Login from "./components/Layouts/Login.vue";
+import SSRLayouts from './components/Layouts/SSRLayouts.vue'
 
 // Pulihkan sesi saat halaman di-refresh
 const token = ref(sessionStorage.getItem("authToken") || "");

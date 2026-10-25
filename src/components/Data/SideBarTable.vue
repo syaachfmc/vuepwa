@@ -16,7 +16,7 @@
 <script setup>
 import { ref } from 'vue';
 import DataTable from './DataTable.vue';
-import Login from './Login.vue';
+import Login from'./../Layouts/Login.vue';
 
 const isLoggedIn = ref(Boolean(sessionStorage.getItem("authToken")));
 

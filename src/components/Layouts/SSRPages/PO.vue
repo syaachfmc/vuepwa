@@ -1,65 +1,78 @@
 <template>
   <div class="form-container">
-
     <div class="button-form-container">
       <Button label="Simpan" @click="simpanData" />
-
       <Button label="Reset" size="small" @click="resetData" />
-
       <Button label="Proses" size="large" :loading="sedangProses" @click="prosesData" />
-
-
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <Textbox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
+      <textbox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <Textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
+      <textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" multiline />
     </div>
-
-
 
     <div class="form-group">
       <label>Dropdown Pilihan Kategori:</label>
-      <Dropdown ref="dropdownKategoriRef" v-model="form.kategori" :options="opsiKategori"
-        placeholder="Pilih Kategori" />
+      <dropdown
+        ref="dropdownKategoriRef"
+        v-model="form.kategori"
+        :options="opsiKategori"
+        placeholder="Pilih Kategori"
+      />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Mu (Readonly/Disabled):</label>
-      <Textbox ref="textboxAku2Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="false" />
+      <textbox
+        ref="textboxAku2Ref"
+        v-model="form.namaku"
+        placeholder="Masukkan nama ku"
+        :enabled="false"
+      />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Mu (Error):</label>
-      <Textbox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
-        :error="isRoleError" errorMessage="ini error message" />
+      <textbox
+        ref="textboxAku3Ref"
+        v-model="form.namaku"
+        placeholder="Masukkan nama ku"
+        :enabled="true"
+        :error="isRoleError"
+        errorMessage="ini error message"
+      />
     </div>
 
     <div class="form-group">
       <label>Dropdown Role (Validasi Error):</label>
-      <Dropdown ref="dropdownRoleRef" v-model="form.role" :options="opsiRole" placeholder="Pilih Role"
-        :error="isRoleError" errorMessage="Role harus 'Admin'" :editable="true" />
+      <dropdown
+        ref="dropdownRoleRef"
+        v-model="form.role"
+        :options="opsiRole"
+        placeholder="Pilih Role"
+        :error="isRoleError"
+        errorMessage="Role harus 'Admin'"
+        :editable="true"
+      />
     </div>
 
     <div class="form-group">
       <label>Pilih Tanggal:</label>
-      <div class="datepicker-wrapper">
-        <!-- Dirty Badge otomatis via isDirty('date1') -->
-        <span v-if="isDirty('date1')" class="dirty-badge" title="Data telah diubah"></span>
-        <VueDatePicker v-model="form.date1" :teleport="true" :formats="{ input: 'dd MMM yyyy' }"
-          placeholder="Pilih Tanggal" :enable-time-picker="true" auto-apply />
-      </div>
-      <div class="datepicker-wrapper">
-        <!-- Dirty Badge otomatis via isDirty('date2') -->
-        <span v-if="isDirty('date2')" class="dirty-badge" title="Data telah diubah"></span>
-        <VueDatePicker v-model="form.date2" :teleport="true" :formats="{ input: 'dd MMM yyyy' }"
-          placeholder="Pilih Tanggal" :enable-time-picker="false" auto-apply />
-      </div>
+      <DatePicker
+        v-model="form.date1"
+        :is-dirty="isDirty('date1')"
+        :enable-time-picker="true"
+      />
+      <DatePicker
+        v-model="form.date2"
+        :is-dirty="isDirty('date2')"
+        :enable-time-picker="false"
+      />
     </div>
 
     <div class="data-preview">
@@ -80,24 +93,17 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import Button from '../Button.vue'
-import Textbox from '../textbox.vue'
+import Button from '../../inputs/Button.vue'
+import textbox from '../../inputs/textbox.vue'
+import dropdown from '../../inputs/dropdown.vue'
+import DatePicker from '../../inputs/DatePicker.vue'
 
-import Dropdown from '../dropdown.vue'
-
-// ---- DATE & STYLES
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
-import '../../assets/styles/datepicker.css'
-import '../../assets/styles/dirtyBadge.css'
-
-import { APP_COLORS } from '../../constants/colors.js'
-import { formatTanggal } from '../../utils/tools.js'
+import { formatTanggal } from '../../../utils/tools.js'
 
 // ---- COMPOSABLE FORMS
-import { useFormTracker } from '../../composables/useFormTracker.js'
+import { useFormTracker } from '../../../composables/useFormTracker.js'
 
-// 1. Inisialisasi Form Tracker (Semua state & status dirty terkumpul di sini)
+// 1. Inisialisasi Form Tracker
 const { form, isDirty, commitOriginal } = useFormTracker({
   namaku: '',
   kategori: '',
@@ -116,8 +122,7 @@ const opsiKategori = ref([
   { label: 'Makanan', value: 'makanan' },
   { label: 'Elektronik', value: 'elektronik' },
   { label: 'Pakaian', value: 'pakaian' },
-  { label: 'Majjjjjjjj jjjjjjjjjjjj jjjjj jjjjjj jjjjjjjjj jjjjjjjj  jjjj jjjjjjkanan', value: 'makanan' },
-
+  { label: 'Majjjjjjjj jjjjjjjjjjjj jjjjj jjjjjj jjjjjjjjj jjjjjjjj  jjjj jjjjjjkanan', value: 'makanan' }
 ])
 
 const opsiRole = ref([
@@ -150,7 +155,6 @@ const isRoleError = computed(() => {
 
 // --- HANDLER SIMPAN / RESET ---
 function handleResetOriginal() {
-  // Cukup teruskan array refs komponen ke commitOriginal
   commitOriginal([
     textboxAku1Ref,
     dropdownKategoriRef,
@@ -164,32 +168,19 @@ function handleResetOriginal() {
 const sedangProses = ref(false)
 
 function simpanData() {
-  console.log('Simpan:', nama.value)
+  console.log('Simpan:', form.namaku)
 }
 
 function resetData() {
-  nama.value = ''
+  form.namaku = ''
 }
 
 function prosesData() {
   console.log('Proses data')
 }
-
-
 </script>
 
 <style scoped>
-.datepicker-wrapper {
-  position: relative;
-  display: inline-block;
-  width: fit-content;
-
-  --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
-  --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
-  --dirty-badge-glow: v-bind('APP_COLORS.dirtyBadgeGlow');
-}
-
-
 .button-form-container {
   display: flex;
   flex-direction: row;
@@ -204,13 +195,11 @@ function prosesData() {
   overflow: auto;
 }
 
-
 .form-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
   flex-direction: row;
-  /* Diubah dari column ke row agar berjejer ke kanan */
   flex-wrap: wrap;
   overflow-x: auto;
   border: 1px;
@@ -221,7 +210,6 @@ function prosesData() {
 .form-group {
   display: flex;
   flex-direction: column;
-
 
   gap: 6px;
   border: 1px;

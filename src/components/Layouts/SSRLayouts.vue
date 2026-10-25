@@ -104,13 +104,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
-import { APP_COLORS } from '../constants/colors.js'
-import SideBarTable from '../components/SideBarTable.vue'
-import POInformation from '../components/SSRPages/PO.vue'
-import { SelectedRowStore } from '../stores/selectedRowStore.js'
-import Shipment from '../components/SSRPages/Shipment.vue'
-import Dates from '../components/SSRPages/Dates.vue'
-import { logout } from '../api/auth.js'
+import { APP_COLORS } from '../../constants/colors.js'
+import SideBarTable from '../../components/Data/SideBarTable.vue'
+import POInformation from '../../components/Layouts/SSRPages/PO.vue'
+import { SelectedRowStore } from '../../stores/selectedRowStore.js'
+import Shipment from '../../components/Layouts/SSRPages/Shipment.vue'
+import Dates from '../../components/Layouts/SSRPages/Dates.vue'
+import { logout } from '../../api/auth.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS

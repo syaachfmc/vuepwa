@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { login, validateSession } from "../api/auth.js";
+import { login, validateSession } from "../../api/auth.js";
 
 // Tambahkan emit 'close'
 const emit = defineEmits(["login-success", "close"]);

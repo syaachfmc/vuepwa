@@ -28,7 +28,7 @@
   
   <script setup>
   import { ref, computed } from 'vue'
-  import { APP_COLORS } from '../constants/colors.js'
+  import { APP_COLORS } from '../../constants/colors.js'
   
   const props = defineProps({
     label: {

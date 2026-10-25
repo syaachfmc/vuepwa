@@ -16,11 +16,11 @@
 
 <script setup>
 import { watch, ref, nextTick } from 'vue'
-import DataField from '../DataField.vue'
-import { SelectedRowStore } from '../../stores/selectedRowStore.js'
+import DataField from '../../inputs/DataField.vue'
+import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 
-import { useFormTracker } from '../../composables/useFormTracker.js'
-import { useTableHelpers } from '../../composables/useTableHelpers.js'
+import { useFormTracker } from  '../../../composables/useFormTracker.js'
+import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
 // Import helper
 const { getDataListFromColumn } = useTableHelpers()

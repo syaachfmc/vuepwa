@@ -73,10 +73,10 @@
   
   import { TabulatorFull as Tabulator } from 'tabulator-tables';
   import { fetchGSheetData } from './DataTable.js';
-  import { APP_COLORS } from '../constants/colors.js';
-  import AppIcon from './AppIcon.vue';
-  import { SelectedRowStore } from '../stores/selectedRowStore.js';
-  import { TableStore } from '../stores/tableStore.js';
+  import { APP_COLORS } from '../../constants/colors.js';
+  import AppIcon from './../AppIcon.vue';
+  import { SelectedRowStore } from '../../stores/selectedRowStore.js';
+  import { TableStore } from '../../stores/tableStore.js';
   
   const props = defineProps({
     config: {

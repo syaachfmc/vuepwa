@@ -95,8 +95,8 @@ import {
   onBeforeUnmount
 } from 'vue'
 
-import { APP_COLORS } from '../constants/colors.js'
-import AppIcon from './AppIcon.vue'
+import { APP_COLORS } from '../../constants/colors.js'
+import AppIcon from './../AppIcon.vue'
 
 const props = defineProps({
   modelValue: {

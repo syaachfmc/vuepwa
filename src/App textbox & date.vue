@@ -13,36 +13,36 @@
 
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <TextBox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
+      <textbox ref="textboxAku1Ref" v-model="form.namaku" placeholder="Masukkan nama ku" />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Aku:</label>
-      <TextBox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
+      <textbox ref="textboxAku4Ref" v-model="form.namaku2" placeholder="Masukkan nama ku" />
     </div>
 
 
 
     <div class="form-group">
       <label>Dropdown Pilihan Kategori:</label>
-      <Dropdown ref="dropdownKategoriRef" v-model="form.kategori" :options="opsiKategori"
+      <dropdown ref="dropdownKategoriRef" v-model="form.kategori" :options="opsiKategori"
         placeholder="Pilih Kategori" />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Mu (Readonly/Disabled):</label>
-      <TextBox ref="textboxAku2Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="false" />
+      <textbox ref="textboxAku2Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="false" />
     </div>
 
     <div class="form-group">
       <label>TextBox Nama Mu (Error):</label>
-      <TextBox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
+      <textbox ref="textboxAku3Ref" v-model="form.namaku" placeholder="Masukkan nama ku" :enabled="true"
         :error="isRoleError" errorMessage="ini error message" />
     </div>
 
     <div class="form-group">
       <label>Dropdown Role (Validasi Error):</label>
-      <Dropdown ref="dropdownRoleRef" v-model="form.role" :options="opsiRole" placeholder="Pilih Role"
+      <dropdown ref="dropdownRoleRef" v-model="form.role" :options="opsiRole" placeholder="Pilih Role"
         :error="isRoleError" errorMessage="Role harus 'Admin'" :editable="true" />
     </div>
 
@@ -80,9 +80,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import Button from './components/Button.vue'
-import TextBox from './components/Textbox.vue'
-import Dropdown from './components/dropdown.vue'
+import Button from '../inputs/Button.vue'
+import textbox from '../inputs/textbox.vue'
+import dropdown from '../inputs/dropdown.vue'
 
 // ---- DATE & STYLES
 import { VueDatePicker } from '@vuepic/vue-datepicker'

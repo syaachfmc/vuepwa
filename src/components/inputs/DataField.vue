@@ -13,7 +13,7 @@
     </label>
 
     <!-- Textbox -->
-    <Textbox
+    <textbox
       v-if="type === 'text' || type === 'number'"
       :id="`col_${id}`"
       v-model="modelValue"
@@ -33,7 +33,7 @@
     />
 
     <!-- Dropdown -->
-    <Dropdown
+    <dropdown
       v-else-if="type === 'dropdown'"
       :id="`col_${id}`"
       v-model="modelValue"
@@ -70,11 +70,11 @@
 
 <script setup>
 import { computed, ref, nextTick, onBeforeUnmount } from 'vue'
-import Textbox from './textbox.vue'
+import textbox from '../inputs/textbox.vue'
 import DatePicker from './DatePicker.vue'
-import Dropdown from './dropdown.vue'
+import dropdown from '../inputs/dropdown.vue'
 
-import { SelectedRowStore } from '../stores/selectedRowStore.js'
+import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 
 defineOptions({
   inheritAttrs: false
