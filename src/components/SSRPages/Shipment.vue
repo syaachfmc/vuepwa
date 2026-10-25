@@ -2,6 +2,7 @@
   <div class="shipment-page">
     <div class="form-container">
       <div>
+        <dropdown2/>
       <DataField id="2" type="text" :reset-key="resetKey" flat readOnly />
       <DataField id="9" type="text" :reset-key="resetKey" :size="{width: '600px',height: '32px'}" multiline />
     </div>
@@ -31,6 +32,8 @@ import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 
 import { useFormTracker } from '../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../composables/useTableHelpers.js'
+
+import dropdown2 from '../dropdown2.vue'
 
 // Import helper
 const { getDataListFromColumn } = useTableHelpers()

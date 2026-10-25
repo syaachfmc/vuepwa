@@ -52,12 +52,7 @@
 
     <!-- FLOATING OPTIONS LIST WRAPPER -->
     <Teleport to="body">
-      <div
-        v-if="isOpen && enabled"
-        ref="optionsListRef"
-        class="options-popover-wrapper"
-        :style="floatingListStyle"
-      >
+      <div v-if="isOpen && enabled" ref="optionsListRef" class="options-popover-wrapper" :style="floatingListStyle">
         <ul class="custom-options-list">
           <li v-for="(option, index) in (editable ? displayOptions : normalizedOptions)" :key="index"
             :ref="el => optionRefs[index] = el" :class="[
@@ -77,12 +72,8 @@
         </ul>
 
         <!-- Resize handle sebagai DIV terpisah di luar UL -->
-        <div
-          class="options-resize-handle"
-          title="Drag untuk mengubah ukuran"
-          aria-label="Resize option list"
-          @mousedown.stop.prevent="startResize"
-        >
+        <div class="options-resize-handle" title="Drag untuk mengubah ukuran" aria-label="Resize option list"
+          @mousedown.stop.prevent="startResize">
           <AppIcon name="Grip" :size="12" :stroke-width="2" color="#64748b" />
         </div>
       </div>
@@ -141,12 +132,14 @@ const props = defineProps({
       color: APP_COLORS?.textPrimary || '#333333'
     })
   },
+
   background: {
     type: Object,
     default: () => ({
-      color: APP_COLORS?.bgPrimary || '#ffffff'
-    })
+      background: APP_COLORS?.bgPrimaryGrad || '#ffffff',
+    }),
   },
+
   border: {
     type: Object,
     default: () => ({
@@ -173,15 +166,15 @@ const props = defineProps({
         offsetY: '2px',
         blur: '4px',
         spread: '0px',
-        inset: false
+        inset: true
       },
       focus: {
         color: APP_COLORS?.shadowColorFocus || 'rgba(0,123,255,0.25)',
         offsetX: '0px',
-        offsetY: '0px',
-        blur: '0px',
-        spread: '2px',
-        inset: false
+        offsetY: '2px',
+        blur: '4px',
+        spread: '1px',
+        inset: true
       },
       error: {
         color: APP_COLORS?.shadowColorError || 'rgba(220,53,69,0.25)',
@@ -197,7 +190,7 @@ const props = defineProps({
         offsetY: '2px',
         blur: '4px',
         spread: '1px',
-        inset: false
+        inset: true
       }
     })
   },
@@ -619,58 +612,67 @@ const dropdownStyle = computed(() => {
   const focus = props.focus || {}
   const text = props.text || {}
 
-  let currentColor = font.color || APP_COLORS?.textPrimary || '#333333'
-  let currentBackground = props.background?.color || APP_COLORS?.bgPrimary || '#ffffff'
-  let currentBorderColor = border.color || APP_COLORS?.borderDefault || '#cccccc'
+  let currentColor = font.color ?? APP_COLORS?.textPrimary ?? '#333333'
+  let currentBackground =
+    props.background?.background ?? APP_COLORS?.bgPrimaryGrad ?? '#ffffff'
+  let currentBorderColor = border.color ?? APP_COLORS?.borderDefault ?? '#cccccc'
   let currentShadow = makeShadow(shadow.normal || {})
 
-  if (props.error) {
-    currentBorderColor = APP_COLORS?.borderError || '#dc3545'
-
-    if (shadow.error) {
-      currentShadow = makeShadow(shadow.error)
-    }
-  }
-
+  // Disabled mempunyai prioritas tertinggi.
   if (!props.enabled) {
-    currentBackground = APP_COLORS?.bgDisabled || '#e9ecef'
-  }
-
-  if (isHovered.value && props.enabled) {
-    if (props.error) {
-      if (shadow.errorHover) {
-        currentShadow = makeShadow(shadow.errorHover)
+    currentBackground = APP_COLORS?.bgDisabled ?? '#e9ecef'
+    currentColor = APP_COLORS?.textDisabled ?? '#999999'
+  } else {
+    // Hover: samakan perilakunya dengan Textbox.vue.
+    if (isHovered.value) {
+      if (hover.color != null) {
+        currentColor = hover.color
       }
-    } else {
-      if (hover.color) currentColor = hover.color
-
-      if (hover.backgroundColor) {
+      if (hover.backgroundColor != null) {
         currentBackground = hover.backgroundColor
       }
-
-      if (hover.borderColor) {
+      if (hover.borderColor != null) {
         currentBorderColor = hover.borderColor
       }
-
-      if (shadow.hover) {
-        currentShadow = makeShadow(shadow.hover)
+      if (props.error) {
+        currentShadow = makeShadow(
+          shadow.errorHover || shadow.error || {}
+        )
+      } else {
+        currentShadow = makeShadow(
+          shadow.hover || shadow.normal || {}
+        )
       }
     }
-  }
 
-  if (isFocused.value && props.enabled) {
-    if (focus.color) currentColor = focus.color
-
-    if (focus.backgroundColor) {
-      currentBackground = focus.backgroundColor
+    // Focus mengalahkan hover, tetapi tetap menggunakan error shadow jika error.
+    if (isFocused.value) {
+      if (focus.color != null) {
+        currentColor = focus.color
+      }
+      if (focus.backgroundColor != null) {
+        currentBackground = focus.backgroundColor
+      }
+      if (focus.borderColor != null) {
+        currentBorderColor = focus.borderColor
+      }
+      currentShadow = makeShadow(
+        props.error
+          ? (shadow.error || {})
+          : (shadow.focus || shadow.normal || {})
+      )
     }
 
-    if (focus.borderColor) {
-      currentBorderColor = focus.borderColor
-    }
-
-    if (shadow.focus) {
-      currentShadow = makeShadow(shadow.focus)
+    // Error selalu mempertahankan border error.
+    if (props.error) {
+      currentBorderColor = APP_COLORS?.borderError || '#dc3545'
+      if (!isFocused.value) {
+        currentShadow = makeShadow(
+          isHovered.value
+            ? (shadow.errorHover || shadow.error || {})
+            : (shadow.error || {})
+        )
+      }
     }
   }
 
@@ -682,7 +684,7 @@ const dropdownStyle = computed(() => {
     fontWeight: font.weight,
     fontStyle: font.style,
     color: currentColor,
-    backgroundColor: currentBackground,
+    background: currentBackground,
     borderColor: currentBorderColor,
     borderWidth: border.width,
     borderStyle: border.style,
@@ -833,6 +835,7 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
+
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -845,6 +848,7 @@ defineExpose({
   display: inline-block;
   width: 100%;
 }
+
 
 .dropdown-non-editable {
   position: relative;
@@ -924,9 +928,10 @@ defineExpose({
 
   width: 16px;
   height: 16px;
-  
+
   cursor: nwse-resize;
-  background: v-bind('APP_COLORS.bgPrimary || "#ffffff"'); /* Tutupi lekukan scrollbar */
+  background: v-bind('APP_COLORS.bgPrimary || "#ffffff"');
+  /* Tutupi lekukan scrollbar */
   border-top-left-radius: 4px;
   touch-action: none;
   user-select: none;
@@ -948,15 +953,15 @@ defineExpose({
 /* ITEM TERPILIH */
 .custom-option-item.is-selected {
   font-weight: 600;
-  background:  v-bind('APP_COLORS.bgGradSelected') !important ;
-  color:  v-bind('APP_COLORS.bgGradTextSelected') !important ;
+  background: v-bind('APP_COLORS.bgGradSelected') !important;
+  color: v-bind('APP_COLORS.bgGradTextSelected') !important;
 }
 
 /* HOVER & ACTIVE STATE */
 .custom-option-item:hover,
 .custom-option-item.is-active {
-  background:  v-bind('APP_COLORS.bgGradHover') !important ;
-  color:  v-bind('APP_COLORS.bgGradTextHover') !important ;
+  background: v-bind('APP_COLORS.bgGradHover') !important;
+  color: v-bind('APP_COLORS.bgGradTextHover') !important;
 }
 
 
@@ -988,3 +993,5 @@ defineExpose({
   margin-top: 4px;
 }
 </style>
+
+ 

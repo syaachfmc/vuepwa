@@ -69,9 +69,11 @@ function handleSave() {
 }
 
 function handleReset() {
+  
   resetToOriginal()
   if (SelectedRowStore.selectedRow.value) {
     Object.assign(SelectedRowStore.selectedRow.value, form)
+
   }
   resetKey.value++
 }
