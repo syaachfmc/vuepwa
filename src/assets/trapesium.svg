@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position: absolute; pointer-events: none;">
+    <defs>
+        <clipPath id="trapesium-rounded" clipPathUnits="objectBoundingBox">
+            <path d="M 0.02,0 
+                     H 0.98 
+                     Q 1,0 0.97,0.08 
+                     L 0.82,0.92 
+                     Q 0.80,1 0.76,1 
+                     H 0.24 
+                     Q 0.20,1 0.18,0.92 
+                     L 0.03,0.08 
+                     Q 0,0 0.02,0 Z" />
+        </clipPath>
+    </defs>
+</svg>

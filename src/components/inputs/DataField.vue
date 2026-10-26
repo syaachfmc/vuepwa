@@ -236,7 +236,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 180px;
+  
   margin-bottom: 10px;
 }
 

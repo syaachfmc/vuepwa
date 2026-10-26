@@ -12,7 +12,7 @@
       </div>
       <div class="divrow">
         <DataField id="12" type="text" :reset-key="resetKey"   />
-        <DataField id="13" type="text" :reset-key="resetKey"   />
+        <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px' , height: '32px'}"  />
         <DataField id="15" type="text" :reset-key="resetKey"   />
         
       </div>      

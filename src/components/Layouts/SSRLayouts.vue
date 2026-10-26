@@ -1,20 +1,6 @@
 <template>
-    <!-- 1. SVG ClipPath (Tetap di atas) -->
-    <svg width="0" height="0" style="position: absolute; pointer-events: none;">
-        <defs>
-            <clipPath id="trapesium-rounded" clipPathUnits="objectBoundingBox">
-                <path d="M 0.02,0 
-                         H 0.98 
-                         Q 1,0 0.97,0.08 
-                         L 0.82,0.92 
-                         Q 0.80,1 0.76,1 
-                         H 0.24 
-                         Q 0.20,1 0.18,0.92 
-                         L 0.03,0.08 
-                         Q 0,0 0.02,0 Z" />
-            </clipPath>
-        </defs>
-    </svg>
+    <!-- 1. SVG ClipPath (Tetap di atas) Render raw SVG string secara inline -->
+<div v-html="trapesiumSvgRaw" ></div>
 
     <div class="app-layout" :class="{ 'is-resizing': isResizing }">
 
@@ -104,6 +90,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
+import trapesiumSvgRaw from '../../assets/trapesium.svg?raw'
 import { APP_COLORS } from '../../constants/colors.js'
 import SideBarTable from '../../components/Data/SideBarTable.vue'
 import POInformation from '../../components/Layouts/SSRPages/PO.vue'
