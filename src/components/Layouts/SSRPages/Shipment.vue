@@ -2,7 +2,7 @@
   <div class="shipment-page">
     <div class="form-container">
 
-      <ContainerB>
+      <ContainerB title="Shipment">
         <div class="divrow">
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
@@ -13,20 +13,29 @@
           <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '810px', height: '32px' }" multiline />
         </div>
       </ContainerB>
-      <ContainerB>
+      <ContainerB title="PO">
         <div class="divrow">
           <DataField id="12" type="text" :reset-key="resetKey" />
           <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
-          <DataField id="15" type="text" :reset-key="resetKey" />
+          <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
         </div>
         <div class="divrow">
           <DataField id="16" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('16')" />
         </div>
       </ContainerB>
-      <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
-
-      <!-- Menggunakan fungsi helper langsung dengan ID kolom -->
-      <DataField id="16" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('4')" :editable="true" />
+      <ContainerB title="RSR">
+        <div class="divrow">
+          <DataField id="6" type="text" :reset-key="resetKey" />
+          <DataField id="7" type="date" :reset-key="resetKey" />
+          <DataField id="8" type="date" :reset-key="resetKey" />
+        </div>
+        <div class="divrow">
+          <DataField id="38" type="text" :reset-key="resetKey" />
+          <DataField id="39" type="text" :reset-key="resetKey" />
+          <DataField id="40" type="text" :reset-key="resetKey" />
+          <DataField id="41" type="text" :reset-key="resetKey" />
+        </div>
+      </ContainerB>
     </div>
 
     <div class="action-buttons">
@@ -113,7 +122,7 @@ function handleReset() {
 
 .form-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: wrap;
   gap: 12px;
   overflow-x: auto;
