@@ -18,6 +18,7 @@
       v-model="modelValue"
       :type="type === 'number' ? 'number' : 'text'"
       :reset-key="resetKey"
+      :width="width"
       v-bind="$attrs"
     />
 
@@ -28,6 +29,7 @@
       v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'"
       :reset-key="resetKey"
+      :width="width"
       v-bind="$attrs"
     />
 
@@ -39,6 +41,7 @@
       :options="options"
       :editable="editable"
       :reset-key="resetKey"
+      :width="width"
       v-bind="$attrs"
     />
 
@@ -49,6 +52,7 @@
       v-model="modelValue"
       :type="type"
       class="custom-input"
+      :style="{ width: customWidth }"
       v-bind="$attrs"
     />
   </div>
@@ -113,6 +117,11 @@ const props = defineProps({
   noLabel: {
     type: Boolean,
     default: false
+  },
+  // Prop width dengan default 70px
+  width: {
+    type: [String, Number],
+    default: '150px'
   }
 })
 
@@ -126,6 +135,11 @@ const tooltipStyle = ref({
 })
 
 let tooltipTimer = null
+
+// Helper untuk format lebar di elemen fallback
+const customWidth = computed(() => {
+  return typeof props.width === 'number' ? `${props.width}px` : props.width
+})
 
 // Binding ke store
 const modelValue = computed({
@@ -236,7 +250,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  
   margin-bottom: 10px;
 }
 
@@ -251,7 +264,7 @@ onBeforeUnmount(() => {
   position: fixed;
   z-index: 99999;
 
-  max-width: min(320px, calc(100vw - 16px));
+  max-width: min(220px, calc(100vw - 16px));
   padding: 7px 10px;
 
   color: #222;

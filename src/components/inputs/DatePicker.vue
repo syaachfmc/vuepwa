@@ -1,10 +1,12 @@
 <template>
-  <div class="datepicker-wrapper">
-    <!-- Dirty Badge muncul otomatis jika nilai berubah dari nilai awal -->
+  <!-- Buka style binding untuk menerima custom width -->
+  <div class="datepicker-wrapper" :style="{ width: customWidth }">
+    <!-- Dirty Badge -->
     <span v-if="isDirty" class="dirty-badge" title="Data telah diubah"></span>
 
     <VueDatePicker 
       v-model="internalValue" 
+       
       :teleport="teleport" 
       :formats="formats" 
       :placeholder="placeholder"
@@ -12,6 +14,7 @@
       :auto-apply="autoApply" 
       :text-input="true"
       :clearable="true"
+      
       />
   </div>
 </template>
@@ -49,36 +52,43 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  // Reset key opsional jika baris/data diganti di parent
   resetKey: {
     type: [String, Number],
     default: 0
+  },
+  // Tambahkan prop width dengan default '70px'
+  width: {
+    type: String,
+    default: '10px'
   }
+})
+
+// Konversi nilai width agar fleksibel (misal jika user passing angka 200 atau string '200px')
+const customWidth = computed(() => {
+  if (typeof props.width === 'number') {
+    return `${props.width}px`
+  }
+  return props.width
 })
 
 const emit = defineEmits(['update:modelValue'])
 
-// Helper untuk menyamakan format pembanding (ISO String / timestamp)
 function normalizeDate(val) {
   if (!val) return ''
   const dateObj = val instanceof Date ? val : new Date(val)
   return isNaN(dateObj.getTime()) ? String(val) : dateObj.toISOString()
 }
 
-// Simpan nilai awal untuk pembanding dirty state
 const initialValue = ref(normalizeDate(props.modelValue))
 
-// Hitung status dirty secara mandiri
 const isDirty = computed(() => {
   return normalizeDate(props.modelValue) !== initialValue.value
 })
 
-// Set baseline saat komponen pertama di-mount
 onMounted(() => {
   initialValue.value = normalizeDate(props.modelValue)
 })
 
-// Reset baseline jika parent mengubah resetKey (misal ganti baris data)
 watch(
   () => props.resetKey,
   () => {
@@ -87,7 +97,6 @@ watch(
   { flush: 'post' }
 )
 
-// Menangani sinkronisasi tipe data untuk VueDatePicker
 const internalValue = computed({
   get: () => {
     if (!props.modelValue) return null
@@ -100,7 +109,6 @@ const internalValue = computed({
   }
 })
 
-// Expose fungsi reset jika ingin dipanggil manual oleh parent
 function resetOriginalValue() {
   initialValue.value = normalizeDate(props.modelValue)
 }
@@ -114,7 +122,8 @@ defineExpose({
 .datepicker-wrapper {
   position: relative;
   display: inline-block;
-  width: fit-content;
+  /* Atur agar inner component VueDatePicker ikut memenuhi wrapper */
+  box-sizing: border-box;
 
   --dirty-badge-bg: v-bind('APP_COLORS.dirtyBadgeBg');
   --dirty-badge-border: v-bind('APP_COLORS.dirtyBadgeBorder');
@@ -122,5 +131,4 @@ defineExpose({
 }
 
  
- 
-</style> 
+</style>

@@ -15,9 +15,7 @@
 
 }
 
-.dp--input-wrap {
-   width: 180px;
-}
+
 
 .dp--input:hover {
    box-shadow: inset 0 2px 4px 0 var(--color-shadowColorHover);
