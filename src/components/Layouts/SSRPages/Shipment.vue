@@ -7,10 +7,10 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('4')" />
+          <DataField id="4" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('4')" :width="'10px'"/>
         </div>
         <div class="divrow">
-          <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '810px', height: '32px' }" multiline />
+          <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '780px', height: '32px' }" multiline />
         </div>
       </ContainerB>
       <ContainerB title="PO">
