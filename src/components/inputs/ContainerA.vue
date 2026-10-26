@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
- import { APP_COLORS } from '../constants/colors.js' // Import variabel warna umum
+ import { APP_COLORS } from '../../constants/colors.js' // Import variabel warna umum
 
 </script>
 
@@ -20,5 +20,6 @@
         border-width: 1px;
         border-color: rgba(203, 203, 203, 0.408);
         border-style: solid;
+        border-radius: 6px;
     }
 </style>

@@ -1,21 +1,28 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      <div class="divrow">
-        <DataField id="2" type="text" :reset-key="resetKey" :font="{weight:'800'}"  />
-        <DataField id="5" type="date" :reset-key="resetKey"   />
-        <DataField id="3" type="text" :reset-key="resetKey"   />
-        <DataField id="4" type="text" :reset-key="resetKey"   />                        
-      </div>
-      <div class="divrow">
-        <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '810px', height: '32px' }" multiline />
-      </div>
-      <div class="divrow">
-        <DataField id="12" type="text" :reset-key="resetKey"   />
-        <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px' , height: '32px'}"  />
-        <DataField id="15" type="text" :reset-key="resetKey"   />
-        
-      </div>      
+
+      <ContainerB>
+        <div class="divrow">
+          <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
+          <DataField id="5" type="date" :reset-key="resetKey" />
+          <DataField id="3" type="text" :reset-key="resetKey" />
+          <DataField id="4" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('4')" />
+        </div>
+        <div class="divrow">
+          <DataField id="9" type="text" :reset-key="resetKey" :size="{ width: '810px', height: '32px' }" multiline />
+        </div>
+      </ContainerB>
+      <ContainerB>
+        <div class="divrow">
+          <DataField id="12" type="text" :reset-key="resetKey" />
+          <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
+          <DataField id="15" type="text" :reset-key="resetKey" />
+        </div>
+        <div class="divrow">
+          <DataField id="16" type="dropdown" :reset-key="resetKey" :options="getDataListFromColumn('16')" />
+        </div>
+      </ContainerB>
       <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey" />
 
       <!-- Menggunakan fungsi helper langsung dengan ID kolom -->
@@ -32,8 +39,11 @@
 <script setup>
 import { watch, ref, nextTick } from 'vue'
 import DataField from '../../inputs/DataField.vue'
-import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 
+import ContainerA from '../../inputs/ContainerA.vue'
+import ContainerB from '../../inputs/ContainerB.vue'
+
+import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
@@ -125,9 +135,10 @@ function handleReset() {
   display: flex;
   flex-direction: column;
 }
+
 .divrow {
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
   gap: 10px;
 }
 </style>
