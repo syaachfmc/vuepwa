@@ -38,7 +38,7 @@
       v-else-if="type === 'dropdown'"
       :id="`col_${id}`"
       v-model="modelValue"
-      :options="options"
+      :options="Array.isArray(options) ? options : options.value"
       :editable="editable"
       :reset-key="resetKey"
       :width="width"
