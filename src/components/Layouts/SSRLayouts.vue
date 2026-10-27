@@ -91,7 +91,7 @@
 
                 <button class="status-button" @click="maximizeSidebar">
                     Maximize
-                </button>
+                </button> 
             </div>
         </footer>
 
