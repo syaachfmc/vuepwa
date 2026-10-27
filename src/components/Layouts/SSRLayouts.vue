@@ -1,6 +1,6 @@
 <template>
     <!-- 1. SVG ClipPath (Tetap di atas) Render raw SVG string secara inline -->
-<div v-html="trapesiumSvgRaw" ></div>
+    <div v-html="trapesiumSvgRaw"></div>
 
     <div class="app-layout" :class="{ 'is-resizing': isResizing }">
 
@@ -25,7 +25,7 @@
             <!-- RESIZE HANDLE -->
             <div v-if="!isSidebarFullWidth" class="resize-handle" :class="{ active: isResizing }"
                 title="Drag untuk mengatur lebar. Double-click untuk full width." @pointerdown="startResize"
-                @dblclick="toggleSidebarFullWidth">
+                @dblclick="toggleSidebarWidth">
                 <span class="resize-indicator"></span>
             </div>
 
@@ -80,9 +80,19 @@
                 }}
             </span>
 
-            <button class="status-button" @click="toggleSidebarFullWidth">
-                {{ isSidebarFullWidth ? 'Restore Sidebar' : 'Full Width' }}
-            </button>
+            <div>
+                <button class="status-button" @click="minimizeSidebar">
+                    Minimize
+                </button>
+
+                <button class="status-button" @click="restoreSidebar">
+                    Restore
+                </button>
+
+                <button class="status-button" @click="maximizeSidebar">
+                    Maximize
+                </button>
+            </div>
         </footer>
 
     </div>
@@ -203,17 +213,31 @@ function stopResize() {
     window.removeEventListener('pointercancel', stopResize)
 }
 
-function toggleSidebarFullWidth() {
+
+function minimizeSidebar() {
     stopResize()
 
     if (!isSidebarFullWidth.value) {
         previousSidebarWidth.value = sidebarWidth.value
-        isSidebarFullWidth.value = true
-    } else {
-        isSidebarFullWidth.value = false
-        sidebarWidth.value = previousSidebarWidth.value
     }
+
+    isSidebarFullWidth.value = false
+    sidebarWidth.value = 0
 }
+
+function restoreSidebar() {
+    stopResize()
+
+    isSidebarFullWidth.value = false
+    sidebarWidth.value = 200
+}
+
+function maximizeSidebar() {
+    stopResize()
+
+    isSidebarFullWidth.value = true
+}
+
 
 // ========================================
 // OBSERVER UNTUK TABULATOR AUTORESIZE
@@ -238,34 +262,34 @@ onBeforeUnmount(() => {
 // ----------HANDLE LOGOUT-------------
 
 const props = defineProps({
-  user: {
-    type: Object,
-    required: true
-  },
-  token: {
-    type: String,
-    required: true
-  }
+    user: {
+        type: Object,
+        required: true
+    },
+    token: {
+        type: String,
+        required: true
+    }
 });
 const emit = defineEmits(["logout-success"]);
 const loading = ref(false);
 const errorMessage = ref("");
 
 async function handleLogout() {
-  loading.value = true;
-  errorMessage.value = "";
+    loading.value = true;
+    errorMessage.value = "";
 
-  try {
-    if (props.token) {
-      await logout(props.token);
+    try {
+        if (props.token) {
+            await logout(props.token);
+        }
+    } catch (error) {
+        console.error("Logout server gagal:", error);
+    } finally {
+        sessionStorage.removeItem("authToken");
+        loading.value = false;
+        emit("logout-success");
     }
-  } catch (error) {
-    console.error("Logout server gagal:", error);
-  } finally {
-    sessionStorage.removeItem("authToken");
-    loading.value = false;
-    emit("logout-success");
-  }
 }
 
 </script>
@@ -318,7 +342,7 @@ async function handleLogout() {
     padding: 6px 12px;
     margin-bottom: 4px;
 }
- 
+
 .shipment-no-title {
     font-weight: bold;
     font-size: 150%;

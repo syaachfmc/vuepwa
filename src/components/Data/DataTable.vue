@@ -175,13 +175,8 @@ function buildColumns(result) {
     .map((title, index) => {
       const rawType = String(result.columnTypes[index] || 'string').trim().toLowerCase();
 
-      if (rawType.includes('hidden')) {
-        return null;
-      }
-
       const columnID = result.columnIDs[index] || `col_${index + 1}`;
       const tooltips = result.columnDescriptions[index] || '';
-      const type = rawType.replace('hidden', '').trim() || 'string';
 
       generatedColumns.push({
         id: columnID,
@@ -189,6 +184,12 @@ function buildColumns(result) {
         tooltips: String(tooltips || title || columnID)
       });
 
+      if (rawType.includes('hidden')) {
+        return null;
+      }
+
+      const type = rawType.replace('hidden', '').trim() || 'string';
+      
       const isFrozen = frozenIndexes.includes(index);
 
       const column = {

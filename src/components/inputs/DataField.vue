@@ -155,10 +155,10 @@ const modelValue = computed({
 
 // Judul kolom
 const columnTitle = computed(() => {
+  
   const col = SelectedRowStore.columns.value?.find(
     c => String(c.id) === String(props.id)
-  )
-
+  ) 
   return col ? col.title : ''
 })
 
@@ -249,12 +249,13 @@ onBeforeUnmount(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 10px;
+  gap: 2px;
+  margin-bottom: 5px;
 }
 
 .label {
   cursor: help;
+  font-size: 1em;
 }
 </style>
 

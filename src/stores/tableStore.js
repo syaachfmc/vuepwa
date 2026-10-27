@@ -16,7 +16,7 @@ export const TableStore = {
 
   // Helper untuk mengambil opsi unik berdasarkan columnID (string/numeric)
   getUniqueColumnOptions(columnId) {
-    console.log('Fetching unique options for columnId:', columnId)
+
     const keyStr = String(columnId)
 
     // Kembalikan dari cache jika sudah pernah dihitung sebelumnya

@@ -111,7 +111,7 @@ async function getSelectedDataGSheet(rowID) {
 function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
-    console.log(selectedRowID.value);
+    console.log("selectedRowID",selectedRowID.value);
     getSelectedDataGSheet(selectedRowID.value);
 }
 </script>

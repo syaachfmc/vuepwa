@@ -7,22 +7,37 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionList(4)" :width="'10px'"/>
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionList(4)" :width="'10px'" />
         </div>
         <div class="divrow">
-          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionList('9')" :size="{ width: '780px', height: '32px' }" multiline />
+          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionList('9')"
+            :size="{ width: '780px', height: '32px' }" multiline />
         </div>
       </ContainerB>
-      <ContainerB title="PO">
-        <div class="divrow">
-          <DataField id="12" type="text" :reset-key="resetKey" />
-          <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
-          <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
-        </div>
-        <div class="divrow">
-          <DataField id="16" type="dropdown" :reset-key="resetKey" editable :options="optionList('16')" />
-        </div>
-      </ContainerB>
+
+      <div class="divrow">
+        <ContainerB title="PO">
+          <div class="divrow">
+            <DataField id="12" type="text" :reset-key="resetKey" />
+            <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
+            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
+          </div>
+          <div class="divrow">
+            <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable :options="optionList('16')" />
+          </div>
+        </ContainerB>
+        <ContainerB title="Delivery Term">
+          <div class="divrow">
+            <DataField id="38" type="text" :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"/>
+            <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }"/>
+          </div>
+          <div class="divrow">
+            <DataField id="40" type="text" :reset-key="resetKey" />
+          </div>
+        </ContainerB>
+
+      </div>
+
       <ContainerB title="RSR">
         <div class="divrow">
           <DataField id="6" type="text" :reset-key="resetKey" />
@@ -30,9 +45,7 @@
           <DataField id="8" type="date" :reset-key="resetKey" />
         </div>
         <div class="divrow">
-          <DataField id="38" type="text" :reset-key="resetKey" />
-          <DataField id="39" type="text" :reset-key="resetKey" />
-          <DataField id="40" type="text" :reset-key="resetKey" />
+
           <DataField id="41" type="text" :reset-key="resetKey" />
         </div>
       </ContainerB>
@@ -55,7 +68,7 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
-const {optionList} = useTableHelpers()
+const { optionList } = useTableHelpers()
 
 
 // Import helper
@@ -122,12 +135,13 @@ function handleReset() {
 
 .form-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 12px;
   overflow-x: auto;
   border: 1px solid #ccc;
   padding: 8px;
+
 }
 
 .action-buttons {
@@ -149,5 +163,6 @@ function handleReset() {
   display: flex;
   flex-direction: row;
   gap: 10px;
+ 
 }
 </style>
