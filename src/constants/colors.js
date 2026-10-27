@@ -19,7 +19,9 @@ export const APP_COLORS = {
   // --- WARNA AKSEN ---
   textPrimaryAksen: 'rgba(0, 81, 173, 0.91)',
   textSecondaryAksen: 'rgba(120, 0, 219, 0.91)',
-
+  textPrimaryAksen20: 'rgba(0, 81, 173, 0.2)',
+  textSecondaryAksen20: 'rgba(120, 0, 219, 0.2)',
+  
   // --- WARNA BORDER ---
   borderDefault: 'rgba(198, 199, 219, 0.82)',
   borderHover: 'rgba(119, 119, 119, 1)',

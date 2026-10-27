@@ -7,10 +7,10 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionList(4)" :width="'10px'" />
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList(4)" :width="'10px'" />
         </div>
         <div class="divrow">
-          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionList('9')"
+          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9')"
             :size="{ width: '780px', height: '32px' }" multiline />
         </div>
       </ContainerB>
@@ -23,7 +23,7 @@
             <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
           </div>
           <div class="divrow">
-            <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable :options="optionList('16')" />
+            <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable :options="optionDataList('16')" />
           </div>
         </ContainerB>
         <ContainerB title="Delivery Term">
@@ -68,11 +68,9 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
-const { optionList } = useTableHelpers()
+const { optionDataList } = useTableHelpers()
 
-
-// Import helper
-const { getDataListFromColumn } = useTableHelpers()
+ 
 
 const isSwitchingRow = ref(false)
 const resetKey = ref(0)

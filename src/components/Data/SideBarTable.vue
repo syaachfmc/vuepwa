@@ -36,7 +36,7 @@ const config = ref({
     RowIDColumn: 'A',
     ProjectID: '25-1808',
     ProjectIDColumn: 'B',
-    FrozenColumnIndex: [0, 2],
+    FrozenColumnIndex: ['2'],
     tableDateFormat: 'dd MMM yy'
 });
 

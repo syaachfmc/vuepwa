@@ -48,13 +48,20 @@
           <button type="button" class="filter-button" :class="{ 'wrap-active': wrapText }" @click="toggleWrap"
             :title="wrapText ? `Don't wrap text in data cell` : `Wrap text in data cell`">
             <AppIcon :name="!wrapText ? 'WrapText' : 'Text'" :size="12" />
-            
+          </button>
+
+          <button type="button" class="filter-button" :class="{ 'filter-active': freezeColumns }"
+            @click="toggleFrozenColumns" :title="freezeColumns ? 'Unfreeze columns' : 'Freeze columns'">
+            <AppIcon :name="freezeColumns ? 'lock' : 'lock-open'" :size="12" />
           </button>
 
           <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
             :title="loading ? 'Loading...' : 'Refresh'">
             <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
           </button>
+
+
+
         </div>
       </div>
     </div>
@@ -77,6 +84,7 @@ import { APP_COLORS } from '../../constants/colors.js';
 import AppIcon from './../AppIcon.vue';
 import { SelectedRowStore } from '../../stores/selectedRowStore.js';
 import { TableStore } from '../../stores/tableStore.js';
+import { pageSidebarWidth } from '../../stores/constStore.js'
 
 const props = defineProps({
   config: {
@@ -100,6 +108,7 @@ const lastUpdated = ref('');
 const tableElement = ref(null);
 const showFilters = ref(false);
 const wrapText = ref(false);
+const freezeColumns = ref(true);
 
 const sheetData = ref({
   status: 'loading',
@@ -137,6 +146,15 @@ function toggleWrap() {
   }
 }
 
+function toggleFrozenColumns() {
+  freezeColumns.value = !freezeColumns.value;
+
+  if (!table || sheetData.value.status !== 'success') return;
+
+  const columns = buildColumns(sheetData.value);
+  table.setColumns(columns);
+}
+
 async function toggleFilters() {
   showFilters.value = !showFilters.value;
 
@@ -166,7 +184,7 @@ function clearAllFilters() {
 
 function buildColumns(result) {
   const frozenIndexes = Array.isArray(props.config.FrozenColumnIndex)
-    ? props.config.FrozenColumnIndex
+    ? props.config.FrozenColumnIndex.map(id => String(id))
     : [];
 
   const generatedColumns = [];
@@ -189,8 +207,10 @@ function buildColumns(result) {
       }
 
       const type = rawType.replace('hidden', '').trim() || 'string';
-      
-      const isFrozen = frozenIndexes.includes(index);
+
+      const isFrozen =
+        freezeColumns.value &&
+        frozenIndexes.includes(String(columnID));
 
       const column = {
         title: String(title || columnID),
@@ -206,6 +226,7 @@ function buildColumns(result) {
           : getSorter(type),
         headerHozAlign: 'center',
         maxWidth: 500,
+        width: isFrozen ? pageSidebarWidth.value : undefined,
         widthGrow: 0,
         tooltip: true,
         headerWordWrap: true,
@@ -415,7 +436,7 @@ async function renderTable() {
       data,
       columns,
 
-      
+
       selectableRows: 1,
       layout: 'fitData',
       autoResize: false,
@@ -907,18 +928,18 @@ onBeforeUnmount(() => {
   height: auto;
   min-height: 0;
   background: v-bind('APP_COLORS.bgGradNormal');
-  color:  v-bind('APP_COLORS.bgGradTextNormal');
+  color: v-bind('APP_COLORS.bgGradTextNormal');
 }
 
 .data-table :deep(.tabulator-row:hover) {
   background: v-bind('APP_COLORS.bgGradHover');
-  color:  v-bind('APP_COLORS.bgGradTextHover');
-  
+  color: v-bind('APP_COLORS.bgGradTextHover');
+
 }
 
 .data-table :deep(.tabulator-row.tabulator-selected) {
   background: v-bind('APP_COLORS.bgGradSelected');
-  color:  v-bind('APP_COLORS.bgGradTextSelected')
+  color: v-bind('APP_COLORS.bgGradTextSelected')
 }
 
 .data-table :deep(.tabulator-cell) {
@@ -926,7 +947,7 @@ onBeforeUnmount(() => {
   white-space: normal;
   background: transparent !important;
   border: 1px dotted v-bind('APP_COLORS.borderDefault');
-  
+
 }
 
 .data-table :deep(.tabulator-col-content) {
@@ -951,7 +972,7 @@ onBeforeUnmount(() => {
 
 .data-table :deep(.tabulator-cell.tabulator-frozen) {
   background: v-bind('APP_COLORS.bgGradNormal') !important;
-  color:  v-bind('APP_COLORS.bgGradTextNormal') !important;
+  color: v-bind('APP_COLORS.bgGradTextNormal') !important;
 }
 
 .data-table :deep(.tabulator-col.tabulator-frozen) {
@@ -960,12 +981,12 @@ onBeforeUnmount(() => {
 
 .data-table :deep(.tabulator-row:hover .tabulator-cell.tabulator-frozen) {
   background: v-bind('APP_COLORS.bgGradHover') !important;
-  color:  v-bind('APP_COLORS.bgGradTextHover') !important;
+  color: v-bind('APP_COLORS.bgGradTextHover') !important;
 }
 
 .data-table :deep(.tabulator-row.tabulator-selected .tabulator-cell.tabulator-frozen) {
   background: v-bind('APP_COLORS.bgGradSelected') !important;
-  color:  v-bind('APP_COLORS.bgGradTextSelected') !important;
+  color: v-bind('APP_COLORS.bgGradTextSelected') !important;
 }
 
 @media (max-width: 600px) {
@@ -987,28 +1008,37 @@ onBeforeUnmount(() => {
   }
 }
 
+/* Garis sisi kiri kolom frozen */
+.data-table :deep(.tabulator-frozen) {
+  border-left: 1px solid v-bind('APP_COLORS.textPrimaryAksen20') !important;
+  border-right: 1px solid v-bind('APP_COLORS.textPrimaryAksen20') !important;
+
+}
+
+
+
 :global(.custom-tooltip) {
-position: fixed;
-z-index: 99999;
+  position: fixed;
+  z-index: 99999;
 
-max-width: min(320px, calc(100vw - 16px));
-padding: 7px 10px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 7px 10px;
 
-color: #222;
-background: #fff;
+  color: #222;
+  background: #fff;
 
-border: 1px solid #ccc;
-border-radius: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 
-font-family: Arial, sans-serif;
-font-size: 12px;
-font-weight: normal;
-line-height: 1.5;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.5;
 
-white-space: pre-wrap;
-overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 
-box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
-pointer-events: none;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
+  pointer-events: none;
 }
 </style>

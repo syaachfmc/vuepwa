@@ -7,7 +7,7 @@ import { computed } from 'vue'
 export function useTableHelpers() {
   const optionCache = new Map()
 
-  function optionList(id) {
+  function optionDataList(id) {
     const key = String(id)
 
     if (!optionCache.has(key)) {
@@ -21,6 +21,6 @@ export function useTableHelpers() {
   }
 
   return {
-    optionList
+    optionDataList
   }
 }

@@ -91,7 +91,7 @@
 
                 <button class="status-button" @click="maximizeSidebar">
                     Maximize
-                </button> 
+                </button>
             </div>
         </footer>
 
@@ -108,20 +108,26 @@ import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import Shipment from '../../components/Layouts/SSRPages/Shipment.vue'
 import Dates from '../../components/Layouts/SSRPages/Dates.vue'
 import { logout } from '../../api/auth.js'
+import { pageSidebarWidth } from '../../stores/constStore.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
 // ========================================
 const sidebarRef = ref(null)
-const defaultSidebarWidth = 320 // Disesuaikan agar Tabulator cukup ruang awal
-const minSidebarWidth = 150
-const maxSidebarWidth = 800
+const defaultSidebarWidth = 200 // Disesuaikan agar Tabulator cukup ruang awal
+const minSidebarWidth = 0
+const maxSidebarWidth = 10000
 
 const sidebarWidth = ref(defaultSidebarWidth)
+pageSidebarWidth.value = defaultSidebarWidth
+
 const previousSidebarWidth = ref(defaultSidebarWidth)
 
 const isSidebarFullWidth = ref(false)
 const isResizing = ref(false)
+
+ 
+
 
 let resizeObserver = null
 
@@ -229,7 +235,7 @@ function restoreSidebar() {
     stopResize()
 
     isSidebarFullWidth.value = false
-    sidebarWidth.value = 200
+    sidebarWidth.value = defaultSidebarWidth
 }
 
 function maximizeSidebar() {
