@@ -16,14 +16,11 @@ import { computed } from 'vue'
  
 
 export function useTableHelpers() {
-
-  // Cache computed berdasarkan ID kolom
   const optionCache = new Map()
 
   function optionList(id) {
     const key = String(id)
 
-    // Gunakan computed yang sudah ada jika ID sama
     if (!optionCache.has(key)) {
       optionCache.set(
         key,
@@ -31,7 +28,7 @@ export function useTableHelpers() {
       )
     }
 
-    return optionCache.get(key)
+    return optionCache.get(key).value
   }
 
   return {

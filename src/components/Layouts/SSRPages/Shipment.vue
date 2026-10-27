@@ -7,10 +7,10 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="option4" :width="'10px'"/>
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionList(4)" :width="'10px'"/>
         </div>
         <div class="divrow">
-          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="getDataListFromColumn('9')" :size="{ width: '780px', height: '32px' }" multiline />
+          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionList('9')" :size="{ width: '780px', height: '32px' }" multiline />
         </div>
       </ContainerB>
       <ContainerB title="PO">
@@ -20,7 +20,7 @@
           <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
         </div>
         <div class="divrow">
-          <DataField id="16" type="dropdown" :reset-key="resetKey" editable :options="getDataListFromColumn('16')" />
+          <DataField id="16" type="dropdown" :reset-key="resetKey" editable :options="optionList('16')" />
         </div>
       </ContainerB>
       <ContainerB title="RSR">
@@ -55,7 +55,7 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
-const {optionList} = useTableHelpers
+const {optionList} = useTableHelpers()
 
 
 // Import helper
