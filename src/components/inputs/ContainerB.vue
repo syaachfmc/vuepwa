@@ -1,4 +1,3 @@
-
 <template>
     <fieldset class="wrapper">
         <legend v-if="title" class="wrapper-title">
@@ -26,7 +25,8 @@ defineProps({
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding: 0px 10px 0px 10px;
+    padding: 10px 10px 0px 10px;
+    margin-top: 0px;
 
     border: 1px solid rgba(203, 203, 203, 0.408);
     border-radius: 6px;
@@ -37,11 +37,14 @@ defineProps({
 .wrapper-title {
     padding: 0 6px;
     margin-left: 5px;
-
+    
     font-size: 1.2em;
-    font-weight: 300;
+    font-weight: 400;
     font-style: italic;
 
-    color: inherit;
+    color: v-bind('APP_COLORS.textSecondaryAksen');
+    
+     text-shadow: 1px 0px 1px rgba(0, 0, 0, 0.116)
+
 }
 </style>

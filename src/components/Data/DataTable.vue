@@ -838,8 +838,9 @@ onBeforeUnmount(() => {
 
 .data-table :deep(.tabulator-col-title) {
   width: 100%;
-  font-weight: bold;
+  font-weight: normal;
   text-align: center;
+  color: v-bind('APP_COLORS.textPrimaryAksen');
 }
 
 .data-table :deep(.cell-scroll) {
