@@ -7,7 +7,7 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="getDataListFromColumn('4')" :width="'10px'"/>
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="option4" :width="'10px'"/>
         </div>
         <div class="divrow">
           <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="getDataListFromColumn('9')" :size="{ width: '780px', height: '32px' }" multiline />
@@ -46,16 +46,16 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick } from 'vue'
+import { watch, ref, nextTick, computed } from 'vue'
 import DataField from '../../inputs/DataField.vue'
 
-import ContainerA from '../../inputs/ContainerA.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
+const {optionList} = useTableHelpers
 
 
 // Import helper
