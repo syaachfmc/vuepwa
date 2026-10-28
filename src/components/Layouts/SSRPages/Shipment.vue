@@ -32,12 +32,13 @@
         </ContainerB>
         <ContainerB title="Delivery Term">
           <div class="divrow">
-            <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" :options="getDropdownOptions('5')" />
+            <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
+              :options="getDropdownOptions('5')" />
             <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
           </div>
           <div class="divrow">
-            <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }"/>
-            <DataField id="41" type="checkbox" :reset-key="resetKey" />       
+            <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" />
+            <DataField id="41" type="checkbox" :reset-key="resetKey" />
           </div>
         </ContainerB>
 
@@ -61,7 +62,7 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onMounted } from 'vue'
+import { watch, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import DataField from '../../inputs/DataField.vue'
 
 import ContainerB from '../../inputs/ContainerB.vue'
@@ -78,18 +79,27 @@ onMounted(() => {
 });
 
 
-
 const { optionDataList } = useTableHelpers()
 
-
-
 const isSwitchingRow = ref(false)
-const resetKey = ref(0)
 
 // Inisialisasi Tracker & Handler
-const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
-  SelectedRowStore.selectedRow.value
-)
+const resetKey = ref(0)
+
+const {
+  form,
+  isDirty,
+  commitOriginal,
+  resetToOriginal,
+  unregister
+} = useFormTracker(SelectedRowStore.selectedRow.value, {
+  refresh: () => resetKey.value++
+})
+
+onBeforeUnmount(() => {
+  unregister()
+})
+
 
 watch(
   () => SelectedRowStore.selectedRow.value,
@@ -134,13 +144,15 @@ function handleReset() {
   resetKey.value++
 }
 </script>
+
+
 <style scoped>
 .shipment-page {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 8px;
- 
+
 }
 
 .form-container {

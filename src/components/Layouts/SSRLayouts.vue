@@ -92,6 +92,18 @@
                 </button>
             </div>
 
+
+
+            <div class="footer-actions">
+                <button class="footer-action-button" @click="handleSave">
+                    Simpan
+                </button>
+
+                <button class="footer-action-button" @click="handleReset">
+                    Reset
+                </button>
+            </div>
+
             <span>
                 {{ isSidebarFullWidth
                     ? 'Sidebar: Full Width'
@@ -110,6 +122,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import trapesiumSvgRaw from '../../assets/trapesium.svg?raw'
+import { saveAllForms, resetAllForms } from '../../composables/useFormTracker.js'
 import { APP_COLORS } from '../../constants/colors.js'
 import SideBarTable from '../../components/Data/SideBarTable.vue'
 import POInformation from '../../components/Layouts/SSRPages/PO.vue'
@@ -306,6 +319,20 @@ async function handleLogout() {
         loading.value = false;
         emit("logout-success");
     }
+}
+
+function handleSave() {
+    const currentData = SelectedRowStore.selectedRow.value
+
+    if (!currentData) return
+
+    saveAllForms(currentData)
+    console.log('Semua form berhasil di-commit.')
+}
+
+function handleReset() {
+    resetAllForms()
+    console.log('Semua form dikembalikan ke nilai awal.')
 }
 
 </script>
