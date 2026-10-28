@@ -140,6 +140,7 @@ function handleReset() {
   flex-direction: column;
   gap: 16px;
   padding: 8px;
+ 
 }
 
 .form-container {

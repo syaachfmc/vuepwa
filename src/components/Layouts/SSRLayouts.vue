@@ -11,7 +11,7 @@
                 {{ loading ? "Memproses..." : "Logout" }}
             </button>
         </header>
-        
+
 
         <!-- BODY -->
         <div class="layout-body" :class="{ 'sidebar-full': isSidebarFullWidth }">
@@ -73,7 +73,25 @@
         </div>
 
         <!-- STATUS BAR -->
-        <footer class="StatusBar">
+        <footer class="footerBar">
+
+            <div class="sidebar-controls">
+                <button class="sidebar-sizer sizer-icon-button" @click="minimizeSidebar" title="Minimize Sidebar"
+                    aria-label="Minimize Sidebar">
+                    <AppIcon name="Minimize2" :size="12" />
+                </button>
+
+                <button class="sidebar-sizer sizer-icon-button" @click="restoreSidebar" title="Restore Sidebar"
+                    aria-label="Restore Sidebar">
+                    <AppIcon name="PanelLeft" :size="12" />
+                </button>
+
+                <button class="sidebar-sizer sizer-icon-button" @click="maximizeSidebar" title="Maximize Sidebar"
+                    aria-label="Maximize Sidebar">
+                    <AppIcon name="Maximize2" :size="12" />
+                </button>
+            </div>
+
             <span>
                 {{ isSidebarFullWidth
                     ? 'Sidebar: Full Width'
@@ -81,19 +99,9 @@
                 }}
             </span>
 
-            <div>
-                <button class="status-button" @click="minimizeSidebar">
-                    Minimize
-                </button>
 
-                <button class="status-button" @click="restoreSidebar">
-                    Restore
-                </button>
 
-                <button class="status-button" @click="maximizeSidebar">
-                    Maximize
-                </button>
-            </div>
+
         </footer>
 
     </div>
@@ -110,6 +118,7 @@ import Shipment from '../../components/Layouts/SSRPages/Shipment.vue'
 import Dates from '../../components/Layouts/SSRPages/Dates.vue'
 import { logout } from '../../api/auth.js'
 import { pageSidebarWidth } from '../../stores/constStore.js'
+import AppIcon from './../AppIcon.vue';
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -127,7 +136,7 @@ const previousSidebarWidth = ref(defaultSidebarWidth)
 const isSidebarFullWidth = ref(false)
 const isResizing = ref(false)
 
- 
+
 
 
 let resizeObserver = null
@@ -317,6 +326,7 @@ async function handleLogout() {
     box-sizing: border-box;
     font-family: "Courier New", monospace;
     background: v-bind('APP_COLORS.bgPrimaryGrad');
+
 }
 
 .app-layout *,
@@ -517,19 +527,21 @@ async function handleLogout() {
 /* ========================================
    STATUS BAR
 ======================================== */
-.StatusBar {
+.footerBar {
     display: flex;
-    flex: 0 0 30px;
-    align-items: center;
+
+    flex: 0 0 100px;
+    align-items: baseline;
     justify-content: space-between;
     gap: 12px;
-    padding: 0 12px;
+    padding: 5px;
     border-top: 1px solid #d1d5db;
     background: #d8dadd;
     font-size: 12px;
+
 }
 
-.status-button {
+.sidebar-sizer {
     padding: 3px 8px;
     border: 1px solid #9ca3af;
     border-radius: 3px;
@@ -539,7 +551,7 @@ async function handleLogout() {
     cursor: pointer;
 }
 
-.status-button:hover {
+.sidebar-sizer:hover {
     background: #e5e7eb;
 }
 
@@ -575,6 +587,24 @@ async function handleLogout() {
     user-select: none !important;
     transition: none !important;
 }
+
+
+.sidebar-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.sidebar-sizer.sizer-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 18px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
 
 /* ========================================
    RESPONSIVE

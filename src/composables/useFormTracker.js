@@ -68,7 +68,7 @@ export function useFormTracker(initialData = {}) {
   }
 
   const resetToOriginal = () => {
-    console.log(initialValues['2'])
+    console.log("initialValues",initialValues['2'])
     
     // Bersihkan formData lama lalu assign kembali nilai asal
     Object.keys(formData).forEach((key) => delete formData[key])
