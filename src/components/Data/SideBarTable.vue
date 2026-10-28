@@ -4,11 +4,7 @@
         <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
 
         <!-- Tampilkan DataTable jika pengguna sudah terotentikasi -->
-        <DataTable 
-            v-else
-            :config="config" 
-            :tableDateFormat="config.tableDateFormat" 
-            @row-selected="handleRowSelected"
+        <DataTable v-else :config="config" :tableDateFormat="config.tableDateFormat" @row-selected="handleRowSelected"
             @relogin="handleRelogin" />
     </main>
 </template>
@@ -16,7 +12,7 @@
 <script setup>
 import { ref } from 'vue';
 import DataTable from './DataTable.vue';
-import Login from'./../Layouts/Login.vue';
+import Login from './../Layouts/Login.vue';
 
 const isLoggedIn = ref(Boolean(sessionStorage.getItem("authToken")));
 
@@ -26,7 +22,7 @@ const selectedDataGSheet = ref('');
 
 const config = ref({
     webAppUrl: 'https://script.google.com/macros/s/AKfycbwvyT0YNOAQLVydiESiBCq-j-kWqQ-95eSnzPI69kkdl8WiOS9fnT-cHbmriUIOgIws/exec',
-    gsheetID:  '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
+    gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
     sheetName: 'Data',
     columnIDRow: 1,
     columnTitleRow: 2,
@@ -64,6 +60,7 @@ async function getSelectedDataGSheet(rowID) {
         return;
     }
 
+
     try {
         const params = new URLSearchParams({
             token: token,
@@ -76,12 +73,14 @@ async function getSelectedDataGSheet(rowID) {
             dataRange: config.value.dataRange,
             RowIDColumn: String(config.value.RowIDColumn),
             RowID: String(rowID),
-            columnIDs: JSON.stringify(['1', '5', '8'])
+            columnIDs: JSON.stringify(['8']),
         });
 
         const response = await fetch(
             `${config.value.webAppUrl}?${params.toString()}`
         );
+
+
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -89,12 +88,14 @@ async function getSelectedDataGSheet(rowID) {
 
         const result = await response.json();
 
+
+
         if (result.status !== 'success') {
             throw new Error(result.error || 'Gagal mengambil data GAS.');
         }
 
         selectedDataGSheet.value = (result.data || [])
-            .map(row => [row['1'], row['8'], row['5']].filter(
+            .map(row => [row['1'], row['8'], row['8']].filter(
                 value => value !== undefined && value !== null && value !== ''
             ).join(' '))
             .join('\r\n');
@@ -108,12 +109,15 @@ async function getSelectedDataGSheet(rowID) {
     }
 }
 
-function handleRowSelected(payload) {
+async function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
-    console.log("selectedRowID",selectedRowID.value);
-    getSelectedDataGSheet(selectedRowID.value);
+    console.log("selectedRowID", selectedRowID.value);
+
+    await getSelectedDataGSheet(selectedRowID.value);
+    console.log("selectedDataGSheet", selectedDataGSheet.value);
 }
+
 </script>
 
 <style scoped>
