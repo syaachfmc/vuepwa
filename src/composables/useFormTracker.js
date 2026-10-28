@@ -110,6 +110,7 @@ export function saveAllForms(currentData) {
 
   trackerRegistry.forEach(tracker => {
     tracker.commitOriginal([], currentData)
+    tracker.refresh?.()
   })
 }
 
