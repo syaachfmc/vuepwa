@@ -1,29 +1,3 @@
-<!-- <template>
-  <VueDatePicker
-    v-model="internalValue"
-    class="my-datepicker"
-    :text-input="true"
-    :clearable="true"
-  />
-</template>
-
-<script setup>
-import { ref } from 'vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
-
-const internalValue = ref(null)
-
- 
-</script>
-
-<style scoped>
-.my-datepicker {
-  width: 250px;
-}
-</style> -->
-
-
 
 <template>
   <div>
@@ -105,4 +79,4 @@ body {
 .myParents {
   background: grey;
 }
-</style>
+</style>  

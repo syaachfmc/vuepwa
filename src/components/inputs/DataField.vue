@@ -45,6 +45,15 @@
       v-bind="$attrs"
     />
 
+    <checkBox
+      v-else-if="type === 'checkbox'"
+      :id="`col_${id}`"
+      v-model="modelValue"
+      :reset-key="resetKey"
+      v-bind="$attrs"  
+      
+    />
+
     <!-- Fallback -->
     <input
       v-else
@@ -78,6 +87,7 @@ import { computed, ref, nextTick, onBeforeUnmount } from 'vue'
 import textbox from '../inputs/textbox.vue'
 import DatePicker from './DatePicker.vue'
 import dropdown from '../inputs/dropdown.vue'
+import checkBox from './checkBox.vue'
 
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 
@@ -122,7 +132,8 @@ const props = defineProps({
   width: {
     type: [String, Number],
     default: '150px'
-  }
+  },
+  
 })
 
 // Tooltip state
@@ -142,16 +153,29 @@ const customWidth = computed(() => {
 })
 
 // Binding ke store
+// Binding ke store
 const modelValue = computed({
   get() {
-    return SelectedRowStore.selectedRow.value?.[String(props.id)] ?? ''
+    const value =
+      SelectedRowStore.selectedRow.value?.[String(props.id)] ?? ''
+
+    // Konversi khusus untuk checkbox
+    if (props.type === 'checkbox') {
+      return value === true ||
+             String(value).toUpperCase() === 'TRUE'
+    }
+
+    // Komponen lainnya tetap menggunakan nilai asli
+    return value
   },
+
   set(val) {
     if (SelectedRowStore.selectedRow.value) {
       SelectedRowStore.selectedRow.value[String(props.id)] = val
     }
   }
 })
+
 
 // Judul kolom
 const columnTitle = computed(() => {
@@ -302,4 +326,6 @@ onBeforeUnmount(() => {
   opacity: 1;
   transform: scaleX(1);
 }
+
+
 </style>

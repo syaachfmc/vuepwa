@@ -7,8 +7,9 @@
           <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
           <DataField id="5" type="date" :reset-key="resetKey" />
           <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable 
-          :options="getDropdownOptions('5')"            :width="'10px'" />
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('5')"
+            :width="'10px'" />
+
         </div>
 
         <div class="divrow">
@@ -31,11 +32,12 @@
         </ContainerB>
         <ContainerB title="Delivery Term">
           <div class="divrow">
-            <DataField id="38" type="text" :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" />
+            <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" :options="getDropdownOptions('5')" />
             <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
           </div>
           <div class="divrow">
-            <DataField id="40" type="text" :reset-key="resetKey" />
+            <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }"/>
+            <DataField id="41" type="checkbox" :reset-key="resetKey" />       
           </div>
         </ContainerB>
 
@@ -47,10 +49,7 @@
           <DataField id="7" type="date" :reset-key="resetKey" />
           <DataField id="8" type="date" :reset-key="resetKey" />
         </div>
-        <div class="divrow">
 
-          <DataField id="41" type="text" :reset-key="resetKey" />
-        </div>
       </ContainerB>
     </div>
 
@@ -77,9 +76,9 @@ onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
   loadDropdownList();
 });
- 
- 
- 
+
+
+
 const { optionDataList } = useTableHelpers()
 
 

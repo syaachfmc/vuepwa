@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkbox</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    input[type="checkbox"] {
+      width: 118px;
+      height: 118px;
+      cursor: pointer;
+    }
+
+    label {
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="check1">
+    <label for="check1">Pilihan pertama</label>
+  </div>
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="check2" checked>
+    <label for="check2">Pilihan kedua</label>
+  </div>
+
+</body>
+</html>
