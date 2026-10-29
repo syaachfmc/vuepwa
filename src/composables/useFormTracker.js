@@ -191,20 +191,26 @@ export function collectDirtyChanges(currentData) {
     if (key.startsWith('__')) return
 
     if (!valuesEqual(currentData[key], savedData[key])) {
-      
-      const value = formatLocalDate(currentData[key])
+      const currentValue = currentData[key]
 
-      changes[key] = safeDeepClone(value)
-
+      // Jika objek Date, ubah menjadi string tanggal lokal.
+      if (currentValue instanceof Date) {
+        changes[key] = formatLocalDate(currentValue)
+      } else {
+        // Tipe data lainnya tetap menggunakan safeDeepClone.
+        changes[key] = safeDeepClone(currentValue)
+      }
 
       console.log(`Perubahan terdeteksi pada kolom ${key}:`, {
         oldValue: savedData[key],
-        newValue: currentData[key]
+        newValue: currentValue
       })
     }
   })
 
   return changes
+
+
 }
 
 //********* chek format data  */
