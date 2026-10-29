@@ -2,21 +2,27 @@
 import { ref, onMounted } from "vue";
 import { login, validateSession } from "../../api/auth.js";
 
-// Tambahkan emit 'close'
 const emit = defineEmits(["login-success", "close"]);
 
-// State Otentikasi & Aplikasi
 const token = ref(sessionStorage.getItem("authToken") || "");
 const user = ref(null);
 const checkingSession = ref(true);
 
-// State Form & Loading
+// State Form
 const username = ref("");
 const password = ref("");
+const projectCode = ref(""); // State untuk Project Code
 const loading = ref(false);
 const errorMessage = ref("");
 
-// --- Handlers ---
+// Daftar Pilihan Project Code
+const projectOptions = [
+  "Proj 01",
+  "25-1808",
+  "25-1812",
+  "18-1206",
+  "Proj 06"
+];
 
 function handleClose() {
   emit("close");
@@ -24,10 +30,17 @@ function handleClose() {
 
 async function handleLogin() {
   errorMessage.value = "";
+
+  if (!projectCode.value) {
+    errorMessage.value = "Silakan pilih Project Code.";
+    return;
+  }
+
   loading.value = true;
 
   try {
-    const result = await login(username.value, password.value);
+    // Kirim username, password, dan projectCode
+    const result = await login(username.value, password.value, projectCode.value);
 
     if (!result.success) {
       errorMessage.value = result.message || "Login gagal.";
@@ -40,6 +53,7 @@ async function handleLogin() {
 
     username.value = "";
     password.value = "";
+    projectCode.value = "";
 
     emit("login-success", { token: result.token, user: result.user });
   } catch (error) {
@@ -76,20 +90,19 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Klik area backdrop akan memicu handleClose -->
   <div class="modal-overlay" @click.self="handleClose">
     <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
 
     <div v-else class="card">
-      <!-- Tombol Close (X) -->
       <button type="button" class="close-btn" @click="handleClose" aria-label="Tutup">
         &times;
       </button>
 
       <h1>Login</h1>
-      <p>Masukkan username dan password.</p>
+      <p>Masukkan akun dan pilih Project Code.</p>
 
       <form @submit.prevent="handleLogin">
+        <!-- Input Username -->
         <label for="username">Username</label>
         <input
           id="username"
@@ -98,6 +111,7 @@ onMounted(async () => {
           required
         />
 
+        <!-- Input Password -->
         <label for="password">Password</label>
         <input
           id="password"
@@ -106,6 +120,15 @@ onMounted(async () => {
           autocomplete="current-password"
           required
         />
+
+        <!-- Dropdown Project Code -->
+        <label for="projectCode">Project Code</label>
+        <select id="projectCode" v-model="projectCode" required>
+          <option value="" disabled>-- Pilih Project Code --</option>
+          <option v-for="proj in projectOptions" :key="proj" :value="proj">
+            {{ proj }}
+          </option>
+        </select>
 
         <p v-if="errorMessage" class="error">
           {{ errorMessage }}
@@ -120,6 +143,19 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Tambahkan styling khusus untuk <select> agar seragam dengan <input> */
+select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* KODE STYLE LAINNYA TETAP SAMA SEPERTI SEBELUMNYA */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -150,15 +186,12 @@ onMounted(async () => {
   width: 100%;
   max-width: 400px;
   padding: 28px;
-  
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  background: var(--color-bgPrimaryGrad);
-  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal);
+  background: var(--color-bgPrimaryGrad, #ffffff);
+  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal, rgba(0,0,0,0.2));
 }
 
-/* Style tombol close X */
 .close-btn {
   position: absolute;
   top: 16px;
@@ -171,8 +204,6 @@ onMounted(async () => {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  width: auto;
-  margin: 0;
 }
 
 .close-btn:hover {
