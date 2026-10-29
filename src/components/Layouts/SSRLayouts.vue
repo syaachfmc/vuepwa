@@ -95,13 +95,15 @@
 
 
             <div class="footer-actions">
-                <button class="footer-action-button" @click="handleSave">
-                    Simpan
+                <button class="footer-action-button" :disabled="saving" @click="handleSave">
+                    {{ saving ? 'Menyimpan...' : 'Simpan' }}
                 </button>
 
-                <button class="footer-action-button" @click="handleReset">
+                <button class="footer-action-button" :disabled="saving" @click="handleReset">
                     Reset
                 </button>
+
+                <span v-if="saveMessage">{{ saveMessage }}</span>
             </div>
 
             <span>
@@ -122,7 +124,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import trapesiumSvgRaw from '../../assets/trapesium.svg?raw'
-import { saveAllForms, resetAllForms } from '../../composables/useFormTracker.js'
+
 import { APP_COLORS } from '../../constants/colors.js'
 import SideBarTable from '../../components/Data/SideBarTable.vue'
 import POInformation from '../../components/Layouts/SSRPages/PO.vue'
@@ -132,6 +134,14 @@ import Dates from '../../components/Layouts/SSRPages/Dates.vue'
 import { logout } from '../../api/auth.js'
 import { pageSidebarWidth } from '../../stores/constStore.js'
 import AppIcon from './../AppIcon.vue';
+import { config } from '../../config/ssrConfig.js'
+import { updateGSheetRow } from '../../api/updateGSheetRow.js'
+import {
+    saveAllForms,
+    collectDirtyChanges,
+    markRowSaved,
+    resetAllForms
+} from '../../composables/useFormTracker.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -321,20 +331,80 @@ async function handleLogout() {
     }
 }
 
-function handleSave() {
+const saving = ref(false)
+const saveMessage = ref('')
+
+async function handleSave() {
+    if (saving.value) return
+
     const currentData = SelectedRowStore.selectedRow.value
 
-    if (!currentData) return
+    if (!currentData || !currentData.__rowID) {
+        saveMessage.value = 'Pilih baris data terlebih dahulu.'
+        return
+    }
 
-    saveAllForms(currentData)
-    console.log('Semua form berhasil di-commit.')
+    const changes = collectDirtyChanges(currentData)
+
+    if (Object.keys(changes).length === 0) {
+        saveMessage.value = 'Tidak ada perubahan untuk disimpan.'
+        return
+    }
+
+    const token = props.token || sessionStorage.getItem('authToken')
+
+    saving.value = true
+    saveMessage.value = ''
+
+    try {
+        await updateGSheetRow({
+            webAppUrl: config.value.webAppUrl,
+            token,
+            GSheetID: config.value.gsheetID,
+            sheetName: config.value.sheetName,
+            dataRange: config.value.dataRange,
+            RowIDColumn: config.value.RowIDColumn,
+            RowID: currentData.__rowID,
+            columnIDRow: config.value.columnIDRow,
+            ProjectID: config.value.ProjectID,
+            ProjectIDColumn: config.value.ProjectIDColumn,
+            changes
+        })
+
+
+        markRowSaved(currentData)
+
+        // Beri tahu DataTable bahwa penyimpanan berhasil.
+        window.dispatchEvent(
+            new CustomEvent('row-data-saved', {
+                detail: {
+                    data: { ...currentData }
+                }
+            })
+        )
+
+        saveMessage.value = 'Data berhasil disimpan.'
+
+
+    } catch (error) {
+        console.error('Gagal menyimpan data:', error)
+        saveMessage.value = `Gagal menyimpan: ${error.message}`
+    } finally {
+        saving.value = false
+    }
 }
 
 function handleReset() {
-    resetAllForms()
-    console.log('Semua form dikembalikan ke nilai awal.')
-}
+    const currentData = SelectedRowStore.selectedRow.value
 
+    if (!currentData || !currentData.__rowID) {
+        saveMessage.value = 'Pilih baris data terlebih dahulu.'
+        return
+    }
+
+    resetAllForms(currentData)
+    saveMessage.value = 'Perubahan lokal dikembalikan ke data tersimpan.'
+}
 </script>
 
 <!-- --------------------------------------------------------------------------------->

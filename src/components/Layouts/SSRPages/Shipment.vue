@@ -101,28 +101,84 @@ onBeforeUnmount(() => {
 })
 
 
+// Snapshot untuk mendeteksi field yang benar-benar berubah
+function cloneFormData(data) {
+  if (data instanceof Date) return new Date(data.getTime())
+
+  if (Array.isArray(data)) {
+    return data.map(item => cloneFormData(item))
+  }
+
+  if (data && typeof data === 'object') {
+    const result = {}
+    Object.keys(data).forEach(key => {
+      result[key] = cloneFormData(data[key])
+    })
+    return result
+  }
+
+  return data
+}
+
+function isSameValue(a, b) {
+  if (a instanceof Date || b instanceof Date) {
+    const dateA = a == null || a === '' ? null : new Date(a).getTime()
+    const dateB = b == null || b === '' ? null : new Date(b).getTime()
+    return dateA === dateB
+  }
+
+  if (a === b) return true
+
+  if (
+    a === null ||
+    b === null ||
+    typeof a !== 'object' ||
+    typeof b !== 'object'
+  ) {
+    return false
+  }
+
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+let lastSyncedForm = {}
+
+// Saat baris yang dipilih berubah
 watch(
   () => SelectedRowStore.selectedRow.value,
   async (newRow) => {
-    if (newRow && Object.keys(newRow).length > 0) {
-      isSwitchingRow.value = true
-      commitOriginal([], newRow)
-      resetKey.value++
+    if (!newRow || Object.keys(newRow).length === 0) return
 
-      await nextTick()
-      isSwitchingRow.value = false
-    }
+    isSwitchingRow.value = true
+
+    commitOriginal([], newRow)
+    lastSyncedForm = cloneFormData(newRow)
+    resetKey.value++
+
+    await nextTick()
+    isSwitchingRow.value = false
   },
   { deep: false, immediate: true }
 )
 
+// Sinkronkan hanya field yang berubah
 watch(
   form,
   (newForm) => {
     if (isSwitchingRow.value) return
-    if (SelectedRowStore.selectedRow.value) {
-      Object.assign(SelectedRowStore.selectedRow.value, newForm)
-    }
+
+    const selectedRow = SelectedRowStore.selectedRow.value
+    if (!selectedRow || Object.keys(selectedRow).length === 0) return
+
+    Object.keys(newForm).forEach(key => {
+      if (key.startsWith('__')) return
+
+      if (!isSameValue(newForm[key], lastSyncedForm[key])) {
+        selectedRow[key] = cloneFormData(newForm[key])
+      }
+    })
+
+    lastSyncedForm = cloneFormData(newForm)
   },
   { deep: true }
 )

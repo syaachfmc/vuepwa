@@ -1,37 +1,60 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      <DataField id="5" type="date" :enable-time="true" :reset-key="resetKey"   />
-      <DataField id="7" type="date" :enable-time="true" :reset-key="resetKey" />
 
-    </div>
-
-    <div class="action-buttons">
-      <button @click="handleSave">Simpan</button>
-      <button @click="handleReset">Reset</button>
-    </div>
+      <ContainerB title="Shipment">
+        <div class="divrow">
+         
+          <DataField id="5" type="date" :reset-key="resetKey" /> 
+          <DataField id="7" type="date" :reset-key="resetKey" />
+          <DataField id="8" type="date" :reset-key="resetKey" />
+        </div>
  
+      </ContainerB>
+    </div>
+    
   </div>
 </template>
 
 <script setup>
-import { watch, ref, nextTick } from 'vue'
+import { watch, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import DataField from '../../inputs/DataField.vue'
-import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 
-import { useFormTracker } from  '../../../composables/useFormTracker.js'
+import ContainerB from '../../inputs/ContainerB.vue'
+
+import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
+import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
-// Import helper
-const { getDataListFromColumn } = useTableHelpers()
+import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
+
+onMounted(() => {
+  // Ambil data dropdown saat komponen dimuat
+  loadDropdownList();
+});
+
+
+const { optionDataList } = useTableHelpers()
 
 const isSwitchingRow = ref(false)
-const resetKey = ref(0)
- 
+
 // Inisialisasi Tracker & Handler
-const { form, isDirty, commitOriginal, resetToOriginal } = useFormTracker(
-  SelectedRowStore.selectedRow.value
-)
+const resetKey = ref(0)
+
+const {
+  form,
+  isDirty,
+  commitOriginal,
+  resetToOriginal,
+  unregister
+} = useFormTracker(SelectedRowStore.selectedRow.value, {
+  refresh: () => resetKey.value++
+})
+
+onBeforeUnmount(() => {
+  unregister()
+})
+
 
 watch(
   () => SelectedRowStore.selectedRow.value,
@@ -59,41 +82,28 @@ watch(
   { deep: true }
 )
 
-function handleSave() {
-  const currentData = SelectedRowStore.selectedRow.value
-  if (currentData) {
-    commitOriginal([], currentData)
-    resetKey.value++
-    console.log('Data Shipment tersimpan:', currentData[2])
-  }
-}
-
-function handleReset() {
-  
-  resetToOriginal()
-  if (SelectedRowStore.selectedRow.value) {
-    Object.assign(SelectedRowStore.selectedRow.value, form)
-
-  }
-  resetKey.value++
-}
+ 
 </script>
+
+
 <style scoped>
 .shipment-page {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 8px;
+
 }
 
 .form-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 12px;
   overflow-x: auto;
   border: 1px solid #ccc;
   padding: 8px;
+
 }
 
 .action-buttons {
@@ -104,5 +114,17 @@ function handleReset() {
 .action-buttons button {
   padding: 6px 12px;
   cursor: pointer;
+}
+
+.divcolumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.divrow {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+
 }
 </style>

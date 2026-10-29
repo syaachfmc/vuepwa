@@ -138,6 +138,31 @@ function handleSidebarResize() {
   }
 }
 
+function handleRowDataSaved(event) {
+  if (!table) return;
+
+  const savedData = event?.detail?.data;
+  if (!savedData || !savedData.__rowID) return;
+
+  const row = table.getRows().find(
+    item => String(item.getData().__rowID) === String(savedData.__rowID)
+  );
+
+  if (!row) return;
+
+  row.update(savedData);
+
+  // Sinkronkan juga data di TableStore.
+  const storeRow = TableStore.tableData.value.find(
+    item => String(item.__rowID) === String(savedData.__rowID)
+  );
+
+  if (storeRow) {
+    Object.assign(storeRow, savedData);
+  }
+}
+
+
 function toggleWrap() {
   wrapText.value = !wrapText.value;
   if (table) {
@@ -636,15 +661,20 @@ watch(
 
 onMounted(() => {
   window.addEventListener('sidebar-resized', handleSidebarResize);
+  window.addEventListener('row-data-saved', handleRowDataSaved);
   loadData();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('sidebar-resized', handleSidebarResize);
+  window.removeEventListener('row-data-saved', handleRowDataSaved);
+
   requestSequence++;
   stopProgressSimulation();
   destroyTable();
 });
+
+
 </script>
 
 <style scoped>
