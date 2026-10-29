@@ -1,10 +1,9 @@
-
 const API_URL =
   "https://script.google.com/macros/s/AKfycbwvyT0YNOAQLVydiESiBCq-j-kWqQ-95eSnzPI69kkdl8WiOS9fnT-cHbmriUIOgIws/exec";
-  // Gsheet User:  https://docs.google.com/spreadsheets/d/1hcpqlhlVR5oEV_ASxPH4E1olaT6UplG8DlMSgp2iqsE/edit?gid=0#gid=0
-  // Script :  https://script.google.com/home/projects/1nSdwzRWRBN9M5J1i8S6cx-mJAGPHUBNqoY4sYh2QFIY8EJ0rZoTAT0uG/edit
 
-
+/**
+ * Helper function untuk mengirim request POST ke Google Apps Script Web App.
+ */
 async function request(action, payload = {}) {
   const response = await fetch(API_URL, {
     method: "POST",
@@ -24,20 +23,37 @@ async function request(action, payload = {}) {
   return response.json();
 }
 
-// ... kode request() tetap sama ...
-
+/**
+ * Melakukan login dengan username, password, dan projectCode.
+ */
 export function login(username, password, projectCode) {
   return request("login", { username, password, projectCode });
 }
 
+/**
+ * Memvalidasi token sesi pengguna.
+ */
 export function validateSession(token) {
   return request("validateSession", { token });
 }
 
+/**
+ * Menghapus sesi login (logout).
+ */
 export function logout(token) {
   return request("logout", { token });
 }
 
+/**
+ * Mengambil data profil user dari sesi aktif.
+ */
 export function getMe(token) {
   return request("me", { token });
+}
+
+/**
+ * Mengambil daftar publik Project Code & Project Name dari sheet ProjectList.
+ */
+export function getProjectList() {
+  return request("getProjectList");
 }

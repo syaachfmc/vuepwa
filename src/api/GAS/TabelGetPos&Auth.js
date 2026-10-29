@@ -6,7 +6,6 @@
 
 /**
  * Main HTTP GET Endpoint Router.
- * Memilih handler berdasarkan parameter request e.parameter.
  */
 function doGet(e) {
   try {
@@ -54,7 +53,8 @@ function doPost(e) {
 
     switch (action) {
       case "login":
-        result = login(body.username, body.password);
+        // Mengoper username, password, dan projectCode ke fungsi login
+        result = login(body.username, body.password, body.projectCode);
         break;
 
       case "validateSession":
@@ -64,6 +64,9 @@ function doPost(e) {
       case "logout":
         result = logout(body.token);
         break;
+
+      case "updateRow":
+        return handleUpdateRow_(body);
 
       case "me":
         result = validateSession(body.token);
@@ -79,7 +82,6 @@ function doPost(e) {
     return jsonResponse_(result);
 
   } catch (err) {
-    // Jangan mengirim detail internal ke client.
     return jsonResponse_({
       success: false,
       message: "Request tidak valid atau terjadi kesalahan server."
@@ -94,17 +96,11 @@ function doPost(e) {
  * ============================================================================
  */
 
-/**
- * Handler doGet khusus untuk mengambil seluruh data GSheet (GAS1).
- */
 function handleGSheetDataDoGet_(e) {
   try {
     const params = (e && e.parameter) ? e.parameter : {};
 
-    // 1. Token wajib dikirim oleh client.
     const token = params.token || params.authToken || "";
-
-    // 2. Validasi token global (Authentication)
     const auth = validateAuthTokenWithAuthApi_(token);
 
     if (!auth || auth.success !== true || !auth.user) {
@@ -124,7 +120,6 @@ function handleGSheetDataDoGet_(e) {
     const gSheetID = params.GSheetID || params.gsheetid || "";
     const sheetName = params.sheetName || params.sheetname || "";
 
-    // 3. Validasi Otorisasi Spesifik pada Workbook Target (User Access Sheet)
     const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username);
     if (!accessCheck.allowed) {
       return createJsonResponse_({
@@ -140,32 +135,17 @@ function handleGSheetDataDoGet_(e) {
       });
     }
 
-    // 4. Baca parameter data setelah otorisasi workbook berhasil
-    const columnIDRow = parseInt(
-      params.columnIDRow || params.columnidrow || "1",
-      10
-    );
-
-    const columnTitleRow = parseInt(
-      params.columnTitleRow || params.columntitlerow || "2",
-      10
-    );
-
-    const columnTitleDescriptionRow = parseInt(
-      params.columnTitleDescriptionRow ||
-      params.columntitledescriptionrow || "3",
-      10
-    );
-
-    const columnTypeRow = parseInt(
-      params.columnTypeRow || params.columntyperow || "4",
-      10
-    );
+    const columnIDRow = parseInt(params.columnIDRow || params.columnidrow || "1", 10);
+    const columnTitleRow = parseInt(params.columnTitleRow || params.columntitlerow || "2", 10);
+    const columnTitleDescriptionRow = parseInt(params.columnTitleDescriptionRow || params.columntitledescriptionrow || "3", 10);
+    const columnTypeRow = parseInt(params.columnTypeRow || params.columntyperow || "4", 10);
 
     const dataRange = params.dataRange || params.datarange || "A5:Z";
     const rowIDColumn = params.RowIDColumn || params.rowidcolumn || "";
 
-    // 5. Ambil data dari Google Sheet
+    const projectID = params.ProjectID !== undefined ? params.ProjectID : (params.projectid !== undefined ? params.projectid : "");
+    const projectIDColumn = params.ProjectIDColumn || params.projectidcolumn || "";
+
     const result = getGSheetData(
       gSheetID,
       sheetName,
@@ -174,12 +154,12 @@ function handleGSheetDataDoGet_(e) {
       columnTitleDescriptionRow,
       columnTypeRow,
       dataRange,
-      rowIDColumn
+      rowIDColumn,
+      projectID,
+      projectIDColumn
     );
 
-    // Lampirkan role user khusus di workbook ini pada response (opsional untuk dipakai Vue)
     result.userRoleInWorkbook = accessCheck.role;
-
     return createJsonResponse_(result);
 
   } catch (err) {
@@ -199,11 +179,7 @@ function handleGSheetDataDoGet_(e) {
   }
 }
 
-/**
- * Memeriksa hak akses user di workbook target melalui sheet "User Access".
- */
 function checkWorkbookUserAccess_(gSheetID, username) {
-  // Daftar Role yang diizinkan melihat/akses data workbook ini
   const ALLOWED_ROLES = ["VIEWER", "EDITOR", "DEVELOPER"];
 
   if (!gSheetID || !username) {
@@ -227,11 +203,10 @@ function checkWorkbookUserAccess_(gSheetID, username) {
     return { allowed: false, message: "Akses ditolak. Belum ada daftar pengguna di sheet 'User Access'." };
   }
 
-  // Mengambil data dari sheet User Access (Kolom A-F: ID, User, Name, Password, Role, Active)
   const rows = userAccessSheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
-  
+
   const targetUsername = String(username).trim().toLowerCase();
-  const match = rows.find(function(row) {
+  const match = rows.find(function (row) {
     return String(row[1] || "").trim().toLowerCase() === targetUsername;
   });
 
@@ -246,7 +221,6 @@ function checkWorkbookUserAccess_(gSheetID, username) {
     return { allowed: false, message: "Akses ditolak. Status akses pengguna di Workbook ini tidak aktif (FALSE)." };
   }
 
-  // Validasi Role berdasarkan daftar ALLOWED_ROLES
   const normalizedRole = role.toUpperCase();
   if (!ALLOWED_ROLES.includes(normalizedRole)) {
     return { allowed: false, message: "Akses ditolak. Role '" + role + "' tidak memiliki hak akses untuk melihat data." };
@@ -259,12 +233,8 @@ function checkWorkbookUserAccess_(gSheetID, username) {
   };
 }
 
-/**
- * Mengambil data dari Google Sheet dan mengembalikannya sebagai Object terstruktur.
- */
-function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnTitleDescriptionRow, columnTypeRow, dataRange, RowIDColumn) {
+function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnTitleDescriptionRow, columnTypeRow, dataRange, RowIDColumn, ProjectID, ProjectIDColumn) {
   try {
-    // 1. Validasi Parameter Dasar
     if (!GSheetID || typeof GSheetID !== 'string' || GSheetID.trim() === '') {
       return createErrorResult("GSheetID tidak boleh kosong.");
     }
@@ -287,7 +257,6 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
       return createErrorResult("dataRange tidak boleh kosong.");
     }
 
-    // 2. Membuka Spreadsheet
     let ss;
     try {
       ss = SpreadsheetApp.openById(GSheetID.trim());
@@ -295,13 +264,11 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
       return createErrorResult("Spreadsheet tidak ditemukan atau tidak dapat diakses.");
     }
 
-    // 3. Membuka Sheet
     const sheet = ss.getSheetByName(sheetName.trim());
     if (!sheet) {
       return createErrorResult(`Sheet '${sheetName}' tidak ditemukan.`);
     }
 
-    // 4. Checking Total Row & Column Sheet
     const lastSheetRow = Math.max(sheet.getLastRow(), 1);
     const lastSheetCol = Math.max(sheet.getLastColumn(), 1);
     const maxRows = sheet.getMaxRows();
@@ -310,15 +277,12 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
       return createErrorResult(`Salah satu baris header/metadata melebihi jumlah baris maksimum sheet.`);
     }
 
-    // 5. Parse dataRange
     const parsedRange = parseRangeInfo(dataRange.trim(), lastSheetRow, lastSheetCol);
     if (!parsedRange.success) {
       return createErrorResult(parsedRange.errorMessage);
     }
 
     const { startCol, startRow, endCol, endRow } = parsedRange;
-
-    // 6. Ambil Column Headers/Metadata (Batch Call 1)
     const numHeaderCols = endCol - startCol + 1;
 
     const idValues = sheet.getRange(columnIDRow, startCol, 1, numHeaderCols).getDisplayValues()[0];
@@ -326,7 +290,6 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
     const descValues = sheet.getRange(columnTitleDescriptionRow, startCol, 1, numHeaderCols).getDisplayValues()[0];
     const typeValues = sheet.getRange(columnTypeRow, startCol, 1, numHeaderCols).getDisplayValues()[0];
 
-    // Clean metadata values
     const columnIDs = idValues.map((h, idx) => {
       const str = String(h).trim();
       return str !== "" ? str : `col_${startCol + idx}`;
@@ -344,44 +307,61 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
       return str !== "" ? str : `string`;
     });
 
-    // 7. Ambil Data Utama
     let data = [];
+    let rowIDs = [];
+
     if (startRow <= endRow && startRow <= lastSheetRow) {
       const effectiveEndRow = Math.min(endRow, lastSheetRow);
       const numDataRows = effectiveEndRow - startRow + 1;
 
       if (numDataRows > 0) {
-        data = sheet.getRange(startRow, startCol, numDataRows, numHeaderCols).getDisplayValues();
-      }
-    }
+        const rawData = sheet.getRange(startRow, startCol, numDataRows, numHeaderCols).getDisplayValues();
 
-    // 8. Ambil Row ID dari Kolom yang Ditentukan
-    let rowIDs = [];
-    if (RowIDColumn && typeof RowIDColumn === 'string' && RowIDColumn.trim() !== '') {
-      const targetColIndex = colLetterToNumber(RowIDColumn.trim());
-      
-      if (startRow <= endRow && startRow <= lastSheetRow) {
-        const effectiveEndRow = Math.min(endRow, lastSheetRow);
-        const numDataRows = effectiveEndRow - startRow + 1;
+        let rawRowIDs = [];
+        if (RowIDColumn && typeof RowIDColumn === 'string' && RowIDColumn.trim() !== '') {
+          const targetColIndex = colLetterToNumber(RowIDColumn.trim());
+          if (targetColIndex >= 1 && targetColIndex <= lastSheetCol) {
+            rawRowIDs = sheet.getRange(startRow, targetColIndex, numDataRows, 1).getDisplayValues().map(r => r[0]);
+          }
+        }
 
-        if (numDataRows > 0 && targetColIndex >= 1 && targetColIndex <= lastSheetCol) {
-          const rawRowIDs = sheet.getRange(startRow, targetColIndex, numDataRows, 1).getDisplayValues();
-          rowIDs = rawRowIDs.map(r => r[0]);
+        const strProjectID = ProjectID !== undefined && ProjectID !== null ? String(ProjectID).trim() : "";
+        const isFilterActive = strProjectID !== "" && strProjectID !== "*";
+
+        if (isFilterActive) {
+          if (!ProjectIDColumn || typeof ProjectIDColumn !== 'string' || ProjectIDColumn.trim() === '') {
+            return createErrorResult("ProjectIDColumn harus dispesifikasikan saat melakukan filtering ProjectID.");
+          }
+
+          const projectColIndex = colLetterToNumber(ProjectIDColumn.trim());
+          let projectValues = [];
+
+          if (projectColIndex >= startCol && projectColIndex <= endCol) {
+            const colOffset = projectColIndex - startCol;
+            projectValues = rawData.map(row => row[colOffset]);
+          } else if (projectColIndex >= 1 && projectColIndex <= lastSheetCol) {
+            projectValues = sheet.getRange(startRow, projectColIndex, numDataRows, 1).getDisplayValues().map(r => r[0]);
+          } else {
+            return createErrorResult(`ProjectIDColumn '${ProjectIDColumn}' berada di luar batas kolom sheet.`);
+          }
+
+          const filterTarget = strProjectID.toLowerCase();
+          for (let i = 0; i < numDataRows; i++) {
+            const val = String(projectValues[i] || "").trim().toLowerCase();
+            if (val === filterTarget) {
+              data.push(rawData[i]);
+              if (rawRowIDs.length > 0) {
+                rowIDs.push(rawRowIDs[i]);
+              }
+            }
+          }
+        } else {
+          data = rawData;
+          rowIDs = rawRowIDs;
         }
       }
     }
 
-    console.log({
-      RowIDColumn: RowIDColumn,
-      targetColIndex: colLetterToNumber(RowIDColumn),
-      lastSheetCol: lastSheetCol,
-      startRow: startRow,
-      endRow: endRow,
-      rowIDsLength: rowIDs.length,
-      rowIDsSample: rowIDs.slice(0, 5)
-    });
-
-    // 9. Kembalikan Response Sukses
     return createSuccessResult(columnIDs, columnTitles, columnDescriptions, columnTypes, data, rowIDs);
 
   } catch (err) {
@@ -389,9 +369,6 @@ function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnT
   }
 }
 
-/**
- * Membuat response Object Sukses
- */
 function createSuccessResult(columnIDs, columnTitles, columnDescriptions, columnTypes, data, rowIDs) {
   return {
     status: "success",
@@ -418,9 +395,6 @@ function createSuccessResult(columnIDs, columnTitles, columnDescriptions, column
   };
 }
 
-/**
- * Membuat response Object Error
- */
 function createErrorResult(errorMessage) {
   return {
     status: "error",
@@ -437,9 +411,6 @@ function createErrorResult(errorMessage) {
   };
 }
 
-/**
- * Standard JSON response.
- */
 function createJsonResponse_(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
@@ -497,9 +468,6 @@ function parseRangeInfo(dataRange, lastSheetRow, lastSheetCol) {
   };
 }
 
-/**
- * Mengubah huruf kolom ke angka (1-based). A -> 1, Z -> 26, AA -> 27.
- */
 function colLetterToNumber(letter) {
   let column = 0;
   const clean = letter.toUpperCase();
@@ -509,9 +477,6 @@ function colLetterToNumber(letter) {
   return column;
 }
 
-/**
- * Mengubah angka ke huruf kolom (1-based). 1 -> A, 26 -> Z, 27 -> AA.
- */
 function numberToColLetter(num) {
   let letter = "";
   while (num > 0) {
@@ -522,9 +487,6 @@ function numberToColLetter(num) {
   return letter;
 }
 
-/**
- * Validate login token melalui internal Auth logic.
- */
 function validateAuthTokenWithAuthApi_(token) {
   return validateSession(token);
 }
@@ -536,14 +498,10 @@ function validateAuthTokenWithAuthApi_(token) {
  * ============================================================================
  */
 
-/**
- * Handler doGet khusus untuk pencarian data per-baris (GAS2).
- */
 function handleRowApiDoGet_(e) {
   try {
     const p = (e && e.parameter) ? e.parameter : {};
 
-    // 1. Validasi token sesi global
     const token = p.token || p.authToken || "";
     const auth = validateSession(token);
 
@@ -551,14 +509,12 @@ function handleRowApiDoGet_(e) {
       return createRowApiError_("Unauthorized. Sesi tidak valid atau telah habis.");
     }
 
-    // 2. Validasi otorisasi di "User Access" sheet pada workbook target
     const gSheetID = p.GSheetID || "";
     const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username);
     if (!accessCheck.allowed) {
       return createRowApiError_("Forbidden: " + accessCheck.message);
     }
 
-    // 3. Lanjutkan ke validasi parameter dan pencarian data
     const params = validateRowApiParams_(e);
     const result = getGSheetRowDataByIDs_(params);
     result.userRoleInWorkbook = accessCheck.role;
@@ -566,16 +522,11 @@ function handleRowApiDoGet_(e) {
     return createRowApiSuccess_(result);
   } catch (error) {
     return createRowApiError_(
-      error && error.message
-        ? error.message
-        : String(error)
+      error && error.message ? error.message : String(error)
     );
   }
 }
 
-/**
- * Validasi dan parsing parameter request Row API.
- */
 function validateRowApiParams_(e) {
   const p = e && e.parameter ? e.parameter : {};
 
@@ -593,158 +544,90 @@ function validateRowApiParams_(e) {
   ];
 
   required.forEach(function (key) {
-    if (
-      p[key] === undefined ||
-      p[key] === null ||
-      String(p[key]).trim() === ""
-    ) {
-      throw new Error(
-        "Parameter wajib tidak tersedia: " + key
-      );
+    if (p[key] === undefined || p[key] === null || String(p[key]).trim() === "") {
+      throw new Error("Parameter wajib tidak tersedia: " + key);
     }
   });
 
-  const rowParams = [
-    "columnIDRow",
-    "columnTitleRow",
-    "columnTitleDescriptionRow",
-    "columnTypeRow"
-  ];
+  const rowParams = ["columnIDRow", "columnTitleRow", "columnTitleDescriptionRow", "columnTypeRow"];
 
   rowParams.forEach(function (key) {
     const value = Number(p[key]);
-
-    if (
-      !Number.isInteger(value) ||
-      value < 1
-    ) {
-      throw new Error(
-        "Parameter " + key +
-        " harus berupa nomor baris positif."
-      );
+    if (!Number.isInteger(value) || value < 1) {
+      throw new Error("Parameter " + key + " harus berupa nomor baris positif.");
     }
   });
 
   let columnIDs;
-
   try {
     columnIDs = JSON.parse(p.columnIDs);
   } catch (error) {
-    throw new Error(
-      "Parameter columnIDs bukan JSON yang valid."
-    );
+    throw new Error("Parameter columnIDs bukan JSON yang valid.");
   }
 
-  if (
-    !Array.isArray(columnIDs) ||
-    columnIDs.length === 0
-  ) {
-    throw new Error(
-      "columnIDs harus berupa JSON array yang tidak kosong."
-    );
+  if (!Array.isArray(columnIDs) || columnIDs.length === 0) {
+    throw new Error("columnIDs harus berupa JSON array yang tidak kosong.");
   }
 
   columnIDs = columnIDs.map(function (id) {
-    if (
-      typeof id !== "string" &&
-      typeof id !== "number"
-    ) {
-      throw new Error(
-        "Setiap columnID harus berupa string atau number."
-      );
+    if (typeof id !== "string" && typeof id !== "number") {
+      throw new Error("Setiap columnID harus berupa string atau number.");
     }
 
     const normalized = String(id).trim();
-
     if (!normalized) {
-      throw new Error(
-        "columnIDs tidak boleh berisi ID kosong."
-      );
+      throw new Error("columnIDs tidak boleh berisi ID kosong.");
     }
-
     return normalized;
   });
 
   if (new Set(columnIDs).size !== columnIDs.length) {
-    throw new Error(
-      "columnIDs tidak boleh berisi ID duplikat."
-    );
+    throw new Error("columnIDs tidak boleh berisi ID duplikat.");
   }
 
-  const range = parseRowApiDataRange_(p.dataRange);
-
-  const rowIDColumn = columnLetterToNumber_(
-    p.RowIDColumn
-  );
+  const rowIDColumn = columnLetterToNumber_(p.RowIDColumn);
 
   return {
     GSheetID: String(p.GSheetID).trim(),
     sheetName: String(p.sheetName).trim(),
-
     columnIDRow: Number(p.columnIDRow),
     columnTitleRow: Number(p.columnTitleRow),
-    columnTitleDescriptionRow:
-      Number(p.columnTitleDescriptionRow),
+    columnTitleDescriptionRow: Number(p.columnTitleDescriptionRow),
     columnTypeRow: Number(p.columnTypeRow),
-
     dataRange: String(p.dataRange).trim(),
-    range: range,
-
     RowIDColumn: String(p.RowIDColumn).trim(),
     rowIDColumnNumber: rowIDColumn,
     RowID: String(p.RowID),
-
     columnIDs: columnIDs
   };
 }
 
-/**
- * Mengambil seluruh baris dengan RowID yang cocok.
- * Nilai data dikembalikan menggunakan getDisplayValues().
- */
 function getGSheetRowDataByIDs_(params) {
   let spreadsheet;
   let sheet;
 
   try {
-    spreadsheet = SpreadsheetApp.openById(
-      params.GSheetID
-    );
-
-    sheet = spreadsheet.getSheetByName(
-      params.sheetName
-    );
+    spreadsheet = SpreadsheetApp.openById(params.GSheetID);
+    sheet = spreadsheet.getSheetByName(params.sheetName);
 
     if (!sheet) {
-      throw new Error(
-        "Worksheet tidak ditemukan: " +
-        params.sheetName
-      );
+      throw new Error("Worksheet tidak ditemukan: " + params.sheetName);
     }
   } catch (error) {
-    throw new Error(
-      "Gagal membuka spreadsheet atau worksheet. " +
-      error.message
-    );
+    throw new Error("Gagal membuka spreadsheet atau worksheet. " + error.message);
   }
 
-  const rangeInfo = params.range;
+  const lastSheetRow = Math.max(sheet.getLastRow(), 1);
+  const lastSheetCol = Math.max(sheet.getLastColumn(), 1);
 
-  if (
-    rangeInfo.endRow > sheet.getMaxRows() ||
-    rangeInfo.endColumn > sheet.getMaxColumns()
-  ) {
-    throw new Error(
-      "dataRange berada di luar ukuran worksheet."
-    );
+  const rangeInfo = parseRowApiDataRange_(params.dataRange, lastSheetRow, lastSheetCol);
+
+  if (rangeInfo.endRow > sheet.getMaxRows() || rangeInfo.endColumn > sheet.getMaxColumns()) {
+    throw new Error("dataRange berada di luar ukuran worksheet.");
   }
 
-  if (
-    params.rowIDColumnNumber > sheet.getMaxColumns()
-  ) {
-    throw new Error(
-      "RowIDColumn berada di luar ukuran worksheet."
-    );
+  if (params.rowIDColumnNumber > sheet.getMaxColumns()) {
+    throw new Error("RowIDColumn berada di luar ukuran worksheet.");
   }
 
   const metadataRows = [
@@ -756,10 +639,7 @@ function getGSheetRowDataByIDs_(params) {
 
   metadataRows.forEach(function (row) {
     if (row > sheet.getMaxRows()) {
-      throw new Error(
-        "Baris metadata " + row +
-        " berada di luar ukuran worksheet."
-      );
+      throw new Error("Baris metadata " + row + " berada di luar ukuran worksheet.");
     }
   });
 
@@ -768,41 +648,25 @@ function getGSheetRowDataByIDs_(params) {
   const dataStartRow = rangeInfo.startRow;
   const dataRowCount = rangeInfo.rowCount;
 
-  /*
-   * Baca metadata dalam batch.
-   * Metadata disejajarkan dengan kolom dataRange.
-   */
   const metadataRange = sheet.getRange(
     Math.min.apply(null, metadataRows),
     dataStartColumn,
-    Math.max.apply(null, metadataRows) -
-    Math.min.apply(null, metadataRows) + 1,
+    Math.max.apply(null, metadataRows) - Math.min.apply(null, metadataRows) + 1,
     dataColumnCount
   );
 
   const metadataValues = metadataRange.getDisplayValues();
-  const metadataStartRow = Math.min.apply(
-    null,
-    metadataRows
-  );
+  const metadataStartRow = Math.min.apply(null, metadataRows);
 
   function getMetadataRow_(absoluteRow) {
-    return metadataValues[
-      absoluteRow - metadataStartRow
-    ];
+    return metadataValues[absoluteRow - metadataStartRow];
   }
 
   const ids = getMetadataRow_(params.columnIDRow);
   const titles = getMetadataRow_(params.columnTitleRow);
-  const descriptions = getMetadataRow_(
-    params.columnTitleDescriptionRow
-  );
+  const descriptions = getMetadataRow_(params.columnTitleDescriptionRow);
   const types = getMetadataRow_(params.columnTypeRow);
 
-  /*
-   * Buat mapping columnID ke indeks absolut spreadsheet.
-   * Hanya kolom di dalam dataRange yang dapat diminta.
-   */
   const columnMap = {};
 
   ids.forEach(function (id, index) {
@@ -819,24 +683,13 @@ function getGSheetRowDataByIDs_(params) {
     }
   });
 
-  const selectedColumns = params.columnIDs.map(
-    function (id) {
-      if (columnMap[id] === undefined) {
-        throw new Error(
-          "Column ID '" + id +
-          "' tidak ditemukan di dataRange " +
-          params.dataRange + "."
-        );
-      }
-
-      return columnMap[id];
+  const selectedColumns = params.columnIDs.map(function (id) {
+    if (columnMap[id] === undefined) {
+      throw new Error("Column ID '" + id + "' tidak ditemukan di dataRange " + params.dataRange + ".");
     }
-  );
+    return columnMap[id];
+  });
 
-  /*
-   * Baca dataRange satu kali untuk memperoleh semua
-   * nilai yang akan diproses.
-   */
   const dataValues = sheet.getRange(
     dataStartRow,
     dataStartColumn,
@@ -844,19 +697,13 @@ function getGSheetRowDataByIDs_(params) {
     dataColumnCount
   ).getDisplayValues();
 
-  /*
-   * RowIDColumn dapat berada di luar dataRange.
-   * Jika berada di luar, baca kolom RowID secara batch.
-   */
   let rowIDValues;
 
   if (
     params.rowIDColumnNumber >= dataStartColumn &&
-    params.rowIDColumnNumber <
-    dataStartColumn + dataColumnCount
+    params.rowIDColumnNumber < dataStartColumn + dataColumnCount
   ) {
-    const rowIDOffset =
-      params.rowIDColumnNumber - dataStartColumn;
+    const rowIDOffset = params.rowIDColumnNumber - dataStartColumn;
 
     rowIDValues = dataValues.map(function (row) {
       return row[rowIDOffset];
@@ -875,10 +722,6 @@ function getGSheetRowDataByIDs_(params) {
   const resultData = [];
 
   for (let i = 0; i < dataValues.length; i++) {
-    /*
-     * Perbandingan string mempertahankan leading zero
-     * pada ID yang dikirim sebagai teks.
-     */
     if (rowIDValues[i] !== params.RowID) {
       continue;
     }
@@ -886,72 +729,65 @@ function getGSheetRowDataByIDs_(params) {
     const item = {};
 
     params.columnIDs.forEach(function (id, index) {
-      item[id] = dataValues[i][
-        selectedColumns[index].offset
-      ];
+      item[id] = dataValues[i][selectedColumns[index].offset];
     });
 
     resultData.push(item);
   }
 
-  /*
-   * Metadata mengikuti urutan columnIDs yang diminta.
-   * Jika RowID tidak ditemukan, metadata tetap tersedia
-   * selama semua columnID valid.
-   */
   return {
     status: "success",
     error: null,
     RowID: params.RowID,
     columnIDs: params.columnIDs,
-
-    columnTitles: selectedColumns.map(function (col) {
-      return col.title;
-    }),
-
-    columnDescriptions: selectedColumns.map(
-      function (col) {
-        return col.description;
-      }
-    ),
-
-    columnTypes: selectedColumns.map(function (col) {
-      return col.type;
-    }),
-
+    columnTitles: selectedColumns.map(function (col) { return col.title; }),
+    columnDescriptions: selectedColumns.map(function (col) { return col.description; }),
+    columnTypes: selectedColumns.map(function (col) { return col.type; }),
     data: resultData,
     rowCount: resultData.length
   };
 }
 
-/**
- * Parse A1 range, misalnya B5:BW20.
- * Mendukung huruf kolom multi-karakter.
- */
-function parseRowApiDataRange_(a1Range) {
-  const match = String(a1Range).trim().match(
-    /^([A-Za-z]+)([1-9]\d*):([A-Za-z]+)([1-9]\d*)$/
-  );
+function parseRowApiDataRange_(a1Range, lastSheetRow, lastSheetCol) {
+  const rangeStr = String(a1Range).toUpperCase().trim();
 
-  if (!match) {
+  let startColumn, startRow, endColumn, endRow;
+
+  const patCellToCell = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/;
+  const patCellToCol = /^([A-Z]+)(\d+):([A-Z]+)$/;
+  const patColToCol = /^([A-Z]+):([A-Z]+)$/;
+  const patRowToRow = /^(\d+):(\d+)$/;
+
+  let match;
+
+  if ((match = rangeStr.match(patCellToCell))) {
+    startColumn = columnLetterToNumber_(match[1]);
+    startRow = Number(match[2]);
+    endColumn = columnLetterToNumber_(match[3]);
+    endRow = Number(match[4]);
+  } else if ((match = rangeStr.match(patCellToCol))) {
+    startColumn = columnLetterToNumber_(match[1]);
+    startRow = Number(match[2]);
+    endColumn = columnLetterToNumber_(match[3]);
+    endRow = lastSheetRow || 1;
+  } else if ((match = rangeStr.match(patColToCol))) {
+    startColumn = columnLetterToNumber_(match[1]);
+    startRow = 1;
+    endColumn = columnLetterToNumber_(match[2]);
+    endRow = lastSheetRow || 1;
+  } else if ((match = rangeStr.match(patRowToRow))) {
+    startColumn = 1;
+    startRow = Number(match[1]);
+    endColumn = lastSheetCol || 1;
+    endRow = Number(match[2]);
+  } else {
     throw new Error(
-      "dataRange tidak valid. " +
-      "Gunakan format seperti B5:BW20."
+      "dataRange tidak valid: " + a1Range + ". Gunakan format seperti B5:BW20 atau B5:BY."
     );
   }
 
-  const startColumn = columnLetterToNumber_(match[1]);
-  const startRow = Number(match[2]);
-  const endColumn = columnLetterToNumber_(match[3]);
-  const endRow = Number(match[4]);
-
-  if (
-    endColumn < startColumn ||
-    endRow < startRow
-  ) {
-    throw new Error(
-      "dataRange memiliki batas akhir sebelum batas awal."
-    );
+  if (endColumn < startColumn || endRow < startRow) {
+    throw new Error("dataRange memiliki batas akhir sebelum batas awal.");
   }
 
   return {
@@ -964,41 +800,26 @@ function parseRowApiDataRange_(a1Range) {
   };
 }
 
-/**
- * Konversi huruf kolom A, Z, AA, BW menjadi angka.
- */
 function columnLetterToNumber_(letters) {
   const value = String(letters).trim().toUpperCase();
 
   if (!/^[A-Z]+$/.test(value)) {
-    throw new Error(
-      "Huruf kolom tidak valid: " + letters
-    );
+    throw new Error("Huruf kolom tidak valid: " + letters);
   }
 
   let number = 0;
-
   for (let i = 0; i < value.length; i++) {
-    number =
-      number * 26 +
-      value.charCodeAt(i) - 64;
+    number = number * 26 + value.charCodeAt(i) - 64;
   }
-
   return number;
 }
 
-/**
- * Response sukses untuk Row API.
- */
 function createRowApiSuccess_(result) {
   return ContentService
     .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * Response error yang konsisten untuk Row API.
- */
 function createRowApiError_(message) {
   return ContentService
     .createTextOutput(JSON.stringify({
@@ -1030,12 +851,20 @@ function jsonResponse_(data) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function login(username, password) {
+/**
+ * Fungsi Login yang Memvalidasi Username, Password, dan Project Code.
+ */
+function login(username, password, projectCode) {
   username = String(username || "").trim();
   password = String(password || "");
+  projectCode = String(projectCode || "").trim();
 
   if (!username || !password) {
     return { success: false, message: "Username dan password wajib diisi." };
+  }
+
+  if (!projectCode) {
+    return { success: false, message: "Project Code wajib dipilih." };
   }
 
   const sheet = getUserSheet_();
@@ -1045,35 +874,48 @@ function login(username, password) {
     return { success: false, message: "Belum ada akun user." };
   }
 
-  // Mengambil kolom A sampai F (6 kolom: ID, User, Name, Password, Role, Active)
-  const rows = sheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
-  const matches = rows.filter(function(row) {
-    return String(row[1] || "").trim().toLowerCase() === username.toLowerCase();
+  // Mengambil 7 kolom: A(ID), B(User), C(Name), D(Password), E(Role), F(Active), G(Project Code)
+  const rows = sheet.getRange(2, 1, lastRow - 1, 7).getDisplayValues();
+
+  // 1. Filter baris berdasarkan Username DAN Project Code yang cocok
+  const matches = rows.filter(function (row) {
+    const rowUsername = String(row[1] || "").trim().toLowerCase();
+    const rowProjectCode = String(row[6] || "").trim().toLowerCase();
+    return rowUsername === username.toLowerCase() && rowProjectCode === projectCode.toLowerCase();
   });
 
-  if (matches.length !== 1) {
-    return { success: false, message: "Username atau password salah." };
+  if (matches.length === 0) {
+    return { success: false, message: "Username, password, atau Project Code salah." };
   }
 
-  const row = matches[0];
-  const id = String(row[0] || "").trim();
-  const storedHash = String(row[3] || "").trim();
-  const role = String(row[4] || "").trim();
-  const activeStatus = String(row[5] || "").trim().toUpperCase();
-
-  // Validasi status Active pengguna di sistem terpusat (Sheet Users)
-  if (activeStatus !== "TRUE") {
-    return { success: false, message: "Akun Anda tidak aktif." };
-  }
-
-  if (!id || !role || !storedHash.startsWith("SHA256$")) {
-    return { success: false, message: "Konfigurasi akun tidak valid." };
-  }
-
+  // 2. Hash password input
   const suppliedHash = "SHA256$" + sha256Hex_(password);
 
-  if (suppliedHash !== storedHash) {
-    return { success: false, message: "Username atau password salah." };
+  // 3. Verifikasi Password dan Status Aktif
+  let validUserRow = null;
+  for (let i = 0; i < matches.length; i++) {
+    const row = matches[i];
+    const storedHash = String(row[3] || "").trim();
+    const activeStatus = String(row[5] || "").trim().toUpperCase();
+
+    if (activeStatus === "TRUE" && storedHash === suppliedHash) {
+      validUserRow = row;
+      break;
+    }
+  }
+
+  if (!validUserRow) {
+    return { success: false, message: "Username, password, atau Project Code salah / akun tidak aktif." };
+  }
+
+  // 4. Ambil data spesifik dari baris terverifikasi
+  const id = String(validUserRow[0] || "").trim();
+  const role = String(validUserRow[4] || "").trim();
+  const activeStatus = String(validUserRow[5] || "").trim().toUpperCase();
+  const matchedProjectCode = String(validUserRow[6] || "").trim();
+
+  if (!id || !role) {
+    return { success: false, message: "Konfigurasi akun tidak valid." };
   }
 
   const token = Utilities.getUuid() + Utilities.getUuid();
@@ -1099,10 +941,11 @@ function login(username, password) {
     expiresAt: session.expiresAt,
     user: {
       id: id,
-      username: String(row[1]).trim(),
-      name: String(row[2] || "").trim(),
+      username: String(validUserRow[1]).trim(),
+      name: String(validUserRow[2] || "").trim(),
       role: role,
-      active: activeStatus
+      active: activeStatus,
+      projectCode: matchedProjectCode
     }
   };
 }
@@ -1158,7 +1001,6 @@ function logout(token) {
   }
 
   const key = AUTH_CONFIG.SESSION_PREFIX + sha256Hex_(token);
-
   PropertiesService.getScriptProperties().deleteProperty(key);
 
   return { success: true, message: "Logout berhasil." };
@@ -1170,9 +1012,9 @@ function findUserById_(userId) {
 
   if (lastRow < 2) return null;
 
-  // Mengambil kolom A sampai F (6 kolom)
-  const rows = sheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
-  const matches = rows.filter(function(row) {
+  // Mengambil 7 kolom (A-G)
+  const rows = sheet.getRange(2, 1, lastRow - 1, 7).getDisplayValues();
+  const matches = rows.filter(function (row) {
     return String(row[0] || "").trim() === String(userId);
   });
 
@@ -1183,8 +1025,8 @@ function findUserById_(userId) {
   const name = String(row[2] || "").trim();
   const role = String(row[4] || "").trim();
   const activeStatus = String(row[5] || "").trim().toUpperCase();
+  const projectCode = String(row[6] || "").trim();
 
-  // Jika akun diubah menjadi FALSE di central Users sheet, batalkan sesi
   if (!username || !role || activeStatus !== "TRUE") return null;
 
   return {
@@ -1192,7 +1034,8 @@ function findUserById_(userId) {
     username: username,
     name: name,
     role: role,
-    active: activeStatus
+    active: activeStatus,
+    projectCode: projectCode
   };
 }
 
@@ -1212,7 +1055,7 @@ function sha256Hex_(value) {
     Utilities.Charset.UTF_8
   );
 
-  return bytes.map(function(b) {
+  return bytes.map(function (b) {
     return ((b + 256) % 256).toString(16).padStart(2, "0");
   }).join("");
 }
@@ -1224,7 +1067,7 @@ function cleanupExpiredSessions() {
 
   let deleted = 0;
 
-  Object.keys(allProperties).forEach(function(key) {
+  Object.keys(allProperties).forEach(function (key) {
     if (!key.startsWith(AUTH_CONFIG.SESSION_PREFIX)) {
       return;
     }
@@ -1237,7 +1080,6 @@ function cleanupExpiredSessions() {
         deleted++;
       }
     } catch (error) {
-      // Hapus data sesi yang rusak.
       properties.deleteProperty(key);
       deleted++;
     }
@@ -1247,12 +1089,10 @@ function cleanupExpiredSessions() {
 }
 
 function createSessionCleanupTrigger() {
-  // Hindari membuat trigger duplikat.
   const triggers = ScriptApp.getProjectTriggers();
 
-  const exists = triggers.some(function(trigger) {
-    return trigger.getHandlerFunction() ===
-      "cleanupExpiredSessions";
+  const exists = triggers.some(function (trigger) {
+    return trigger.getHandlerFunction() === "cleanupExpiredSessions";
   });
 
   if (exists) {
@@ -1281,14 +1121,13 @@ function migratePasswordsToHash() {
   var range = sheet.getRange(2, 4, lastRow - 1, 1);
   var passwords = range.getValues();
 
-  var updated = passwords.map(function(row) {
+  var updated = passwords.map(function (row) {
     var password = String(row[0] || "");
 
     if (!password) {
       return [""];
     }
 
-    // Hindari meng-hash ulang password yang sudah dimigrasikan.
     if (password.indexOf("SHA256$") === 0) {
       return [password];
     }
@@ -1299,7 +1138,7 @@ function migratePasswordsToHash() {
       Utilities.Charset.UTF_8
     );
 
-    var hash = bytes.map(function(b) {
+    var hash = bytes.map(function (b) {
       var value = (b + 256) % 256;
       return value.toString(16).padStart(2, "0");
     }).join("");
@@ -1315,146 +1154,390 @@ function migratePasswordsToHash() {
 
 /**
  * ============================================================================
+ * SAVE SECTION
+ * ============================================================================
+ */
+
+function handleUpdateRow_(body) {
+  try {
+    if (!body || !body.token) {
+      return updateRowJson_({
+        success: false,
+        message: "Token autentikasi wajib diisi."
+      });
+    }
+
+    var requiredFields = [
+      "GSheetID",
+      "sheetName",
+      "dataRange",
+      "RowIDColumn",
+      "RowID"
+    ];
+
+    for (var i = 0; i < requiredFields.length; i++) {
+      var field = requiredFields[i];
+
+      if (
+        body[field] === undefined ||
+        body[field] === null ||
+        String(body[field]).trim() === ""
+      ) {
+        return updateRowJson_({
+          success: false,
+          message: "Parameter wajib tidak tersedia: " + field
+        });
+      }
+    }
+
+    if (
+      !body.changes ||
+      typeof body.changes !== "object" ||
+      Array.isArray(body.changes)
+    ) {
+      return updateRowJson_({
+        success: false,
+        message: "changes harus berupa object kolom dan nilai."
+      });
+    }
+
+    var changedColumnIDs = Object.keys(body.changes);
+
+    if (changedColumnIDs.length === 0) {
+      return updateRowJson_({
+        success: false,
+        message: "Tidak ada perubahan untuk disimpan."
+      });
+    }
+
+    var auth = validateSession(String(body.token));
+
+    if (!auth || auth.success === false || auth.valid === false) {
+      return updateRowJson_({
+        success: false,
+        message: "Session tidak valid atau sudah kedaluwarsa."
+      });
+    }
+
+    var authUser = auth.user || auth;
+
+    if (authUser.active === false) {
+      return updateRowJson_({
+        success: false,
+        message: "Akun tidak aktif."
+      });
+    }
+
+    var username = authUser.username;
+
+    if (!username) {
+      return updateRowJson_({
+        success: false,
+        message: "Informasi username tidak ditemukan dalam session."
+      });
+    }
+
+    var access = checkWorkbookUserAccess_(
+      String(body.GSheetID),
+      String(username)
+    );
+
+    if (!access || !access.allowed) {
+      return updateRowJson_({
+        success: false,
+        message: "User tidak memiliki akses ke workbook ini."
+      });
+    }
+
+    var role = String(access.role || authUser.role || "")
+      .trim()
+      .toUpperCase();
+
+    if (role !== "EDITOR" && role !== "DEVELOPER") {
+      return updateRowJson_({
+        success: false,
+        message: "Akses simpan ditolak. Role harus EDITOR atau DEVELOPER."
+      });
+    }
+
+    var rangeMatch = String(body.dataRange)
+      .trim()
+      .toUpperCase()
+      .match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/);
+
+    if (!rangeMatch) {
+      return updateRowJson_({
+        success: false,
+        message: "Format dataRange tidak valid: " + body.dataRange
+      });
+    }
+
+    var startColumn = updateRowColumnNumber_(rangeMatch[1]);
+    var startRow = Number(rangeMatch[2]);
+    var endColumn = updateRowColumnNumber_(rangeMatch[3]);
+
+    if (
+      startColumn < 1 ||
+      endColumn < startColumn ||
+      startRow < 1
+    ) {
+      return updateRowJson_({
+        success: false,
+        message: "Rentang data tidak valid."
+      });
+    }
+
+    var spreadsheet = SpreadsheetApp.openById(String(body.GSheetID));
+    var sheet = spreadsheet.getSheetByName(String(body.sheetName));
+
+    if (!sheet) {
+      return updateRowJson_({
+        success: false,
+        message: "Sheet tidak ditemukan: " + body.sheetName
+      });
+    }
+
+    var lastRow = sheet.getLastRow();
+    var endRow = rangeMatch[4]
+      ? Math.min(Number(rangeMatch[4]), lastRow)
+      : lastRow;
+
+    if (endRow < startRow) {
+      return updateRowJson_({
+        success: false,
+        message: "Tidak ada baris data pada rentang tersebut."
+      });
+    }
+
+    var columnIDRow = Number(body.columnIDRow || 1);
+
+    if (
+      !Number.isInteger(columnIDRow) ||
+      columnIDRow < 1 ||
+      columnIDRow >= startRow
+    ) {
+      return updateRowJson_({
+        success: false,
+        message: "Posisi metadata columnIDRow tidak valid."
+      });
+    }
+
+    var metadata = sheet
+      .getRange(
+        columnIDRow,
+        startColumn,
+        1,
+        endColumn - startColumn + 1
+      )
+      .getDisplayValues()[0];
+
+    var columnMap = {};
+
+    metadata.forEach(function (value, index) {
+      var columnID = String(value).trim();
+
+      if (columnID !== "") {
+        if (columnMap[columnID] !== undefined) {
+          columnMap[columnID] = null;
+        } else {
+          columnMap[columnID] = startColumn + index;
+        }
+      }
+    });
+
+    var updates = [];
+
+    for (var j = 0; j < changedColumnIDs.length; j++) {
+      var changedID = String(changedColumnIDs[j]).trim();
+      var physicalColumn = columnMap[changedID];
+
+      if (
+        changedID === "" ||
+        physicalColumn === undefined ||
+        physicalColumn === null
+      ) {
+        return updateRowJson_({
+          success: false,
+          message: "Column ID tidak valid atau duplikat: " + changedID
+        });
+      }
+
+      updates.push({
+        columnID: changedID,
+        columnNumber: physicalColumn,
+        value: body.changes[changedColumnIDs[j]]
+      });
+    }
+
+    var rowIDColumn = updateRowColumnNumber_(
+      String(body.RowIDColumn).trim().toUpperCase()
+    );
+
+    if (rowIDColumn < 1) {
+      return updateRowJson_({
+        success: false,
+        message: "RowIDColumn tidak valid."
+      });
+    }
+
+    var targetRowID = String(body.RowID).trim();
+
+    var rowIDs = sheet
+      .getRange(startRow, rowIDColumn, endRow - startRow + 1, 1)
+      .getDisplayValues();
+
+    var matchedRow = 0;
+    var matchCount = 0;
+
+    for (var k = 0; k < rowIDs.length; k++) {
+      if (String(rowIDs[k][0]).trim() === targetRowID) {
+        matchedRow = startRow + k;
+        matchCount++;
+      }
+    }
+
+    if (matchCount === 0) {
+      return updateRowJson_({
+        success: false,
+        message: "RowID tidak ditemukan: " + targetRowID
+      });
+    }
+
+    if (matchCount > 1) {
+      return updateRowJson_({
+        success: false,
+        message: "RowID duplikat. Penyimpanan dibatalkan: " + targetRowID
+      });
+    }
+
+    if (
+      body.ProjectID !== undefined &&
+      body.ProjectID !== null &&
+      String(body.ProjectID).trim() !== "" &&
+      String(body.ProjectID).trim() !== "*"
+    ) {
+      var projectColumnLetter = String(
+        body.ProjectIDColumn || ""
+      ).trim().toUpperCase();
+
+      var projectColumnNumber = updateRowColumnNumber_(
+        projectColumnLetter
+      );
+
+      if (
+        projectColumnNumber < 1 ||
+        projectColumnNumber > sheet.getMaxColumns()
+      ) {
+        return updateRowJson_({
+          success: false,
+          message: "ProjectIDColumn tidak valid: " + projectColumnLetter
+        });
+      }
+
+      var actualProjectID = String(
+        sheet.getRange(matchedRow, projectColumnNumber).getDisplayValue()
+      ).trim();
+
+      if (actualProjectID !== String(body.ProjectID).trim()) {
+        return updateRowJson_({
+          success: false,
+          message: "RowID tidak termasuk ProjectID yang diizinkan."
+        });
+      }
+    }
+
+    var lock = LockService.getScriptLock();
+
+    if (!lock.tryLock(10000)) {
+      return updateRowJson_({
+        success: false,
+        message: "Sistem sedang memproses penyimpanan lain. Coba lagi."
+      });
+    }
+
+    try {
+      updates.forEach(function (item) {
+        var cell = sheet.getRange(matchedRow, item.columnNumber);
+
+        var valueToSave =
+          item.value === null || item.value === undefined
+            ? ""
+            : item.value;
+
+        if (
+          typeof valueToSave === "string" &&
+          /^\d{4}-\d{2}-\d{2}T/.test(valueToSave)
+        ) {
+          var datePart = valueToSave.substring(0, 10);
+          var dateParts = datePart.split("-");
+
+          valueToSave = new Date(
+            Number(dateParts[0]),
+            Number(dateParts[1]) - 1,
+            Number(dateParts[2])
+          );
+        }
+
+        cell.setValue(valueToSave);
+      });
+
+      SpreadsheetApp.flush();
+    } finally {
+      lock.releaseLock();
+    }
+
+    return updateRowJson_({
+      success: true,
+      message: "Data berhasil disimpan.",
+      RowID: targetRowID,
+      updatedColumnIDs: updates.map(function (item) {
+        return item.columnID;
+      })
+    });
+
+  } catch (error) {
+    return updateRowJson_({
+      success: false,
+      message: "Gagal menyimpan data: " + error.message
+    });
+  }
+}
+
+function updateRowColumnNumber_(columnLetters) {
+  var letters = String(columnLetters || "").trim().toUpperCase();
+
+  if (!/^[A-Z]+$/.test(letters)) {
+    return 0;
+  }
+
+  var number = 0;
+  for (var i = 0; i < letters.length; i++) {
+    number = number * 26 + letters.charCodeAt(i) - 64;
+  }
+  return number;
+}
+
+function updateRowJson_(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/**
+ * ============================================================================
  * SECTION 4: TEST FUNCTIONS
  * ============================================================================
  */
 
-function testGetGSheetData() {
-  const SPREADSHEET_ID = "1Gzo0l_7klJHcpOCXFsxQYlI75kWSjcP5w_GmgMASkb4";
-
-  const result = getGSheetData(
-    SPREADSHEET_ID,
-    "data",
-    1,          // columnIDRow
-    2,          // columnTitleRow
-    3,          // columnTitleDescriptionRow
-    4,          // columnTypeRow
-    "B5:E10",   // dataRange
-    "A"         // RowIDColumn
-  );
-
-  Logger.log("========== TEST getGSheetData ==========");
-  Logger.log("Status: " + result.status);
-  Logger.log("Error: " + result.error);
-
-  if (result.status !== "success") {
-    Logger.log("TEST FAILED: " + result.error);
-    return;
-  }
-
-  Logger.log("Column IDs: " + JSON.stringify(result.columnIDs));
-  Logger.log("Column Titles: " + JSON.stringify(result.columnTitles));
-  Logger.log("Column Descriptions: " + JSON.stringify(result.columnDescriptions));
-  Logger.log("Column Types: " + JSON.stringify(result.columnTypes));
-
-  Logger.log("Total Data Rows: " + result.data.length);
-  Logger.log("Total Row IDs: " + result.rowIDs.length);
-
-  Logger.log("Data Sample: " + JSON.stringify(result.data.slice(0, 5)));
-  Logger.log("Row ID Sample: " + JSON.stringify(result.rowIDs.slice(0, 5)));
-
-  // Test akses data
-  Logger.log("Row 0 Col 0: " + result.get(0, 0));
-  Logger.log("Row 1 Col 2: " + result.get(1, 2));
-
-  // Test akses Row ID
-  Logger.log("Row 0 ID: " + result.rowIDs[0]);
-  Logger.log("Row 1 ID: " + result.rowIDs[1]);
-
-  // Test jumlah baris
-  Logger.log(
-    "Data rows = Row ID count: " +
-    (result.data.length === result.rowIDs.length)
-  );
-
-  // Test di luar range
-  Logger.log("Row Out of Bounds: " + result.get(999, 0));
-
-  Logger.log("========== END TEST ==========");
-} 
-
-function testToken(){
-  validateAuthTokenWithAuthApi_("64c4ef215b97d68dd76dfe993220cb494a65aa8714d7a3b2bcf97c214688c93d");
-}
-
-function testDoGet() {
-  const SPREADSHEET_ID = "1Gzo0l_7klJHcpOCXFsxQYlI75kWSjcP5w_GmgMASkb4";
-  const dummyEvent = {
-    parameter: {
-      GSheetID: SPREADSHEET_ID,
-      sheetName: "data",
-      columnIDRow: "1",
-      columnTitleRow: "2",
-      columnTitleDescriptionRow: "3",
-      columnTypeRow: "4",
-      dataRange: "B5:Z100",
-      RowIDColumn: "A",
-      RowID: "5135.728397",
-      columnIDs: JSON.stringify(["1","5","8"])
-    }
-  };
-
-  const response = doGet(dummyEvent);
-  Logger.log(response.getContent());
-}
-
-function testLogin() {
-  const result = login("nana", "abc");
-
-  Logger.log(JSON.stringify({
-    success: result.success,
-    message: result.message,
-    user: result.user || null,
-    expiresAt: result.expiresAt || null
-  }));
-}
-
-function clearAllAuthSessions() {
-  const properties = PropertiesService.getScriptProperties();
-  const allProperties = properties.getProperties();
-
-  let deleted = 0;
-
-  Object.keys(allProperties).forEach(function(key) {
-    if (key.indexOf("AUTH_SESSION_") === 0) {
-      properties.deleteProperty(key);
-      deleted++;
-    }
-  });
-
-  Logger.log("Sesi dihapus: " + deleted);
-}
-
-function testAuthFlow() {
-  const result = login("nana", "abc");
-
-  Logger.log("Login berhasil: " + result.success);
-
-  if (!result.success) {
-    Logger.log("Pesan: " + result.message);
-    return;
-  }
-
-  const check = validateSession(result.token);
-
-  Logger.log("Sesi valid: " + check.success);
-
-  const logoutResult = logout(result.token);
-
-  Logger.log("Logout berhasil: " + logoutResult.success);
-
-  const afterLogout = validateSession(result.token);
-
-  Logger.log("Sesi setelah logout: " + afterLogout.success);
-}
-
-function testDoPostLogin() {
+function testDoPostLoginWithProjectCode() {
   const e = {
     postData: {
       contents: JSON.stringify({
         action: "login",
         username: "nana",
-        password: "abc"
+        password: "abc",
+        projectCode: "25-1808"
       })
     }
   };
@@ -1462,10 +1545,6 @@ function testDoPostLogin() {
   const response = doPost(e);
   const result = JSON.parse(response.getContent());
 
-  Logger.log(JSON.stringify({
-    success: result.success,
-    message: result.message,
-    user: result.user || null,
-    tokenReceived: Boolean(result.token)
-  }));
+  Logger.log("========== TEST LOGIN WITH PROJECT CODE ==========");
+  Logger.log(JSON.stringify(result, null, 2));
 }

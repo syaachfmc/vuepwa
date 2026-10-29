@@ -1,28 +1,27 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { login, validateSession } from "../../api/auth.js";
+import { login, validateSession, getProjectList } from "../../api/auth.js";
+import { config } from "../../config/ssrConfig.js";
 
 const emit = defineEmits(["login-success", "close"]);
 
+// State Otentikasi & Aplikasi
 const token = ref(sessionStorage.getItem("authToken") || "");
 const user = ref(null);
 const checkingSession = ref(true);
 
-// State Form
+// State Form & Loading
 const username = ref("");
 const password = ref("");
-const projectCode = ref(""); // State untuk Project Code
+const projectCode = ref("");
 const loading = ref(false);
 const errorMessage = ref("");
 
-// Daftar Pilihan Project Code
-const projectOptions = [
-  "Proj 01",
-  "25-1808",
-  "25-1812",
-  "18-1206",
-  "Proj 06"
-];
+// State Dinamis Opsi Project
+const projectOptions = ref([]);
+const loadingProjects = ref(true);
+
+// --- Handlers ---
 
 function handleClose() {
   emit("close");
@@ -39,7 +38,6 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    // Kirim username, password, dan projectCode
     const result = await login(username.value, password.value, projectCode.value);
 
     if (!result.success) {
@@ -50,6 +48,11 @@ async function handleLogin() {
     sessionStorage.setItem("authToken", result.token);
     token.value = result.token;
     user.value = result.user;
+
+    // Set ProjectID di config secara dinamis saat Login Berhasil
+    if (result.user && result.user.projectCode) {
+      config.value.ProjectID = result.user.projectCode;
+    }
 
     username.value = "";
     password.value = "";
@@ -65,6 +68,23 @@ async function handleLogin() {
 }
 
 onMounted(async () => {
+  // 1. Ambil daftar project dari GAS
+  try {
+    loadingProjects.value = true;
+    const projectRes = await getProjectList();
+    
+    if (projectRes.success && Array.isArray(projectRes.data)) {
+      projectOptions.value = projectRes.data;
+    } else {
+      console.warn("Daftar project gagal dimuat:", projectRes.message);
+    }
+  } catch (error) {
+    console.error("Gagal mengambil daftar project:", error);
+  } finally {
+    loadingProjects.value = false;
+  }
+
+  // 2. Validasi sesi aktif jika token tersedia
   if (!token.value) {
     checkingSession.value = false;
     return;
@@ -75,6 +95,12 @@ onMounted(async () => {
 
     if (result.success) {
       user.value = result.user;
+
+      // Set ProjectID di config saat pemulihan/validasi Sesi
+      if (result.user && result.user.projectCode) {
+        config.value.ProjectID = result.user.projectCode;
+      }
+
       emit("login-success", { token: token.value, user: result.user });
     } else {
       sessionStorage.removeItem("authToken");
@@ -94,6 +120,7 @@ onMounted(async () => {
     <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
 
     <div v-else class="card">
+      <!-- Tombol Close (X) -->
       <button type="button" class="close-btn" @click="handleClose" aria-label="Tutup">
         &times;
       </button>
@@ -121,12 +148,18 @@ onMounted(async () => {
           required
         />
 
-        <!-- Dropdown Project Code -->
+        <!-- Dropdown Project Code Dinamis -->
         <label for="projectCode">Project Code</label>
-        <select id="projectCode" v-model="projectCode" required>
-          <option value="" disabled>-- Pilih Project Code --</option>
-          <option v-for="proj in projectOptions" :key="proj" :value="proj">
-            {{ proj }}
+        <select id="projectCode" v-model="projectCode" :disabled="loadingProjects" required>
+          <option value="" disabled>
+            {{ loadingProjects ? "Memuat daftar project..." : "-- Pilih Project Code --" }}
+          </option>
+          <option 
+            v-for="proj in projectOptions" 
+            :key="proj.code" 
+            :value="proj.code"
+          >
+            {{ proj.code }}{{ proj.name ? ` - ${proj.name}` : '' }}
           </option>
         </select>
 
@@ -134,7 +167,7 @@ onMounted(async () => {
           {{ errorMessage }}
         </p>
 
-        <button type="submit" class="submit-btn" :disabled="loading">
+        <button type="submit" class="submit-btn" :disabled="loading || loadingProjects">
           {{ loading ? "Memproses..." : "Login" }}
         </button>
       </form>
@@ -143,7 +176,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Tambahkan styling khusus untuk <select> agar seragam dengan <input> */
 select {
   box-sizing: border-box;
   width: 100%;
@@ -155,7 +187,11 @@ select {
   cursor: pointer;
 }
 
-/* KODE STYLE LAINNYA TETAP SAMA SEPERTI SEBELUMNYA */
+select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
