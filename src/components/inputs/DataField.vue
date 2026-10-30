@@ -1,81 +1,41 @@
 <template>
   <div class="form-group">
-    <label
-      v-if="columnTitle && !noLabel"
-      ref="labelElement"
-      :for="`col_${id}`"
-      class="label"
-      @mouseenter="showTooltip"
-      @mouseleave="hideTooltip"
-    >
+    <label v-if="columnTitle && !noLabel" ref="labelElement" :for="`col_${id}`" class="label" @mouseenter="showTooltip"
+      @mouseleave="hideTooltip">
       {{ columnTitle }}
     </label>
 
     <!-- Textbox -->
-    <textbox
-      v-if="type === 'text' || type === 'number'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :type="type === 'number' ? 'number' : 'text'"
-      :reset-key="resetKey"
-      :width="width"
-      v-bind="$attrs"
-    />
+    <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
+      :type="type === 'number' ? 'number' : 'text'" :reset-key="resetKey" :width="width"
+      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
+      @dirty-change="(isDirty) => console.log('Textbox dirty state changed:', id, isDirty)" />
 
     <!-- DatePicker -->
-    <DatePicker
-      v-else-if="type === 'date' || type === 'datetime'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :enable-time-picker="enableTime || type === 'datetime'"
-      :reset-key="resetKey"
-      :width="width"
-      v-bind="$attrs"
-    />
+    <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
+      :enable-time-picker="enableTime || type === 'datetime'" :reset-key="resetKey" :width="width"
+      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" />
 
     <!-- Dropdown -->
-    <dropdown
-      v-else-if="type === 'dropdown'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :options="Array.isArray(options) ? options : options.value"
-      :editable="editable"
-      :reset-key="resetKey"
-      :width="width"
-      v-bind="$attrs"
-    />
+    <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
+      :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="resetKey"
+      :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
+      @dirty-change="(isDirty) => console.log('Dropdown dirty state changed:', id, isDirty)" />
 
-    <checkBox
-      v-else-if="type === 'checkbox'"
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :reset-key="resetKey"
-      v-bind="$attrs"  
-      
-    />
+    <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="resetKey"
+      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
+      @dirty-change="(isDirty) => console.log('Dropdown dirty state changed:', id, isDirty)" />
 
     <!-- Fallback -->
-    <input
-      v-else
-      :id="`col_${id}`"
-      v-model="modelValue"
-      :type="type"
-      class="custom-input"
-      :style="{ width: customWidth }"
-      v-bind="$attrs"
-    />
+    <input v-else :id="`col_${id}`" v-model="modelValue" :type="type" class="custom-input"
+      :style="{ width: customWidth }" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" />
   </div>
 
   <!-- Tooltip di luar parent agar tidak terpotong overflow -->
   <Teleport to="body">
     <Transition name="split-vertical">
-      <div
-        v-if="tooltipVisible && columnTooltips"
-        ref="tooltipElement"
-        class="custom-tooltip"
-        :style="tooltipStyle"
-        role="tooltip"
-      >
+      <div v-if="tooltipVisible && columnTooltips" ref="tooltipElement" class="custom-tooltip" :style="tooltipStyle"
+        role="tooltip">
         {{ columnTooltips }}
       </div>
     </Transition>
@@ -90,6 +50,11 @@ import dropdown from '../inputs/dropdown.vue'
 import checkBox from './checkBox.vue'
 
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
+
+function textCliked() {
+  console.log('Text clicked', props.id, modelValue.value)
+}
+
 
 defineOptions({
   inheritAttrs: false
@@ -133,7 +98,7 @@ const props = defineProps({
     type: [String, Number],
     default: '150px'
   },
-  
+
 })
 
 // Tooltip state
@@ -153,36 +118,44 @@ const customWidth = computed(() => {
 })
 
 // Binding ke store
-// Binding ke store
+const hasSelectedRow = computed(() => {
+  return !!SelectedRowStore.selectedRow.value
+})
+
 const modelValue = computed({
   get() {
+
     const value =
       SelectedRowStore.selectedRow.value?.[String(props.id)] ?? ''
 
     // Konversi khusus untuk checkbox
+    // Kosongkan field jika belum ada row dipilih
+    if (!hasSelectedRow.value) {
+      return props.type === 'checkbox' ? false : ''
+    }
     if (props.type === 'checkbox') {
       return value === true ||
-             String(value).toUpperCase() === 'TRUE'
+        String(value).toUpperCase() === 'TRUE'
     }
 
-    // Komponen lainnya tetap menggunakan nilai asli
     return value
   },
 
   set(val) {
-    if (SelectedRowStore.selectedRow.value) {
-      SelectedRowStore.selectedRow.value[String(props.id)] = val
-    }
+    // Jangan izinkan perubahan jika belum ada row
+    if (!hasSelectedRow.value) return
+
+    SelectedRowStore.selectedRow.value[String(props.id)] = val
   }
 })
 
 
 // Judul kolom
 const columnTitle = computed(() => {
-  
+
   const col = SelectedRowStore.columns.value?.find(
     c => String(c.id) === String(props.id)
-  ) 
+  )
   return col ? col.title : ''
 })
 
@@ -326,6 +299,4 @@ onBeforeUnmount(() => {
   opacity: 1;
   transform: scaleX(1);
 }
-
-
 </style>

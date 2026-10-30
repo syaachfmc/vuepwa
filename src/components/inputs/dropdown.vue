@@ -257,7 +257,8 @@ const emit = defineEmits([
   'change',
   'focus',
   'blur',
-  'click'
+  'click',
+  'dirty-change'
 ])
 
 const themeColors = APP_COLORS || {}
@@ -375,6 +376,14 @@ function handleClickOutside(event) {
 
 const isDirty = computed(
   () => props.modelValue !== initialValue.value
+)
+
+watch(
+    isDirty,
+    (newValue, oldValue) => {
+        emit('dirty-change', newValue)
+    },
+    { immediate: true }
 )
 
 const normalizedOptions = computed(() => {

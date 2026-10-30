@@ -35,10 +35,10 @@
                 <div class="ShipmentNo">
                     <label for="col_2" class="label">{{ shipmentColumnTitle }}:</label>
                     <label id="col_2" class="shipment-no-title">
-                        {{ SelectedRowStore.selectedRow.value['2'] || '-' }}
+                        {{ SelectedRowStore.selectedRow.value?.['2'] || '-' }}
                     </label>
                     <label id="col_9" class="shipment-desc-title">
-                        {{ SelectedRowStore.selectedRow.value['9'] || '-' }}
+                        {{ SelectedRowStore.selectedRow.value?.['9'] || '-' }}
                     </label>
                 </div>
                 <section class="MainContent">

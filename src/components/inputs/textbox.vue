@@ -40,6 +40,7 @@ import { APP_COLORS } from '../../constants/colors.js'
 // PROPS
 // --------------------------------------------------
 const props = defineProps({
+     
     modelValue: {
          type: [String, Number],
          default: ''
@@ -243,7 +244,8 @@ const emit = defineEmits([
     'blur',
     'keydown',
     'keyup',
-    'click'
+    'click',
+    'dirty-change'
 ])
 // --------------------------------------------------
 // REF & STATE
@@ -264,6 +266,15 @@ const initialValue = ref(normalizeValue(props.modelValue))
 const isDirty = computed(() => {
     return normalizeValue(props.modelValue) !== initialValue.value
 })
+
+watch(
+    isDirty,
+    (newValue, oldValue) => {
+        emit('dirty-change', newValue)
+    },
+    { immediate: true }
+)
+
 // --------------------------------------------------
 // INITIAL VALUE & ROW SWITCH
 // --------------------------------------------------

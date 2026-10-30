@@ -185,7 +185,8 @@ const emit = defineEmits([
     'blur',
     'keydown',
     'keyup',
-    'click'
+    'click',
+    'dirty-change'
 ])
 
 // --------------------------------------------------
@@ -208,6 +209,15 @@ const isDirty = computed(() => {
         Boolean(props.indeterminate) !== initialIndeterminate.value
     )
 })
+
+watch(
+    isDirty,
+    (newValue, oldValue) => {
+        emit('dirty-change', newValue)
+    },
+    { immediate: true }
+)
+
 
 // Sync property indeterminate ke elemen DOM input asli
 watch(
