@@ -467,7 +467,7 @@ async function renderTable() {
       autoResize: false,
       height: "100%",
       renderVertical: "virtual",
-      renderVerticalBuffer: 20,
+      renderVerticalBuffer: false,
       index: '__rowIndex',
       placeholder: 'Tidak ada data',
       movableColumns: true,
