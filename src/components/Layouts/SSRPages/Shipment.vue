@@ -53,11 +53,6 @@
 
       </ContainerB>
     </div>
-
-    <div class="action-buttons">
-      <button @click="handleSave">Simpan</button>
-      <button @click="handleReset">Reset</button>
-    </div>
   </div>
 </template>
 
@@ -183,22 +178,8 @@ watch(
   { deep: true }
 )
 
-function handleSave() {
-  const currentData = SelectedRowStore.selectedRow.value
-  if (currentData) {
-    commitOriginal([], currentData)
-    resetKey.value++
-    console.log('Data Shipment tersimpan:', currentData[2])
-  }
-}
 
-function handleReset() {
-  resetToOriginal()
-  if (SelectedRowStore.selectedRow.value) {
-    Object.assign(SelectedRowStore.selectedRow.value, form)
-  }
-  resetKey.value++
-}
+
 </script>
 
 
@@ -220,16 +201,6 @@ function handleReset() {
   border: 1px solid #ccc;
   padding: 8px;
 
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.action-buttons button {
-  padding: 6px 12px;
-  cursor: pointer;
 }
 
 .divcolumn {
