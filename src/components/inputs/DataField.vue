@@ -7,24 +7,24 @@
 
     <!-- Textbox -->
     <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
-      :type="type === 'number' ? 'number' : 'text'" :reset-key="resetKey" :width="width"
+      :type="type === 'number' ? 'number' : 'text'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
       @dirty-change="(isDirty) => console.log('Textbox dirty state changed:', id, isDirty)" />
 
     <!-- DatePicker -->
     <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
-      :enable-time-picker="enableTime || type === 'datetime'" :reset-key="resetKey" :width="width"
+      :enable-time-picker="enableTime || type === 'datetime'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" 
       @dirty-change="(isDirty) => console.log('DatePicker dirty state changed:', id, isDirty)" />
       
 
     <!-- Dropdown -->
     <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
-      :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="resetKey"
+      :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="internalResetKey"
       :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
       @dirty-change="(isDirty) => console.log('Dropdown dirty state changed:', id, isDirty)" />
 
-    <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="resetKey"
+    <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="internalResetKey"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
       @dirty-change="(isDirty) => console.log('checkBox dirty state changed:', id, isDirty)" />
 
@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { computed, ref, nextTick, onBeforeUnmount } from 'vue'
+import { computed, ref, nextTick, onBeforeUnmount, watch } from 'vue'
 import textbox from '../inputs/textbox.vue'
 import DatePicker from './DatePicker.vue'
 import dropdown from '../inputs/dropdown.vue'
@@ -56,6 +56,7 @@ import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 function textCliked() {
   console.log('Text clicked', props.id, modelValue.value)
 }
+
 
 
 defineOptions({
@@ -102,6 +103,15 @@ const props = defineProps({
   },
 
 })
+
+const internalResetKey = ref(0)
+
+watch(
+  () => props.resetKey,
+  () => {
+    internalResetKey.value++
+  }
+)
 
 // Tooltip state
 const labelElement = ref(null)

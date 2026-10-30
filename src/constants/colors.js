@@ -24,8 +24,8 @@ export const APP_COLORS = {
   
   // --- WARNA BORDER ---
   borderDefault: 'rgba(198, 199, 219, 0.82)',
-  borderHover: 'rgba(119, 119, 119, 1)',
-  borderFocus: 'rgba(119, 119, 119, 1)',
+  borderHover: 'rgb(0, 162, 255)',
+  borderFocus: 'rgba(119, 119, 119, 0)',
   borderError: 'rgba(220, 53, 69, 1)',
 
   // --- WARNA STATE (DIRTY BADGE, ERROR) ---
@@ -42,8 +42,8 @@ export const APP_COLORS = {
   optionEmptyText: 'rgba(136, 136, 136, 1)',
 
   // --- SHADOWS ---
-  shadowColorNormal: flatTheme ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0.2)',
-  shadowColorHover: flatTheme ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0.2)',
+  shadowColorNormal: flatTheme ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0)',
+  shadowColorHover: flatTheme ? 'rgba(255, 255, 255, 0)' : 'rgba(0, 0, 0, 0.08)',
   shadowColorFocus: 'rgba(0, 0, 0, 0.2)',
   shadowColorError: 'rgba(220, 53, 69, 0.2)',
   shadowColorErrorHover: 'rgba(220, 53, 69, 0.4)',
