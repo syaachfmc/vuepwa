@@ -10,7 +10,7 @@ export const config = ref({
   columnTypeRow: 4,
   dataRange: 'B5:BY',
   RowIDColumn: 'A',
-  ProjectID: '25-1808',
+  ProjectID: '',
   ProjectIDColumn: 'B',
   FrozenColumnIndex: ['2'],
   tableDateFormat: 'dd MMM yy'
