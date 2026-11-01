@@ -34,6 +34,7 @@ async function handleLogout() {
     console.error("Logout server gagal:", error);
   } finally {
     sessionStorage.removeItem("authToken");
+    sessionStorage.removeItem("authUser");
     loading.value = false;
     emit("logout-success");
   }

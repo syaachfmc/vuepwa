@@ -129,6 +129,7 @@ const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 function handleRelogin() {
   sessionStorage.removeItem("authToken");
+  sessionStorage.removeItem("authUser");
   emit('relogin');
 }
 

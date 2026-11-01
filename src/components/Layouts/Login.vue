@@ -46,6 +46,8 @@ async function handleLogin() {
     }
 
     sessionStorage.setItem("authToken", result.token);
+    sessionStorage.setItem("authUser", JSON.stringify(result.user));
+
     token.value = result.token;
     user.value = result.user;
 
@@ -72,7 +74,7 @@ onMounted(async () => {
   try {
     loadingProjects.value = true;
     const projectRes = await getProjectList();
-    
+
     if (projectRes.success && Array.isArray(projectRes.data)) {
       projectOptions.value = projectRes.data;
     } else {
@@ -95,6 +97,7 @@ onMounted(async () => {
 
     if (result.success) {
       user.value = result.user;
+      sessionStorage.setItem("authUser", JSON.stringify(result.user));
 
       // Set ProjectID di config saat pemulihan/validasi Sesi
       if (result.user && result.user.projectCode) {
@@ -104,6 +107,7 @@ onMounted(async () => {
       emit("login-success", { token: token.value, user: result.user });
     } else {
       sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("authUser");
       token.value = "";
     }
   } catch (error) {
@@ -131,22 +135,11 @@ onMounted(async () => {
       <form @submit.prevent="handleLogin">
         <!-- Input Username -->
         <label for="username">Username</label>
-        <input
-          id="username"
-          v-model.trim="username"
-          autocomplete="username"
-          required
-        />
+        <input id="username" v-model.trim="username" autocomplete="username" required />
 
         <!-- Input Password -->
         <label for="password">Password</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        />
+        <input id="password" v-model="password" type="password" autocomplete="current-password" required />
 
         <!-- Dropdown Project Code Dinamis -->
         <label for="projectCode">Project Code</label>
@@ -154,11 +147,7 @@ onMounted(async () => {
           <option value="" disabled>
             {{ loadingProjects ? "Memuat daftar project..." : "-- Pilih Project Code --" }}
           </option>
-          <option 
-            v-for="proj in projectOptions" 
-            :key="proj.code" 
-            :value="proj.code"
-          >
+          <option v-for="proj in projectOptions" :key="proj.code" :value="proj.code">
             {{ proj.code }}{{ proj.name ? ` - ${proj.name}` : '' }}
           </option>
         </select>
@@ -225,7 +214,7 @@ select:disabled {
   border-radius: 12px;
   box-sizing: border-box;
   background: var(--color-bgPrimaryGrad, #ffffff);
-  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal, rgba(0,0,0,0.2));
+  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal, rgba(0, 0, 0, 0.2));
 }
 
 .close-btn {

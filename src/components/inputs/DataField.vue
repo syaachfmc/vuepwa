@@ -9,24 +9,24 @@
     <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
       :type="type === 'number' ? 'number' : 'text'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
-      @dirty-change="(isDirty) => console.log('Textbox dirty state changed:', id, isDirty)" />
+      @dirty-change="(isDirty) =>  {}" />
 
     <!-- DatePicker -->
     <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" 
-      @dirty-change="(isDirty) => console.log('DatePicker dirty state changed:', id, isDirty)" />
+      @dirty-change="(isDirty) => {}" />
       
 
     <!-- Dropdown -->
     <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
       :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="internalResetKey"
       :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
-      @dirty-change="(isDirty) => console.log('Dropdown dirty state changed:', id, isDirty)" />
+      @dirty-change="(isDirty) => {}" />
 
     <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="internalResetKey"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
-      @dirty-change="(isDirty) => console.log('checkBox dirty state changed:', id, isDirty)" />
+      @dirty-change="(isDirty) => {}" />
 
     <!-- Fallback -->
     <input v-else :id="`col_${id}`" v-model="modelValue" :type="type" class="custom-input"

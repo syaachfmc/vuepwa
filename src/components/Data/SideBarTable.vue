@@ -27,9 +27,12 @@ function handleLoginSuccess() {
 
 function handleRelogin() {
     sessionStorage.removeItem("authToken");
+    sessionStorage.removeItem("authUser");
     isLoggedIn.value = false;
 }
 
+
+/*TEST AMBIL DATA PER ROW
 async function getSelectedDataGSheet(rowID) {
     if (!rowID) {
         selectedDataGSheet.value = '';
@@ -60,7 +63,7 @@ async function getSelectedDataGSheet(rowID) {
             RowID: String(rowID),
             columnIDs: JSON.stringify(['8']),
         });
-
+        console.log("aparams sidebartable ", params.toString())
         const response = await fetch(
             `${config.value.webAppUrl}?${params.toString()}`
         );
@@ -93,14 +96,15 @@ async function getSelectedDataGSheet(rowID) {
         selectedDataGSheet.value = `Error: ${error.message}`;
     }
 }
+*/
 
 async function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
     console.log("selectedRowID", selectedRowID.value);
 
-    await getSelectedDataGSheet(selectedRowID.value);
-    console.log("selectedDataGSheet", selectedDataGSheet.value);
+    // await getSelectedDataGSheet(selectedRowID.value);
+    // console.log("selectedDataGSheet", selectedDataGSheet.value);
 }
 
 </script>

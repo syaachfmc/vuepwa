@@ -18,11 +18,11 @@ export async function fetchGSheetData(
   webAppUrl,
   gsheetID,
   sheetName,
-  columnIDRow = 1,
-  columnTitleRow = 2,
-  columnTitleDescriptionRow = 3,
-  columnTypeRow = 4,
-  dataRange = 'A5:Z',
+  columnIDRow,
+  columnTitleRow,
+  columnTitleDescriptionRow,
+  columnTypeRow,
+  dataRange = '',
   rowIDColumn = '',
   projectID = '',
   projectIDColumn = ''
@@ -31,6 +31,8 @@ export async function fetchGSheetData(
 
   // Ambil token dari sessionStorage
   const token = sessionStorage.getItem("authToken") || "";
+  const authUser = JSON.parse(sessionStorage.getItem('authUser') || '{}');
+  projectID = authUser.projectCode || '';
 
   url.searchParams.append("token", token);
   url.searchParams.append("GSheetID", gsheetID);
@@ -43,7 +45,10 @@ export async function fetchGSheetData(
   if (rowIDColumn) {
     url.searchParams.append("RowIDColumn", rowIDColumn);
   }
+
+  console.log("project id:", projectID)
   if (projectID !== undefined && projectID !== null && projectID !== '') {
+
     url.searchParams.append("ProjectID", projectID);
   }
   if (projectIDColumn) {
@@ -94,8 +99,8 @@ function attachClientWrapper(obj) {
     status: obj && obj.status ? obj.status : "error",
     error: obj && obj.error !== undefined ? obj.error : "Unknown client error",
     columnIDs: Array.isArray(obj && obj.columnIDs) ? obj.columnIDs : [],
-    columnTitles: Array.isArray(obj && obj.columnTitles) 
-      ? obj.columnTitles 
+    columnTitles: Array.isArray(obj && obj.columnTitles)
+      ? obj.columnTitles
       : (Array.isArray(obj && obj.columnHeaders) ? obj.columnHeaders : []),
     columnDescriptions: Array.isArray(obj && obj.columnDescriptions) ? obj.columnDescriptions : [],
     columnTypes: Array.isArray(obj && obj.columnTypes) ? obj.columnTypes : [],
@@ -104,7 +109,7 @@ function attachClientWrapper(obj) {
   };
 
   Object.defineProperty(safeObj, 'get', {
-    value: function(rowIndex, colIndex) {
+    value: function (rowIndex, colIndex) {
       if (
         Array.isArray(this.data) &&
         rowIndex >= 0 &&
