@@ -18,7 +18,7 @@
         </div>
       </ContainerB>
 
-      <div class="divrow">
+      <div class="divrow container-row">
         <ContainerB title="PO">
           <div class="divrow">
             <DataField id="12" type="text" :reset-key="resetKey" />
@@ -189,6 +189,7 @@ watch(
   flex-direction: column;
   gap: 16px;
   padding: 8px;
+  width: 100%;
 
 }
 
@@ -213,5 +214,18 @@ watch(
   flex-direction: row;
   gap: 10px;
 
+}
+
+.container-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.container-row > * {
+  flex: 1 1 auto;
+  min-width: max-content;
 }
 </style>

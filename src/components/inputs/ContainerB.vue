@@ -31,7 +31,9 @@ defineProps({
     border: 1px solid rgba(203, 203, 203, 0.408);
     border-radius: 6px;
 
-    min-width: 0;
+    width: auto;
+    min-width: max-content;
+    box-sizing: border-box;
 }
 
 .wrapper-title {
