@@ -14,7 +14,7 @@ const dropdownConfig = {
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'b5:Z',
+  dataRange: 'B5:BH',
   RowIDColumn: 'A',
   ProjectID: 'any',
   ProjectIDColumn: 'B'

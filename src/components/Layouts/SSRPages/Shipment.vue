@@ -5,22 +5,29 @@
       <div class="dataItemContainer container-row">
         <ContainerB title="Shipment">
           <div class="dataItemContainer">
-            <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" 
+            <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
               :size="{ width: '170px', height: '32px' }" />
             <DataField id="5" type="date" :reset-key="resetKey" />
             <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
           </div>
-
           <div class="dataItemContainer">
             <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9')"
               :size="{ width: '480px', height: '32px' }" />
           </div>
         </ContainerB>
-        <ContainerB title="Arrange">
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
-            :size="{ width: '90px', height: '32px' }" />
-          <div class="dataItemContainer">
 
+        <ContainerB title="Arrange">
+          <div class="dataItemContainer">
+            <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('9')"
+              :size="{ width: '150px', height: '32px' }" />
+            <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('10')"
+              :size="{ width: '120px', height: '32px' }" />
+          </div>
+          <div class="dataItemContainer">
+            <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
+              :size="{ width: '150px', height: '32px' }" />
+            <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
+              :size="{ width: '120px', height: '32px' }" />
           </div>
         </ContainerB>
       </div>
