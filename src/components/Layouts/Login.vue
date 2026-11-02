@@ -8,7 +8,9 @@ const emit = defineEmits(["login-success", "close"]);
 // State Otentikasi & Aplikasi
 const token = ref(sessionStorage.getItem("authToken") || "");
 const user = ref(null);
-const checkingSession = ref(true);
+
+// Jika tidak ada token sejak awal, set false secara synchronous agar form langsung tampil
+const checkingSession = ref(!!token.value);
 
 // State Form & Loading
 const username = ref("");
@@ -69,8 +71,8 @@ async function handleLogin() {
   }
 }
 
-onMounted(async () => {
-  // 1. Ambil daftar project dari GAS
+// Fungsi internal untuk memuat daftar project
+async function fetchProjects() {
   try {
     loadingProjects.value = true;
     const projectRes = await getProjectList();
@@ -85,13 +87,18 @@ onMounted(async () => {
   } finally {
     loadingProjects.value = false;
   }
+}
 
-  // 2. Validasi sesi aktif jika token tersedia
+onMounted(async () => {
+  // 1. Jalankan pemanggilan daftar project secara independen (non-blocking)
+  fetchProjects();
+
+  // 2. Jika token TIDAK ada, langsung keluar (UI form login sudah aktif)
   if (!token.value) {
-    checkingSession.value = false;
     return;
   }
 
+  // 3. Hanya jika token ADA, lakukan validasi sesi di background/loading state
   try {
     const result = await validateSession(token.value);
 
@@ -99,7 +106,6 @@ onMounted(async () => {
       user.value = result.user;
       sessionStorage.setItem("authUser", JSON.stringify(result.user));
 
-      // Set ProjectID di config saat pemulihan/validasi Sesi
       if (result.user && result.user.projectCode) {
         config.value.ProjectID = result.user.projectCode;
       }
@@ -118,7 +124,6 @@ onMounted(async () => {
   }
 });
 </script>
-
 <template>
   <div class="modal-overlay" @click.self="handleClose">
     <p v-if="checkingSession" class="status-message">Memeriksa sesi...</p>
