@@ -434,6 +434,7 @@ function onKeydown(event) {
 }
 function onKeyup(event) {
     emit('keyup', event)
+    emit('change', event.target.value)
 }
 function onClick(event) {
     emit('click', event)

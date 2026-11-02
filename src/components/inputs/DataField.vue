@@ -58,7 +58,7 @@ import checkBox from './checkBox.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 
 function textCliked() {
-  console.log('Text clicked', props.id, modelValue.value)
+ 
 }
 
 

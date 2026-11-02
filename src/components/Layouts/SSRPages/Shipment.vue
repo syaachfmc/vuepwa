@@ -6,7 +6,7 @@
         <ContainerB title="Shipment">
           <div class="dataItemContainer">
             <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
-              :size="{ width: '170px', height: '32px' }" />
+              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" />
             <DataField id="5" type="date" :reset-key="resetKey" />
             <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
           </div>
@@ -90,6 +90,23 @@ onMounted(() => {
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
 // Regex untuk membaca Shipment Number
 const shipmentPattern = /^(.+)-(S[IR][ILEO])-(\d{5})([A-Z])?$/
+
+function handleShipmentNoChange(newValue) {
+  const shippingCodeMap = {
+  I: 'Shipping Instruction',
+  R: 'Shipping Release'
+}
+
+const arrangeCodeMap = {
+  I: 'Import',
+  L: 'Domestic',
+  E: 'Export',
+  O: 'Other'
+}
+const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+if (!r) { console.log('Format Shipment Number tidak valid'); return }
+SelectedRowStore.selectedRow.value['10']=arrangeCodeMap[r.shipmentType]
+}
 
 function handleShipmentTypeChange(newValue) {
   // Mapping Arrange Type (id=10)
