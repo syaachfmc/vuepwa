@@ -2,41 +2,47 @@
   <div class="shipment-page">
     <div class="form-container">
 
-      <ContainerB title="Shipment">
-        <div class="divrow">
-          <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" />
-          <DataField id="5" type="date" :reset-key="resetKey" />
-          <DataField id="3" type="text" :reset-key="resetKey" />
-          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('5')"
-            :width="'10px'" />
+      <div class="dataItemContainer container-row">
+        <ContainerB title="Shipment">
+          <div class="dataItemContainer">
+            <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }" 
+              :size="{ width: '170px', height: '32px' }" />
+            <DataField id="5" type="date" :reset-key="resetKey" />
+            <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
+          </div>
 
-        </div>
+          <div class="dataItemContainer">
+            <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9')"
+              :size="{ width: '480px', height: '32px' }" />
+          </div>
+        </ContainerB>
+        <ContainerB title="Arrange">
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
+            :size="{ width: '90px', height: '32px' }" />
+          <div class="dataItemContainer">
 
-        <div class="divrow">
-          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9')"
-            :size="{ width: '780px', height: '32px' }" multiline />
-        </div>
-      </ContainerB>
-
-      <div class="divrow container-row">
+          </div>
+        </ContainerB>
+      </div>
+      <div class="dataItemContainer container-row">
         <ContainerB title="PO">
-          <div class="divrow">
+          <div class="dataItemContainer">
             <DataField id="12" type="text" :reset-key="resetKey" />
             <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
             <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
           </div>
-          <div class="divrow">
+          <div class="dataItemContainer">
             <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable
               :options="optionDataList('16')" />
           </div>
         </ContainerB>
         <ContainerB title="Delivery Term">
-          <div class="divrow">
+          <div class="dataItemContainer">
             <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
               :options="getDropdownOptions('5')" />
             <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
           </div>
-          <div class="divrow">
+          <div class="dataItemContainer">
             <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" />
             <DataField id="41" type="checkbox" :reset-key="resetKey" />
           </div>
@@ -45,7 +51,7 @@
       </div>
 
       <ContainerB title="RSR">
-        <div class="divrow">
+        <div class="dataItemContainer">
           <DataField id="6" type="text" :reset-key="resetKey" />
           <DataField id="7" type="date" :reset-key="resetKey" />
           <DataField id="8" type="date" :reset-key="resetKey" />
@@ -204,12 +210,7 @@ watch(
 
 }
 
-.divcolumn {
-  display: flex;
-  flex-direction: column;
-}
-
-.divrow {
+.dataItemContainer {
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -224,7 +225,7 @@ watch(
   align-items: stretch;
 }
 
-.container-row > * {
+.container-row>* {
   flex: 1 1 auto;
   min-width: max-content;
 }
