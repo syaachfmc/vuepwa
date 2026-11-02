@@ -106,6 +106,7 @@ const arrangeCodeMap = {
 const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
 if (!r) { console.log('Format Shipment Number tidak valid'); return }
 SelectedRowStore.selectedRow.value['10']=arrangeCodeMap[r.shipmentType]
+SelectedRowStore.selectedRow.value['301']=shippingCodeMap[r.shippingCode]
 }
 
 function handleShipmentTypeChange(newValue) {
