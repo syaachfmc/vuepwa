@@ -19,13 +19,13 @@
         <ContainerB title="Arrange">
           <div class="dataItemContainer">
             <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('9')"
-              :size="{ width: '150px', height: '32px' }" />
+              :size="{ width: '150px', height: '32px' }" @change="handleShipmentTypeChange" />
             <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('10')"
               :size="{ width: '120px', height: '32px' }" />
           </div>
           <div class="dataItemContainer">
             <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
-              :size="{ width: '150px', height: '32px' }" />
+              :size="{ width: '150px', height: '32px' }" @change="handleDocumentReleasedChange" />
             <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
               :size="{ width: '120px', height: '32px' }" />
           </div>
@@ -80,12 +80,57 @@ import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
 import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
+import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
   loadDropdownList();
 });
 
+/***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
+// Regex untuk membaca Shipment Number
+const shipmentPattern = /^(.+)-(S[IR][ILEO])-(\d{5})([A-Z])?$/
+
+function handleShipmentTypeChange(newValue) {
+  // Mapping Arrange Type (id=10)
+  const arrangeTypeMap = {
+    'Import': 'I',
+    'Domestic': 'L',
+    'Export': 'E',
+    'Other': 'O'
+  }
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+  if (!r) { console.log('Format Shipment Number tidak valid'); return }
+  const newShipmentNo = r.projectSuffix + '-S' + r.shippingCode + arrangeTypeMap[newValue] + "-" + r.sequence + r.grouping
+  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
+}
+
+function handleDocumentReleasedChange(newValue) {
+  // Mapping Shipping Type (id=301)
+  const shippingTypeMap = {
+    'Shipping Instruction': 'I',
+    'Shipping Release': 'R'
+  }
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+  if (!r) { console.log('Format Shipment Number tidak valid'); return }
+  const newShipmentNo = r.projectSuffix + '-S' + shippingTypeMap[newValue] + r.shipmentType + "-" + r.sequence + r.grouping
+  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
+}
+
+function parseShipmentNumber(value) {
+  if (typeof value !== 'string') return null
+  const match = value.trim().match(shipmentPattern)
+  if (!match) return null
+  return {
+    projectSuffix: match[1] ?? '',
+    shippingCode: match[2]?.[1] ?? '',
+    shipmentType: match[2]?.[2] ?? '',
+    sequence: match[3] ?? '',
+    grouping: match[4] ?? ''
+  }
+}
+
+/****************************** */
 
 const { optionDataList } = useTableHelpers()
 
@@ -170,9 +215,11 @@ watch(
 )
 
 // Sinkronkan hanya field yang berubah
+
 watch(
   form,
   (newForm) => {
+
     if (isSwitchingRow.value) return
 
     const selectedRow = SelectedRowStore.selectedRow.value

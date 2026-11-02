@@ -9,12 +9,14 @@
     <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
       :type="type === 'number' ? 'number' : 'text'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
+      @change="$emit('change', $event)"
       @dirty-change="(isDirty) =>  {}" />
 
     <!-- DatePicker -->
     <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" 
+      @change="$emit('change', $event)"
       @dirty-change="(isDirty) => {}" />
       
 
@@ -22,10 +24,12 @@
     <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
       :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="internalResetKey"
       :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
+      @change="$emit('change', $event)"
       @dirty-change="(isDirty) => {}" />
 
     <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="internalResetKey"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
+      @change="$emit('change', $event)"
       @dirty-change="(isDirty) => {}" />
 
     <!-- Fallback -->
@@ -58,6 +62,7 @@ function textCliked() {
 }
 
 
+const emit = defineEmits(['change'])
 
 defineOptions({
   inheritAttrs: false

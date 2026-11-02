@@ -51,7 +51,7 @@ export async function updateGSheetRow({
       changes
     }
   
-    console.log('Payload untuk updateGSheetRow:', payload.changes)
+    
 
     if (ProjectID !== undefined && ProjectID !== null && ProjectID !== '') {
       payload.ProjectID = ProjectID
