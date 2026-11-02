@@ -47,6 +47,7 @@ export async function updateGSheetRow({
       RowIDColumn,
       RowID: String(RowID),
       columnIDRow,
+      ProjectIDColumn,
       changes
     }
   

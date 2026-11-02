@@ -22,18 +22,19 @@ export async function fetchGSheetData(
   columnTitleRow,
   columnTitleDescriptionRow,
   columnTypeRow,
-  dataRange = '',
-  rowIDColumn = '',
-  projectID = '',
-  projectIDColumn = ''
+  dataRange ,
+  rowIDColumn,
+  projectID ,
+  projectIDColumn 
 ) {
   const url = new URL(webAppUrl);
 
   // Ambil token dari sessionStorage
   const token = sessionStorage.getItem("authToken") || "";
   const authUser = JSON.parse(sessionStorage.getItem('authUser') || '{}');
-  projectID = authUser.projectCode || '';
-
+  
+  if (projectID !== 'any') projectID = authUser.projectCode || '';
+  
   url.searchParams.append("token", token);
   url.searchParams.append("GSheetID", gsheetID);
   url.searchParams.append("sheetName", sheetName);

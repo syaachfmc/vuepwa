@@ -53,8 +53,11 @@ function doPost(e) {
 
     switch (action) {
       case "login":
-        // Mengoper username, password, dan projectCode ke fungsi login
         result = login(body.username, body.password, body.projectCode);
+        break;
+
+      case "getProjectList":
+        result = getProjectList(); // Public Endpoint - tanpa validasi token
         break;
 
       case "validateSession":
@@ -67,6 +70,9 @@ function doPost(e) {
 
       case "updateRow":
         return handleUpdateRow_(body);
+      
+      case "addNewRow":
+        return handleAddNewRow_(body);
 
       case "me":
         result = validateSession(body.token);
@@ -143,8 +149,34 @@ function handleGSheetDataDoGet_(e) {
     const dataRange = params.dataRange || params.datarange || "A5:Z";
     const rowIDColumn = params.RowIDColumn || params.rowidcolumn || "";
 
-    const projectID = params.ProjectID !== undefined ? params.ProjectID : (params.projectid !== undefined ? params.projectid : "");
-    const projectIDColumn = params.ProjectIDColumn || params.projectidcolumn || "";
+    // ------------------------------------------------------------------------
+    // PERBAIKAN LOGIKA PROJECT ID:
+    // Cek apakah parameter ProjectID dari request dikirim dan bernilai "any" (case-insensitive)
+    // ------------------------------------------------------------------------
+    const requestedProjectID = String(params.ProjectID || params.projectid || "").trim();
+    
+    let projectID = "";
+    if (requestedProjectID.toLowerCase() === "any") {
+      projectID = "any"; // Menggunakan "any" khusus jika Vue mengirim "any"
+    } else {
+      projectID = String(auth.user.projectCode || "").trim(); // Default menginduk ke session user
+    }
+
+    const projectIDColumn = String(params.ProjectIDColumn || params.projectidcolumn || "").trim();
+
+    if (!projectID || !projectIDColumn) {
+      return createJsonResponse_({
+        status: "error",
+        error: "Project Code atau ProjectIDColumn tidak tersedia pada konfigurasi autentikasi.",
+        code: "PROJECT_SCOPE_REQUIRED",
+        columnIDs: [],
+        columnTitles: [],
+        columnDescriptions: [],
+        columnTypes: [],
+        data: [],
+        rowIDs: []
+      });
+    }
 
     const result = getGSheetData(
       gSheetID,
@@ -515,7 +547,14 @@ function handleRowApiDoGet_(e) {
       return createRowApiError_("Forbidden: " + accessCheck.message);
     }
 
+    const projectCode = String(auth.user.projectCode || "").trim();
+
+    if (!projectCode) {
+      return createRowApiError_("Project Code tidak tersedia pada session.");
+    }
+
     const params = validateRowApiParams_(e);
+    params.ProjectCode = projectCode;
     const result = getGSheetRowDataByIDs_(params);
     result.userRoleInWorkbook = accessCheck.role;
 
@@ -539,6 +578,7 @@ function validateRowApiParams_(e) {
     "columnTypeRow",
     "dataRange",
     "RowIDColumn",
+    "ProjectIDColumn",
     "RowID",
     "columnIDs"
   ];
@@ -597,6 +637,9 @@ function validateRowApiParams_(e) {
     dataRange: String(p.dataRange).trim(),
     RowIDColumn: String(p.RowIDColumn).trim(),
     rowIDColumnNumber: rowIDColumn,
+    ProjectIDColumn: String(p.ProjectIDColumn).trim(),
+    projectIDColumnNumber: columnLetterToNumber_(p.ProjectIDColumn),
+    ProjectCode: "",
     RowID: String(p.RowID),
     columnIDs: columnIDs
   };
@@ -628,6 +671,17 @@ function getGSheetRowDataByIDs_(params) {
 
   if (params.rowIDColumnNumber > sheet.getMaxColumns()) {
     throw new Error("RowIDColumn berada di luar ukuran worksheet.");
+  }
+
+  if (
+    params.projectIDColumnNumber < 1 ||
+    params.projectIDColumnNumber > sheet.getMaxColumns()
+  ) {
+    throw new Error("ProjectIDColumn berada di luar ukuran worksheet.");
+  }
+
+  if (!params.ProjectCode) {
+    throw new Error("Project Code tidak tersedia pada session.");
   }
 
   const metadataRows = [
@@ -724,6 +778,20 @@ function getGSheetRowDataByIDs_(params) {
   for (let i = 0; i < dataValues.length; i++) {
     if (rowIDValues[i] !== params.RowID) {
       continue;
+    }
+
+    const actualProjectCode = String(
+      sheet.getRange(
+        dataStartRow + i,
+        params.projectIDColumnNumber
+      ).getDisplayValue() || ""
+    ).trim();
+
+    if (
+      actualProjectCode.toLowerCase() !==
+      String(params.ProjectCode).trim().toLowerCase()
+    ) {
+      throw new Error("RowID tidak termasuk Project Code yang diizinkan.");
     }
 
     const item = {};
@@ -841,6 +909,7 @@ function createRowApiError_(message) {
 const AUTH_CONFIG = {
   SPREADSHEET_ID: "1hcpqlhlVR5oEV_ASxPH4E1olaT6UplG8DlMSgp2iqsE",
   SHEET_NAME: "Users",
+  PROJECTS_SHEET_NAME: "ProjectList", // Sheet daftar project
   SESSION_HOURS: 8,
   SESSION_PREFIX: "AUTH_SESSION_"
 };
@@ -849,6 +918,65 @@ function jsonResponse_(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/**
+ * Mengambil daftar Project Code dan Project Name dari sheet "ProjectList".
+ * Publik (tidak memerlukan token / login).
+ */
+function getProjectList() {
+  try {
+    const ss = SpreadsheetApp.openById(AUTH_CONFIG.SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(AUTH_CONFIG.PROJECTS_SHEET_NAME);
+
+    if (!sheet) {
+      return {
+        success: false,
+        message: `Sheet '${AUTH_CONFIG.PROJECTS_SHEET_NAME}' tidak ditemukan.`,
+        data: []
+      };
+    }
+
+    const lastRow = sheet.getLastRow();
+
+    // Jika tidak ada data (hanya header atau kosong)
+    if (lastRow < 2) {
+      return {
+        success: true,
+        message: "Daftar project kosong.",
+        data: []
+      };
+    }
+
+    // Ambil Kolom A (Project Code) dan Kolom B (Project Name) mulai baris ke-2
+    const rows = sheet.getRange(2, 1, lastRow - 1, 2).getDisplayValues();
+
+    const projects = rows
+      .map(function (row) {
+        return {
+          code: String(row[0] || "").trim(),
+          name: String(row[1] || "").trim()
+        };
+      })
+      .filter(function (item) {
+        // Hanya ambil baris yang memiliki Project Code (tidak kosong)
+        return item.code !== "";
+      });
+
+    return {
+      success: true,
+      message: "Berhasil mengambil daftar project.",
+      data: projects
+    };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: "Gagal mengambil daftar project: " + (error.message || String(error)),
+      data: []
+    };
+  }
 }
 
 /**
@@ -884,7 +1012,7 @@ function login(username, password, projectCode) {
     return rowUsername === username.toLowerCase() && rowProjectCode === projectCode.toLowerCase();
   });
 
-  if (matches.length === 0) {
+  if (matches.length !== 1) {
     return { success: false, message: "Username, password, atau Project Code salah." };
   }
 
@@ -914,7 +1042,11 @@ function login(username, password, projectCode) {
   const activeStatus = String(validUserRow[5] || "").trim().toUpperCase();
   const matchedProjectCode = String(validUserRow[6] || "").trim();
 
-  if (!id || !role) {
+  if (
+    !id ||
+    !role ||
+    !["VIEWER", "EDITOR", "DEVELOPER"].includes(role.toUpperCase())
+  ) {
     return { success: false, message: "Konfigurasi akun tidak valid." };
   }
 
@@ -953,7 +1085,7 @@ function login(username, password, projectCode) {
 function validateSession(token) {
   token = String(token || "");
 
-  if (!token || token.length > 200) {
+  if (!token || token.length < 60 || token.length > 200) {
     return { success: false, message: "Token tidak valid." };
   }
 
@@ -974,7 +1106,12 @@ function validateSession(token) {
     return { success: false, message: "Data sesi tidak valid." };
   }
 
-  if (!session.expiresAt || Date.now() >= session.expiresAt) {
+  if (
+    !session ||
+    !session.userId ||
+    !Number.isFinite(Number(session.expiresAt)) ||
+    Date.now() >= Number(session.expiresAt)
+  ) {
     properties.deleteProperty(key);
     return { success: false, message: "Sesi kedaluwarsa." };
   }
@@ -996,7 +1133,7 @@ function validateSession(token) {
 function logout(token) {
   token = String(token || "");
 
-  if (!token || token.length > 200) {
+  if (!token || token.length < 60 || token.length > 200) {
     return { success: false, message: "Token tidak valid." };
   }
 
@@ -1027,7 +1164,15 @@ function findUserById_(userId) {
   const activeStatus = String(row[5] || "").trim().toUpperCase();
   const projectCode = String(row[6] || "").trim();
 
-  if (!username || !role || activeStatus !== "TRUE") return null;
+  const allowedRoles = ["VIEWER", "EDITOR", "DEVELOPER"];
+
+  if (
+    !username ||
+    !role ||
+    activeStatus !== "TRUE" ||
+    !allowedRoles.includes(role.toUpperCase()) ||
+    !projectCode
+  ) return null;
 
   return {
     id: String(row[0]).trim(),
@@ -1075,7 +1220,7 @@ function cleanupExpiredSessions() {
     try {
       const session = JSON.parse(allProperties[key]);
 
-      if (!session.expiresAt || now >= Number(session.expiresAt)) {
+      if (!session || !Number.isFinite(Number(session.expiresAt)) || now >= Number(session.expiresAt)) {
         properties.deleteProperty(key);
         deleted++;
       }
@@ -1172,6 +1317,7 @@ function handleUpdateRow_(body) {
       "sheetName",
       "dataRange",
       "RowIDColumn",
+      "ProjectIDColumn",
       "RowID"
     ];
 
@@ -1212,14 +1358,14 @@ function handleUpdateRow_(body) {
 
     var auth = validateSession(String(body.token));
 
-    if (!auth || auth.success === false || auth.valid === false) {
+    if (!auth || auth.success !== true || !auth.user) {
       return updateRowJson_({
         success: false,
         message: "Session tidak valid atau sudah kedaluwarsa."
       });
     }
 
-    var authUser = auth.user || auth;
+    var authUser = auth.user;
 
     if (authUser.active === false) {
       return updateRowJson_({
@@ -1229,6 +1375,14 @@ function handleUpdateRow_(body) {
     }
 
     var username = authUser.username;
+    var authenticatedProjectCode = String(authUser.projectCode || "").trim();
+
+    if (!authenticatedProjectCode) {
+      return updateRowJson_({
+        success: false,
+        message: "Project Code tidak ditemukan pada session."
+      });
+    }
 
     if (!username) {
       return updateRowJson_({
@@ -1410,40 +1564,46 @@ function handleUpdateRow_(body) {
       });
     }
 
+    var projectColumnLetter = String(
+      body.ProjectIDColumn || ""
+    ).trim().toUpperCase();
+
+    var projectColumnNumber = updateRowColumnNumber_(
+      projectColumnLetter
+    );
+
     if (
-      body.ProjectID !== undefined &&
-      body.ProjectID !== null &&
-      String(body.ProjectID).trim() !== "" &&
-      String(body.ProjectID).trim() !== "*"
+      projectColumnNumber < 1 ||
+      projectColumnNumber > sheet.getMaxColumns()
     ) {
-      var projectColumnLetter = String(
-        body.ProjectIDColumn || ""
-      ).trim().toUpperCase();
+      return updateRowJson_({
+        success: false,
+        message: "ProjectIDColumn tidak valid: " + projectColumnLetter
+      });
+    }
 
-      var projectColumnNumber = updateRowColumnNumber_(
-        projectColumnLetter
-      );
+    var actualProjectID = String(
+      sheet.getRange(matchedRow, projectColumnNumber).getDisplayValue() || ""
+    ).trim();
 
-      if (
-        projectColumnNumber < 1 ||
-        projectColumnNumber > sheet.getMaxColumns()
-      ) {
-        return updateRowJson_({
-          success: false,
-          message: "ProjectIDColumn tidak valid: " + projectColumnLetter
-        });
-      }
+    if (
+      actualProjectID.toLowerCase() !==
+      authenticatedProjectCode.toLowerCase()
+    ) {
+      return updateRowJson_({
+        success: false,
+        message: "RowID tidak termasuk Project Code yang diizinkan."
+      });
+    }
 
-      var actualProjectID = String(
-        sheet.getRange(matchedRow, projectColumnNumber).getDisplayValue()
-      ).trim();
-
-      if (actualProjectID !== String(body.ProjectID).trim()) {
-        return updateRowJson_({
-          success: false,
-          message: "RowID tidak termasuk ProjectID yang diizinkan."
-        });
-      }
+    // Kolom ProjectID tidak boleh diubah melalui endpoint save.
+    if (updates.some(function (item) {
+      return item.columnNumber === projectColumnNumber;
+    })) {
+      return updateRowJson_({
+        success: false,
+        message: "Kolom ProjectID tidak boleh diubah melalui endpoint ini."
+      });
     }
 
     var lock = LockService.getScriptLock();
@@ -1526,6 +1686,220 @@ function updateRowJson_(data) {
 
 /**
  * ============================================================================
+ * ADD NEW ROW LOGIC (Dengan Generate UUID & Auto Increment Main ID per Project)
+ * ============================================================================
+ */
+function handleAddNewRow_(body) {
+  try {
+    // 1. Validasi Token & Authenticated User
+    if (!body || !body.token) {
+      return jsonResponse_({
+        success: false,
+        message: "Token autentikasi wajib diisi."
+      });
+    }
+
+    var auth = validateSession(String(body.token));
+    if (!auth || auth.success !== true || !auth.user) {
+      return jsonResponse_({
+        success: false,
+        message: "Session tidak valid atau sudah kedaluwarsa."
+      });
+    }
+
+    var authUser = auth.user;
+    if (authUser.active === false) {
+      return jsonResponse_({
+        success: false,
+        message: "Akun tidak aktif."
+      });
+    }
+
+    var username = authUser.username;
+    var authenticatedProjectCode = String(authUser.projectCode || "").trim();
+
+    if (!authenticatedProjectCode) {
+      return jsonResponse_({
+        success: false,
+        message: "Project Code tidak ditemukan pada session."
+      });
+    }
+
+    // 2. Validasi Hak Akses Workbook (Harus EDITOR atau DEVELOPER)
+    var access = checkWorkbookUserAccess_(
+      String(body.GSheetID || ""),
+      String(username)
+    );
+
+    if (!access || !access.allowed) {
+      return jsonResponse_({
+        success: false,
+        message: "User tidak memiliki akses ke workbook ini."
+      });
+    }
+
+    var role = String(access.role || authUser.role || "").trim().toUpperCase();
+    if (role !== "EDITOR" && role !== "DEVELOPER") {
+      return jsonResponse_({
+        success: false,
+        message: "Akses tambah data ditolak. Role harus EDITOR atau DEVELOPER."
+      });
+    }
+
+    // 3. Validasi Parameter Wajib
+    var requiredFields = [
+      "GSheetID",
+      "sheetName",
+      "RowIDColumn",
+      "ProjectIDColumn"
+    ];
+
+    for (var i = 0; i < requiredFields.length; i++) {
+      var field = requiredFields[i];
+      if (
+        body[field] === undefined ||
+        body[field] === null ||
+        String(body[field]).trim() === ""
+      ) {
+        return jsonResponse_({
+          success: false,
+          message: "Parameter wajib tidak tersedia: " + field
+        });
+      }
+    }
+
+    // 4. Buka Spreadsheet & Sheet
+    var spreadsheet = SpreadsheetApp.openById(String(body.GSheetID));
+    var sheet = spreadsheet.getSheetByName(String(body.sheetName));
+
+    if (!sheet) {
+      return jsonResponse_({
+        success: false,
+        message: "Sheet tidak ditemukan: " + body.sheetName
+      });
+    }
+
+    // 5. Hitung Indeks Kolom Target
+    var rowIDColumnNumber = columnLetterToNumber_(String(body.RowIDColumn).trim());
+    var projectIDColumnNumber = columnLetterToNumber_(String(body.ProjectIDColumn).trim());
+
+    if (rowIDColumnNumber < 1 || rowIDColumnNumber > sheet.getMaxColumns()) {
+      return jsonResponse_({
+        success: false,
+        message: "RowIDColumn berada di luar batas sheet."
+      });
+    }
+
+    if (projectIDColumnNumber < 1 || projectIDColumnNumber > sheet.getMaxColumns()) {
+      return jsonResponse_({
+        success: false,
+        message: "ProjectIDColumn berada di luar batas sheet."
+      });
+    }
+
+    // 6. Gunakan LockService untuk Mencegah Race Condition / Nomor Duplikat
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(10000)) {
+      return jsonResponse_({
+        success: false,
+        message: "Sistem sedang sibuk memproses penambahan baris lain. Coba lagi."
+      });
+    }
+
+    var newRowID = "";
+    var newMainID = "";
+    var targetRowIndex = 0;
+
+    try {
+      // Generate UUID v4
+      newRowID = Utilities.getUuid();
+      targetRowIndex = sheet.getLastRow() + 1;
+
+      // Logika Pemrosesan Auto-Increment Main ID jika MainIDColumn dikirimkan
+      var mainIDColumnLetter = String(body.MainIDColumn || "").trim();
+      if (mainIDColumnLetter !== "") {
+        var mainIDColumnNumber = columnLetterToNumber_(mainIDColumnLetter);
+        
+        if (mainIDColumnNumber >= 1 && mainIDColumnNumber <= sheet.getMaxColumns()) {
+          var startDataRow = Number(body.startRow || 5); // Default data dimulai baris ke-5
+          var totalRows = targetRowIndex - startDataRow;
+          
+          var maxSeq = 0;
+          var detectedPrefix = "SAPKTB-SIL-"; // Default fallback prefix jika belum ada data project ini
+          var numDigits = 5; // Default digit angka
+
+          if (totalRows > 0) {
+            // Ambil data Main ID dan Project ID dari baris data yang sudah ada
+            var mainIDValues = sheet.getRange(startDataRow, mainIDColumnNumber, totalRows, 1).getDisplayValues();
+            var projectIDValues = sheet.getRange(startDataRow, projectIDColumnNumber, totalRows, 1).getDisplayValues();
+            
+            // Regex memisahkan: Prefix (group 1), Angka (group 2), dan Suffix Huruf Opsional (group 3)
+            var pattern = /^(.*?)(-?)(\d+)([A-Za-z]*)$/;
+
+            for (var r = 0; r < totalRows; r++) {
+              var rowProjectCode = String(projectIDValues[r][0] || "").trim();
+
+              // === KHUSUS: Hanya cek baris yang memiliki Project ID sesuai ===
+              if (rowProjectCode !== authenticatedProjectCode) {
+                continue;
+              }
+
+              var val = String(mainIDValues[r][0] || "").trim();
+              if (!val) continue;
+
+              var match = val.match(pattern);
+              if (match) {
+                var prefixPart = match[1] + match[2];
+                var numberPartStr = match[3];
+                var seqNum = parseInt(numberPartStr, 10);
+
+                if (seqNum > maxSeq) {
+                  maxSeq = seqNum;
+                  detectedPrefix = prefixPart;
+                  numDigits = numberPartStr.length; // Mengikuti panjang pad angka existing untuk project ini
+                }
+              }
+            }
+          }
+
+          var nextSeq = maxSeq + 1;
+          var formattedNumber = String(nextSeq).padStart(numDigits, "0");
+          newMainID = detectedPrefix + formattedNumber;
+
+          // Tulis Main ID baru ke kolom MainIDColumn
+          sheet.getRange(targetRowIndex, mainIDColumnNumber).setValue(newMainID);
+        }
+      }
+
+      // Tulis UUID dan ProjectCode pada baris baru
+      sheet.getRange(targetRowIndex, rowIDColumnNumber).setValue(newRowID);
+      sheet.getRange(targetRowIndex, projectIDColumnNumber).setValue(authenticatedProjectCode);
+
+      SpreadsheetApp.flush();
+    } finally {
+      lock.releaseLock();
+    }
+
+    // 7. Kembalikan Respon Berhasil
+    return jsonResponse_({
+      success: true,
+      message: "Baris baru berhasil ditambahkan.",
+      newRowID: newRowID,
+      newMainID: newMainID,
+      rowIndex: targetRowIndex,
+      projectCode: authenticatedProjectCode
+    });
+
+  } catch (error) {
+    return jsonResponse_({
+      success: false,
+      message: "Gagal menambah baris baru: " + (error.message || String(error))
+    });
+  }
+}
+
+/**
+ * ============================================================================
  * SECTION 4: TEST FUNCTIONS
  * ============================================================================
  */
@@ -1548,3 +1922,127 @@ function testDoPostLoginWithProjectCode() {
   Logger.log("========== TEST LOGIN WITH PROJECT CODE ==========");
   Logger.log(JSON.stringify(result, null, 2));
 }
+
+
+
+/**
+ * Test fungsi untuk membuat baris baru via action "addNewRow" (UUID + MainID Auto Increment).
+ * Dijalankan langsung dari GAS Editor.
+ */
+function testDoPostAddNewRow() {
+  // 1. Ambil/Buat sesi valid untuk testing
+  const testUsername = "nana";
+  const testPassword = "abc";
+  const testProjectCode = "18-1206";
+
+  Logger.log("1. Melakukan login untuk mendapatkan token tes...");
+  const loginResult = login(testUsername, testPassword, testProjectCode);
+
+  if (!loginResult || !loginResult.success) {
+    Logger.log("❌ Gagal login untuk testing: " + (loginResult ? loginResult.message : "No response"));
+    return;
+  }
+
+  const token = loginResult.token;
+  Logger.log("✅ Token berhasil didapat: " + token);
+
+  // 2. Siapkan payload simulasi e.postData.contents untuk "addNewRow"
+  // SESUAIKAN GSheetID, sheetName, dan kolom-kolom target dengan sheet Anda
+  const payload = {
+    action: "addNewRow",
+    token: token,
+    GSheetID: "1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo", // Ganti dengan GSheetID Anda
+    sheetName: "Data",                              // Ganti dengan nama sheet target
+    RowIDColumn: "A",                                       // Kolom tempat UUID disimpan
+    ProjectIDColumn: "",                                   // Kolom tempat ProjectCode disimpan
+    MainIDColumn: "D",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
+    startRow: 5                                             // Baris pertama data dimulai (opsional, default: 5)
+  };
+
+  const e = {
+    postData: {
+      contents: JSON.stringify(payload)
+    }
+  };
+
+  // 3. Eksekusi fungsi doPost
+  Logger.log("2. Memanggil doPost dengan action 'addNewRow'...");
+  const response = doPost(e);
+  const result = JSON.parse(response.getContent());
+
+  // 4. Tampilkan Log Hasil Test
+  Logger.log("========== TEST ADD NEW ROW RESULT ==========");
+  Logger.log(JSON.stringify(result, null, 2));
+
+  // 5. Bersihkan sesi tes
+  logout(token);
+  Logger.log("3. Sesi tes dibersihkan (logout).");
+}
+
+
+
+
+
+/**
+ * Test fungsi untuk memverifikasi request doGet dengan ProjectID = "any" (Dropdown List).
+ * Dijalankan langsung dari Google Apps Script Editor.
+ */
+function testDoGetFetchDropdowns() {
+  // 1. Login terlebih dahulu untuk mendapatkan token sesi tes
+  const testUsername = "nana";
+  const testPassword = "abc";
+  const testProjectCode = "18-1206";
+
+  Logger.log("1. Melakukan login untuk mendapatkan token tes...");
+  const loginResult = login(testUsername, testPassword, testProjectCode);
+
+  if (!loginResult || !loginResult.success) {
+    Logger.log("❌ Gagal login untuk testing: " + (loginResult ? loginResult.message : "No response"));
+    return;
+  }
+
+  const token = loginResult.token;
+  Logger.log("✅ Token berhasil didapat: " + token);
+
+  // 2. Simulasi parameter HTTP GET e.parameter dari vue/dropdownStore.js
+  const e = {
+    parameter: {
+      token: token,
+      GSheetID: "1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo",
+      sheetName: "Dropdowns",
+      columnIDRow: "1",
+      columnTitleRow: "2",
+      columnTitleDescriptionRow: "3",
+      columnTypeRow: "4",
+      dataRange: "b5:Z",
+      RowIDColumn: "A",
+      ProjectID: "any",          // Explicitly set "any"
+      ProjectIDColumn: "B"
+    }
+  };
+
+  // 3. Eksekusi handler doGet
+  Logger.log("2. Memanggil doGet dengan ProjectID = 'any'...");
+  const response = doGet(e);
+  const result = JSON.parse(response.getContent());
+
+  // 4. Log hasil pemeriksaan
+  Logger.log("========== TEST FETCH DROPDOWNS RESULT ==========");
+  Logger.log("Status Response : " + result.status);
+  Logger.log("Jumlah Kolom    : " + (result.columnIDs ? result.columnIDs.length : 0));
+  Logger.log("Jumlah Baris    : " + (result.data ? result.data.length : 0));
+
+  if (result.status === "success" && result.data && result.data.length > 0) {
+    Logger.log("✅ BERHASIL: Data dropdown dengan ProjectID 'any' berhasil ditarik!");
+    Logger.log("Sample Data Baris Pertama: " + JSON.stringify(result.data[0]));
+  } else {
+    Logger.log("⚠️ PERHATIAN: Response success tetapi array data kosong. Pastikan di sheet 'Dropdowns' kolom B berisi teks 'any'.");
+  }
+
+  // 5. Cleanup sesi tes
+  logout(token);
+  Logger.log("3. Sesi tes dibersihkan (logout).");
+}
+
+
+

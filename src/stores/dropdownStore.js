@@ -6,7 +6,8 @@ export const isDropdownLoading = ref(false);
 export const isDropdownLoaded = ref(false);
 
 const dropdownConfig = {
-  webAppUrl: 'https://script.google.com/macros/s/AKfycbwvyT0YNOAQLVydiESiBCq-j-kWqQ-95eSnzPI69kkdl8WiOS9fnT-cHbmriUIOgIws/exec',
+  webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
+
   gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
   sheetName: 'Dropdowns',
   columnIDRow: 1,
@@ -37,7 +38,10 @@ export async function loadDropdownList() {
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
     );
- console.log('Hasil fetchGSheetData:', result);
+    console.log('Hasil fetchGSheetData DropDown:', result);
+     
+
+
     if (result.status === 'success') {
       const map = {};
 
@@ -70,6 +74,6 @@ export async function loadDropdownList() {
 
 // Mengembalikan ComputedRef agar komponen yang memanggilnya selalu update
 export function getDropdownOptions(columnID) {
-    const key = String(columnID).trim();
-    return dropdownDataMap.value[key] || [];
-  }
+  const key = String(columnID).trim();
+  return dropdownDataMap.value[key] || [];
+}
