@@ -61,6 +61,7 @@ function handleLogoutSuccess() {
 
   sessionStorage.removeItem("authToken");
   sessionStorage.removeItem("authUser");
+  sessionStorage.removeItem("authProject");
 
   currentView.value = "login";
 }

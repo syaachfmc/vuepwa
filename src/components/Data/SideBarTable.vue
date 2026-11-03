@@ -28,6 +28,7 @@ function handleLoginSuccess() {
 function handleRelogin() {
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("authUser");
+    sessionStorage.removeItem("authProject");
     isLoggedIn.value = false;
 }
 

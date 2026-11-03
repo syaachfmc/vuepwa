@@ -11,7 +11,7 @@ const user = ref(null);
 
 // Jika tidak ada token sejak awal, set false secara synchronous agar form langsung tampil
 const checkingSession = ref(!!token.value);
- 
+
 // State Form & Loading
 const username = ref("");
 const password = ref("");
@@ -28,6 +28,26 @@ const loadingProjects = ref(true);
 function handleClose() {
   emit("close");
 }
+
+function saveAuthProject(projectCode) {
+  const project = projectOptions.value.find(
+    item => String(item.code).trim() === String(projectCode || '').trim()
+  );
+
+  if (!project) {
+    console.error("Project tidak ditemukan:", projectCode);
+    return;
+  }
+
+  const authProject = {
+    projectID: project.code,
+    projectName: project.name,
+    shipmentNoPrefix: project.prefix
+  };
+
+  sessionStorage.setItem("authProject", JSON.stringify(authProject));
+}
+
 
 async function handleLogin() {
   errorMessage.value = "";
@@ -49,6 +69,7 @@ async function handleLogin() {
 
     sessionStorage.setItem("authToken", result.token);
     sessionStorage.setItem("authUser", JSON.stringify(result.user));
+    saveAuthProject(result.user.projectCode);
 
     token.value = result.token;
     user.value = result.user;
@@ -62,7 +83,7 @@ async function handleLogin() {
     password.value = "";
     projectCode.value = "";
 
-    emit("login-success", { token: result.token, user: result.user });
+    emit("login-success", { token: result.token, user: result.user, projectOptions: projectOptions.value });
   } catch (error) {
     console.error(error);
     errorMessage.value = "Gagal menghubungi server.";
@@ -91,7 +112,7 @@ async function fetchProjects() {
 
 onMounted(async () => {
   // 1. Jalankan pemanggilan daftar project secara independen (non-blocking)
-  fetchProjects();
+  const projectsPromise = fetchProjects();
 
   // 2. Jika token TIDAK ada, langsung keluar (UI form login sudah aktif)
   if (!token.value) {
@@ -108,12 +129,15 @@ onMounted(async () => {
 
       if (result.user && result.user.projectCode) {
         config.value.ProjectID = result.user.projectCode;
+        await projectsPromise;
+        saveAuthProject(result.user.projectCode);
       }
 
-      emit("login-success", { token: token.value, user: result.user });
+      emit("login-success", { token: token.value, user: result.user, projectOptions: projectOptions.value });
     } else {
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("authUser");
+      sessionStorage.removeItem("authProject");
       token.value = "";
     }
   } catch (error) {

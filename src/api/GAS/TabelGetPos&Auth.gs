@@ -70,7 +70,7 @@ function doPost(e) {
 
       case "updateRow":
         return handleUpdateRow_(body);
-      
+
       case "addNewRow":
         return handleAddNewRow_(body);
 
@@ -154,7 +154,9 @@ function handleGSheetDataDoGet_(e) {
     // Cek apakah parameter ProjectID dari request dikirim dan bernilai "any" (case-insensitive)
     // ------------------------------------------------------------------------
     const requestedProjectID = String(params.ProjectID || params.projectid || "").trim();
-    
+
+    console.log("requestedProjectID", requestedProjectID)
+
     let projectID = "";
     if (requestedProjectID.toLowerCase() === "any") {
       projectID = "any"; // Menggunakan "any" khusus jika Vue mengirim "any"
@@ -192,7 +194,14 @@ function handleGSheetDataDoGet_(e) {
     );
 
     result.userRoleInWorkbook = accessCheck.role;
-    return createJsonResponse_(result);
+    // Tambahkan properti debug pada return JSON jika diperlukan
+    return createJsonResponse_({
+      ...result,
+      debugInfo: {
+        requestedProjectID: requestedProjectID,
+        projectIDUsed: projectID
+      }
+    });
 
   } catch (err) {
     console.error("Data API request failed.");
@@ -908,12 +917,13 @@ function createRowApiError_(message) {
 
 const AUTH_CONFIG = {
   SPREADSHEET_ID: "1hcpqlhlVR5oEV_ASxPH4E1olaT6UplG8DlMSgp2iqsE",
-  SHEET_NAME: "Users",
+  SHEET_USER_NAME: "Users",
   PROJECTS_SHEET_NAME: "ProjectList", // Sheet daftar project
   SESSION_HOURS: 8,
   SESSION_PREFIX: "AUTH_SESSION_"
 };
 
+ 
 function jsonResponse_(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
@@ -950,13 +960,14 @@ function getProjectList() {
     }
 
     // Ambil Kolom A (Project Code) dan Kolom B (Project Name) mulai baris ke-2
-    const rows = sheet.getRange(2, 1, lastRow - 1, 2).getDisplayValues();
+    const rows = sheet.getRange(2, 1, lastRow - 1, 3).getDisplayValues();
 
     const projects = rows
       .map(function (row) {
         return {
           code: String(row[0] || "").trim(),
-          name: String(row[1] || "").trim()
+          name: String(row[1] || "").trim(),
+          prefix: String(row[2] || "").trim()
         };
       })
       .filter(function (item) {
@@ -1186,7 +1197,7 @@ function findUserById_(userId) {
 
 function getUserSheet_() {
   const ss = SpreadsheetApp.openById(AUTH_CONFIG.SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(AUTH_CONFIG.SHEET_NAME);
+  const sheet = ss.getSheetByName(AUTH_CONFIG.SHEET_USER_NAME);
 
   if (!sheet) throw new Error("Sheet User tidak ditemukan.");
 
@@ -1256,7 +1267,7 @@ function createSessionCleanupTrigger() {
 function migratePasswordsToHash() {
   var ss = SpreadsheetApp.openById(AUTH_CONFIG.SPREADSHEET_ID);
 
-  var sheet = ss.getSheetByName(AUTH_CONFIG.SHEET_NAME);
+  var sheet = ss.getSheetByName(AUTH_CONFIG.SHEET_USER_NAME);
   var lastRow = sheet.getLastRow();
 
   if (lastRow < 2) {
@@ -1819,11 +1830,11 @@ function handleAddNewRow_(body) {
       var mainIDColumnLetter = String(body.MainIDColumn || "").trim();
       if (mainIDColumnLetter !== "") {
         var mainIDColumnNumber = columnLetterToNumber_(mainIDColumnLetter);
-        
+
         if (mainIDColumnNumber >= 1 && mainIDColumnNumber <= sheet.getMaxColumns()) {
           var startDataRow = Number(body.startRow || 5); // Default data dimulai baris ke-5
           var totalRows = targetRowIndex - startDataRow;
-          
+
           var maxSeq = 0;
           var detectedPrefix = "SAPKTB-SIL-"; // Default fallback prefix jika belum ada data project ini
           var numDigits = 5; // Default digit angka
@@ -1832,7 +1843,7 @@ function handleAddNewRow_(body) {
             // Ambil data Main ID dan Project ID dari baris data yang sudah ada
             var mainIDValues = sheet.getRange(startDataRow, mainIDColumnNumber, totalRows, 1).getDisplayValues();
             var projectIDValues = sheet.getRange(startDataRow, projectIDColumnNumber, totalRows, 1).getDisplayValues();
-            
+
             // Regex memisahkan: Prefix (group 1), Angka (group 2), dan Suffix Huruf Opsional (group 3)
             var pattern = /^(.*?)(-?)(\d+)([A-Za-z]*)$/;
 
@@ -1954,7 +1965,7 @@ function testDoPostAddNewRow() {
     GSheetID: "1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo", // Ganti dengan GSheetID Anda
     sheetName: "Data",                              // Ganti dengan nama sheet target
     RowIDColumn: "A",                                       // Kolom tempat UUID disimpan
-    ProjectIDColumn: "",                                   // Kolom tempat ProjectCode disimpan
+    ProjectIDColumn: "B",                                   // Kolom tempat ProjectCode disimpan
     MainIDColumn: "D",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
     startRow: 5                                             // Baris pertama data dimulai (opsional, default: 5)
   };

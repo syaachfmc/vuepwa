@@ -28,7 +28,7 @@
             <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
               :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
             <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
-              :size="{ width: '120px', height: '32px' }"  :font="{ weight: '800' }" />
+              :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
           </div>
         </ContainerB>
       </div>
@@ -98,8 +98,21 @@ function getDropdownMapping(sourceID, targetID, value) {
 }
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
+// ========================================
+// PROJECT PREFIX
+// ========================================
+const authProject = JSON.parse(
+  sessionStorage.getItem("authProject") || "{}"
+);
+const projectPrefix = authProject.shipmentNoPrefix || '';
+
+
 // Regex untuk membaca Shipment Number
-const shipmentPattern = /^(.+)-(S[IR][ILEO])-(\d{5})([A-Z])?$/
+
+const shipmentPattern = new RegExp(
+  `^${projectPrefix}-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
+);
+console.log("projectPrefix---",projectPrefix)
 // Error state Shipment Number
 const shipmentNoError = ref(false)
 const shipmentNoErrorMessage = ref('')
@@ -150,7 +163,7 @@ function handleDocumentTypeChange(newValue) {
   SelectedRowStore.selectedRow.value['11'] = arrangedBy
 }
 
-function handleShipmentArrangedByChange(newValue) { 
+function handleShipmentArrangedByChange(newValue) {
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const docCode = getDropdownMapping('10', '60', newValue)
@@ -170,7 +183,7 @@ function handleShipmentArrangedByChange(newValue) {
 
 function checkValidateShipmentNo(value) {
   const r = parseShipmentNumber(value)
-  
+
   if (!r) {
     shipmentNoError.value = true
     shipmentNoErrorMessage.value = 'Shipment Number tidak valid'

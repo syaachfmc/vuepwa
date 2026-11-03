@@ -142,6 +142,7 @@ import {
     markRowSaved,
     resetAllForms
 } from '../../composables/useFormTracker.js'
+import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -308,8 +309,17 @@ const props = defineProps({
     token: {
         type: String,
         required: true
+    },
+    projectOptions: {
+        type: Array,
+        default: () => []
     }
 });
+
+
+
+
+
 const emit = defineEmits(["logout-success"]);
 const loading = ref(false);
 const errorMessage = ref("");
@@ -327,6 +337,7 @@ async function handleLogout() {
     } finally {
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
+        sessionStorage.removeItem("authProject");
         loading.value = false;
         emit("logout-success");
     }

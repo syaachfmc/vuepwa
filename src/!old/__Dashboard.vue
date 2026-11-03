@@ -35,6 +35,7 @@ async function handleLogout() {
   } finally {
     sessionStorage.removeItem("authToken");
     sessionStorage.removeItem("authUser");
+    sessionStorage.removeItem("authProject");
     loading.value = false;
     emit("logout-success");
   }
