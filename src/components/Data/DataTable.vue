@@ -646,7 +646,7 @@ async function loadData() {
 }
 
 
-async function addAndSelectRow(rowID) {
+async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
   if (!rowID) {
     throw new Error('RowID tidak tersedia.');
   }

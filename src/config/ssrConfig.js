@@ -15,5 +15,5 @@ export const config = ref({
   ProjectIDColumn: 'B',
   FrozenColumnIndex: ['2'],
   tableDateFormat: 'dd MMM yy',
-  MainIDColumnID: '2',
+  mainIDColumnID: '2',
 })

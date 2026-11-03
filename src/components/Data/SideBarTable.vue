@@ -110,12 +110,12 @@ async function handleRowSelected(payload) {
     // console.log("selectedDataGSheet", selectedDataGSheet.value);
 }
 
-async function addAndSelectRow(rowID) {
+async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
     if (!dataTableRef.value) {
         throw new Error('DataTable belum siap.');
     }
 
-    return dataTableRef.value.addAndSelectRow(rowID);
+    return dataTableRef.value.addAndSelectRow(rowID, mainIDColumnID, newMainIDValue);
 }
 
 defineExpose({

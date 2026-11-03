@@ -5,7 +5,7 @@ export async function addNewRow({
     sheetName,
     RowIDColumn,
     ProjectIDColumn,
-    MainIDColumnID,
+    mainIDColumnID,
     columnIDRow = 1,
     dataRange,
     startRow = 5
@@ -21,7 +21,7 @@ export async function addNewRow({
         sheetName,
         RowIDColumn,
         ProjectIDColumn,
-        MainIDColumnID,
+        mainIDColumnID,
         columnIDRow,
         dataRange,
         startRow

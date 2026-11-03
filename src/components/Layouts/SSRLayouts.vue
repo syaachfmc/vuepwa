@@ -379,15 +379,16 @@ async function handleAddNewShipment() {
             RowIDColumn: config.value.RowIDColumn,
             ProjectIDColumn: config.value.ProjectIDColumn,
 
-            MainIDColumnID: config.value.MainIDColumnID,
+            mainIDColumnID: config.value.mainIDColumnID,
 
             columnIDRow: config.value.columnIDRow,
             dataRange: config.value.dataRange,
             startRow: 5
         })
 
+        
         // 2. Reload tabel dan pilih baris berdasarkan UUID.
-        await sideBarTableRef.value.addAndSelectRow(result.newRowID)
+        await sideBarTableRef.value.addAndSelectRow(result.newRowID, result.mainIDColumnID, result.newMainIDValue)
 
         // 3. Buka tab Shipment.
         activeTab.value = 1
