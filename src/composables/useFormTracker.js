@@ -201,10 +201,10 @@ export function collectDirtyChanges(currentData) {
         changes[key] = safeDeepClone(currentValue)
       }
 
-      console.log(`Perubahan terdeteksi pada kolom ${key}:`, {
-        oldValue: savedData[key],
-        newValue: currentValue
-      })
+      // console.log(`Perubahan terdeteksi pada kolom ${key}:`, {
+      //   oldValue: savedData[key],
+      //   newValue: currentValue
+      // })
     }
   })
 

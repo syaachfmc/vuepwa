@@ -28,10 +28,10 @@
             <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
               :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
             <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
-              :size="{ width: '120px', height: '32px' }" />
+              :size="{ width: '120px', height: '32px' }"  :font="{ weight: '800' }" />
           </div>
         </ContainerB>
-      </div>az
+      </div>
       <div class="dataItemContainer container-row">
         <ContainerB title="PO">
           <div class="dataItemContainer">
@@ -170,7 +170,7 @@ function handleShipmentArrangedByChange(newValue) {
 
 function checkValidateShipmentNo(value) {
   const r = parseShipmentNumber(value)
-  console.log(value)
+  
   if (!r) {
     shipmentNoError.value = true
     shipmentNoErrorMessage.value = 'Shipment Number tidak valid'
@@ -270,8 +270,7 @@ watch(
 
     isSwitchingRow.value = true
 
-    // Validasi Shipment Number dari row yang dipilih
-    console.log("newRow['2']", newRow['2'])
+    // Validasi Shipment Number dari row yang dipilih     
     checkValidateShipmentNo(newRow['2'])
 
     commitOriginal([], newRow)
@@ -328,9 +327,9 @@ watch(
   flex-direction: column;
   flex-wrap: wrap;
   gap: 12px;
-  overflow-x: auto;
   border: 1px solid #ccc;
   padding: 8px;
+
 
 }
 
