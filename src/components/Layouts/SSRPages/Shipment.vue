@@ -110,7 +110,7 @@ const projectPrefix = authProject.shipmentNoPrefix || '';
 // Regex untuk membaca Shipment Number
 
 const shipmentPattern = new RegExp(
-  `^${projectPrefix}-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
+  `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
 );
 console.log("projectPrefix---",projectPrefix)
 // Error state Shipment Number
@@ -131,7 +131,7 @@ function handleShipmentNoChange(newValue) {
 
 function handleShipmentTypeChange(newValue) {
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])  
   const typeCode = getDropdownMapping('9', '59', newValue)
   if (!typeCode) return
   const newShipmentNo =
