@@ -46,8 +46,7 @@ export async function fetchGSheetData(
   if (rowIDColumn) {
     url.searchParams.append("RowIDColumn", rowIDColumn);
   }
-
-  console.log("project id:", projectID)
+  
   if (projectID !== undefined && projectID !== null && projectID !== '') {
 
     url.searchParams.append("ProjectID", projectID);

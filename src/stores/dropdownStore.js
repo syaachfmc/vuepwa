@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan path DataTable.js Anda
 
 export const dropdownDataMap = ref({});
@@ -38,10 +38,7 @@ export async function loadDropdownList() {
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
     );
-    console.log('Hasil fetchGSheetData DropDown:', result);
-     
-
-
+  
     if (result.status === 'success') {
       const map = {};
 

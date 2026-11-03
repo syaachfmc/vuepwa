@@ -6,7 +6,8 @@
         <ContainerB title="Shipment">
           <div class="dataItemContainer">
             <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
-              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" />
+              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" 
+              :error="shipmentNoError"  :errorMessage="shipmentNoErrorMessage"  />
             <DataField id="5" type="date" :reset-key="resetKey" />
             <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
           </div>
@@ -80,7 +81,7 @@ import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
 import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
-import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
+ 
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
@@ -90,30 +91,33 @@ onMounted(() => {
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
 // Regex untuk membaca Shipment Number
 const shipmentPattern = /^(.+)-(S[IR][ILEO])-(\d{5})([A-Z])?$/
+// Error state Shipment Number
+const shipmentNoError = ref(false)
+const shipmentNoErrorMessage = ref('')
 
 function handleShipmentNoChange(newValue) {
   const shippingCodeMap = {
-  I: 'Shipping Instruction',
-  R: 'Shipping Release'
-}
+    I: 'Shipping Instruction',
+    R: 'Shipping Release'
+  }
 
-const arrangeCodeMap = {
-  I: 'Import',
-  L: 'Domestic',
-  E: 'Export',
-  O: 'Other'
-}
+  const arrangeCodeMap = {
+    I: 'Import',
+    L: 'Domestic',
+    E: 'Export',
+    O: 'Other'
+  }
 
-const arrangeByCodeMap = {
-  I: 'Company',
-  R: 'Vendor',  
-}
+  const arrangeByCodeMap = {
+    I: 'Company',
+    R: 'Vendor',
+  }
 
-const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-if (!r) { console.log('Format Shipment Number tidak valid'); return }
-SelectedRowStore.selectedRow.value['10']=arrangeCodeMap[r.shipmentType]
-SelectedRowStore.selectedRow.value['301']=shippingCodeMap[r.shippingCode]
-SelectedRowStore.selectedRow.value['11']=arrangeByCodeMap[r.shippingCode]
+  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+  SelectedRowStore.selectedRow.value['10'] = arrangeCodeMap[r.shipmentType]
+  SelectedRowStore.selectedRow.value['301'] = shippingCodeMap[r.shippingCode]
+  SelectedRowStore.selectedRow.value['11'] = arrangeByCodeMap[r.shippingCode]
 }
 
 function handleShipmentTypeChange(newValue) {
@@ -124,8 +128,8 @@ function handleShipmentTypeChange(newValue) {
     'Export': 'E',
     'Other': 'O'
   }
+  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  if (!r) { console.log('Format Shipment Number tidak valid'); return }
   const newShipmentNo = r.projectSuffix + '-S' + r.shippingCode + arrangeTypeMap[newValue] + "-" + r.sequence + r.grouping
   SelectedRowStore.selectedRow.value['2'] = newShipmentNo
 }
@@ -136,10 +140,25 @@ function handleDocumentReleasedChange(newValue) {
     'Shipping Instruction': 'I',
     'Shipping Release': 'R'
   }
+  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  if (!r) { console.log('Format Shipment Number tidak valid'); return }
   const newShipmentNo = r.projectSuffix + '-S' + shippingTypeMap[newValue] + r.shipmentType + "-" + r.sequence + r.grouping
   SelectedRowStore.selectedRow.value['2'] = newShipmentNo
+}
+
+function checkValidateShipmentNo(value) {
+  const r = parseShipmentNumber(value)
+console.log (value)
+  if (!r) {
+    shipmentNoError.value = true
+    shipmentNoErrorMessage.value = 'Shipment Number tidak valid'
+    return false
+  }
+
+  shipmentNoError.value = false
+  shipmentNoErrorMessage.value = ''
+
+  return true
 }
 
 function parseShipmentNumber(value) {
@@ -228,6 +247,10 @@ watch(
     if (!newRow || Object.keys(newRow).length === 0) return
 
     isSwitchingRow.value = true
+    
+    // Validasi Shipment Number dari row yang dipilih
+    console.log("newRow['2']",newRow['2'])
+    checkValidateShipmentNo(newRow['2'])
 
     commitOriginal([], newRow)
     lastSyncedForm = cloneFormData(newRow)
