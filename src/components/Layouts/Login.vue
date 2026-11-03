@@ -31,7 +31,7 @@ function handleClose() {
 
 function saveAuthProject(projectCode) {
   const project = projectOptions.value.find(
-    item => String(item.code).trim() === String(projectCode || '').trim()
+    item => String(item.projectID).trim() === String(projectCode || '').trim()
   );
 
   if (!project) {
@@ -40,9 +40,14 @@ function saveAuthProject(projectCode) {
   }
 
   const authProject = {
-    projectID: project.code,
-    projectName: project.name,
-    shipmentNoPrefix: project.prefix
+    projectID: project.projectID,
+    projectName: project.projectName,
+    shipmentNoPrefix: project.shipmentNoPrefix,
+    regEx: project.regEx,
+    prop1: project.prop1,
+    prop2: project.prop2,
+    prop3: project.prop3,    
+
   };
 
   sessionStorage.setItem("authProject", JSON.stringify(authProject));
@@ -176,8 +181,8 @@ onMounted(async () => {
           <option value="" disabled>
             {{ loadingProjects ? "Memuat daftar project..." : "-- Pilih Project Code --" }}
           </option>
-          <option v-for="proj in projectOptions" :key="proj.code" :value="proj.code">
-            {{ proj.code }}{{ proj.name ? ` - ${proj.name}` : '' }}
+          <option v-for="proj in projectOptions" :key="proj.projectID" :value="proj.projectID">
+            {{ proj.projectID }}{{ proj.projectName ? ` - ${proj.projectName}` : '' }}
           </option>
         </select>
 

@@ -565,11 +565,12 @@ function stopProgressSimulation() {
   }
 }
 
-async function loadData() {  
-    // Reset pilihan row sebelum refresh atau load ulang
-    SelectedRowStore.selectedRow.value = null
+async function loadData() {
+  // Reset pilihan row sebelum refresh atau load ulang
+  SelectedRowStore.selectedRow.value = null
   const currentRequest = ++requestSequence;
   loading.value = true;
+
   startProgressSimulation();
 
   try {
