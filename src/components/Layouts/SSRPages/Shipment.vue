@@ -119,6 +119,7 @@ const shipmentNoErrorMessage = ref('')
 
 
 function handleShipmentNoChange(newValue) {
+  if(!SelectedRowStore.selectedRow.value)return  
   if (!checkValidateShipmentNo(newValue)) return
   const r = parseShipmentNumber(newValue)
   SelectedRowStore.selectedRow.value['10'] =
@@ -130,6 +131,7 @@ function handleShipmentNoChange(newValue) {
 }
 
 function handleShipmentTypeChange(newValue) {
+  if(!SelectedRowStore.selectedRow.value)return  
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])  
   const typeCode = getDropdownMapping('9', '59', newValue)
@@ -146,6 +148,7 @@ function handleShipmentTypeChange(newValue) {
 }
 
 function handleDocumentTypeChange(newValue) {
+  if(!SelectedRowStore.selectedRow.value)return  
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const docCode = getDropdownMapping('58', '60', newValue)
@@ -164,6 +167,7 @@ function handleDocumentTypeChange(newValue) {
 }
 
 function handleShipmentArrangedByChange(newValue) {
+  if(!SelectedRowStore.selectedRow.value)return  
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const docCode = getDropdownMapping('10', '60', newValue)

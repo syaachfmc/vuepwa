@@ -750,6 +750,10 @@ function onFocusEditable(event) {
 
 function onBlurEditable(event) {
   isFocused.value = false
+  isOpen.value = false
+  isFiltering.value = false
+  focusedIndex.value = -1
+
   emit('blur', event)
 }
 
@@ -770,6 +774,9 @@ function onFocus(event) {
 
 function onBlur(event) {
   isFocused.value = false
+  isOpen.value = false
+  focusedIndex.value = -1
+
   emit('blur', event)
 }
 
