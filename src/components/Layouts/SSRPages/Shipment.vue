@@ -6,8 +6,8 @@
         <ContainerB title="Shipment">
           <div class="dataItemContainer">
             <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
-              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" 
-              :error="shipmentNoError"  :errorMessage="shipmentNoErrorMessage"  />
+              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" :error="shipmentNoError"
+              :errorMessage="shipmentNoErrorMessage" />
             <DataField id="5" type="date" :reset-key="resetKey" />
             <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
           </div>
@@ -22,16 +22,16 @@
             <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('9')"
               :size="{ width: '150px', height: '32px' }" @change="handleShipmentTypeChange" />
             <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('10')"
-              :size="{ width: '120px', height: '32px' }" />
+              :size="{ width: '120px', height: '32px' }" @change="handleShipmentArrangedByChange" />
           </div>
           <div class="dataItemContainer">
             <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
-              :size="{ width: '150px', height: '32px' }" @change="handleDocumentReleasedChange" />
+              :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
             <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
               :size="{ width: '120px', height: '32px' }" />
           </div>
         </ContainerB>
-      </div>
+      </div>az
       <div class="dataItemContainer container-row">
         <ContainerB title="PO">
           <div class="dataItemContainer">
@@ -80,13 +80,22 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { useTableHelpers } from '../../../composables/useTableHelpers.js'
 
-import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
- 
+import { loadDropdownList, getDropdownOptions, dropdownDataMap } from '../../../stores/dropdownStore.js'
+
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
   loadDropdownList();
 });
+
+function getDropdownMapping(sourceID, targetID, value) {
+  const source = dropdownDataMap.value[String(sourceID)] || []
+  const target = dropdownDataMap.value[String(targetID)] || []
+
+  const index = source.indexOf(value)
+
+  return index !== -1 ? target[index] ?? null : null
+}
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
 // Regex untuk membaca Shipment Number
@@ -95,60 +104,73 @@ const shipmentPattern = /^(.+)-(S[IR][ILEO])-(\d{5})([A-Z])?$/
 const shipmentNoError = ref(false)
 const shipmentNoErrorMessage = ref('')
 
+
 function handleShipmentNoChange(newValue) {
-  const shippingCodeMap = {
-    I: 'Shipping Instruction',
-    R: 'Shipping Release'
-  }
-
-  const arrangeCodeMap = {
-    I: 'Import',
-    L: 'Domestic',
-    E: 'Export',
-    O: 'Other'
-  }
-
-  const arrangeByCodeMap = {
-    I: 'Company',
-    R: 'Vendor',
-  }
-
-  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  SelectedRowStore.selectedRow.value['10'] = arrangeCodeMap[r.shipmentType]
-  SelectedRowStore.selectedRow.value['301'] = shippingCodeMap[r.shippingCode]
-  SelectedRowStore.selectedRow.value['11'] = arrangeByCodeMap[r.shippingCode]
+  if (!checkValidateShipmentNo(newValue)) return
+  const r = parseShipmentNumber(newValue)
+  SelectedRowStore.selectedRow.value['10'] =
+    getDropdownMapping('59', '9', r.shipmentType)
+  SelectedRowStore.selectedRow.value['301'] =
+    getDropdownMapping('60', '58', r.docType)
+  SelectedRowStore.selectedRow.value['11'] =
+    getDropdownMapping('60', '10', r.docType)
 }
 
 function handleShipmentTypeChange(newValue) {
-  // Mapping Arrange Type (id=10)
-  const arrangeTypeMap = {
-    'Import': 'I',
-    'Domestic': 'L',
-    'Export': 'E',
-    'Other': 'O'
-  }
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const newShipmentNo = r.projectSuffix + '-S' + r.shippingCode + arrangeTypeMap[newValue] + "-" + r.sequence + r.grouping
+  const typeCode = getDropdownMapping('9', '59', newValue)
+  if (!typeCode) return
+  const newShipmentNo =
+    r.projectSuffix +
+    '-S' +
+    r.docType +
+    typeCode +
+    '-' +
+    r.sequence +
+    r.grouping
   SelectedRowStore.selectedRow.value['2'] = newShipmentNo
 }
 
-function handleDocumentReleasedChange(newValue) {
-  // Mapping Shipping Type (id=301)
-  const shippingTypeMap = {
-    'Shipping Instruction': 'I',
-    'Shipping Release': 'R'
-  }
+function handleDocumentTypeChange(newValue) {
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const newShipmentNo = r.projectSuffix + '-S' + shippingTypeMap[newValue] + r.shipmentType + "-" + r.sequence + r.grouping
+  const docCode = getDropdownMapping('58', '60', newValue)
+  const arrangedBy = getDropdownMapping('58', '10', newValue)
+  if (!docCode) return
+  const newShipmentNo =
+    r.projectSuffix +
+    '-S' +
+    docCode +
+    r.shipmentType +
+    '-' +
+    r.sequence +
+    r.grouping
   SelectedRowStore.selectedRow.value['2'] = newShipmentNo
+  SelectedRowStore.selectedRow.value['11'] = arrangedBy
+}
+
+function handleShipmentArrangedByChange(newValue) { 
+  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
+  const docCode = getDropdownMapping('10', '60', newValue)
+  const arrangedBy = getDropdownMapping('10', '58', newValue)
+  if (!docCode) return
+  const newShipmentNo =
+    r.projectSuffix +
+    '-S' +
+    docCode +
+    r.shipmentType +
+    '-' +
+    r.sequence +
+    r.grouping
+  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
+  SelectedRowStore.selectedRow.value['301'] = arrangedBy
 }
 
 function checkValidateShipmentNo(value) {
   const r = parseShipmentNumber(value)
-console.log (value)
+  console.log(value)
   if (!r) {
     shipmentNoError.value = true
     shipmentNoErrorMessage.value = 'Shipment Number tidak valid'
@@ -167,7 +189,7 @@ function parseShipmentNumber(value) {
   if (!match) return null
   return {
     projectSuffix: match[1] ?? '',
-    shippingCode: match[2]?.[1] ?? '',
+    docType: match[2]?.[1] ?? '',
     shipmentType: match[2]?.[2] ?? '',
     sequence: match[3] ?? '',
     grouping: match[4] ?? ''
@@ -247,9 +269,9 @@ watch(
     if (!newRow || Object.keys(newRow).length === 0) return
 
     isSwitchingRow.value = true
-    
+
     // Validasi Shipment Number dari row yang dipilih
-    console.log("newRow['2']",newRow['2'])
+    console.log("newRow['2']", newRow['2'])
     checkValidateShipmentNo(newRow['2'])
 
     commitOriginal([], newRow)
