@@ -4,8 +4,8 @@
         <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
 
         <!-- Tampilkan DataTable jika pengguna sudah terotentikasi -->
-        <DataTable v-else :config="config" :tableDateFormat="config.tableDateFormat" @row-selected="handleRowSelected"
-            @relogin="handleRelogin" />
+        <DataTable v-else ref="dataTableRef" :config="config" :tableDateFormat="config.tableDateFormat"
+            @row-selected="handleRowSelected" @relogin="handleRelogin" />
     </main>
 </template>
 
@@ -20,6 +20,8 @@ const isLoggedIn = ref(Boolean(sessionStorage.getItem("authToken")));
 const selectedData = ref('');
 const selectedRowID = ref('');
 const selectedDataGSheet = ref('');
+
+const dataTableRef = ref(null);
 
 function handleLoginSuccess() {
     isLoggedIn.value = true;
@@ -102,12 +104,23 @@ async function getSelectedDataGSheet(rowID) {
 async function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
-    
+
 
     // await getSelectedDataGSheet(selectedRowID.value);
     // console.log("selectedDataGSheet", selectedDataGSheet.value);
 }
 
+async function addAndSelectRow(rowID) {
+    if (!dataTableRef.value) {
+        throw new Error('DataTable belum siap.');
+    }
+
+    return dataTableRef.value.addAndSelectRow(rowID);
+}
+
+defineExpose({
+    addAndSelectRow
+});
 </script>
 
 <style scoped>

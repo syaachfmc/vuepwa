@@ -19,7 +19,7 @@
             <!-- SIDE BAR (DIV-2 & DIV-5 Tempat Tabulator) -->
             <aside class="SideBar" ref="sidebarRef" :style="sidebarStyle">
                 <div class="sidebar-content">
-                    <SideBarTable />
+                    <SideBarTable ref="sideBarTableRef" />
                 </div>
             </aside>
 
@@ -95,11 +95,16 @@
 
 
             <div class="footer-actions">
-                <button class="footer-action-button" :disabled="saving" @click="handleSave">
+
+                <button class="footer-action-button" :disabled="addingShipment || saving" @click="handleAddNewShipment">
+                    {{ addingShipment ? 'Menambahkan...' : 'Add New Shipment' }}
+                </button>
+
+                <button class="footer-action-button" :disabled="saving || addingShipment" @click="handleSave">
                     {{ saving ? 'Menyimpan...' : 'Simpan' }}
                 </button>
 
-                <button class="footer-action-button" :disabled="saving" @click="handleReset">
+                <button class="footer-action-button" :disabled="saving || addingShipment" @click="handleReset">
                     Reset
                 </button>
 
@@ -142,7 +147,7 @@ import {
     markRowSaved,
     resetAllForms
 } from '../../composables/useFormTracker.js'
-import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
+import { addNewRow } from '../../api/addNewRow.js'
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -345,6 +350,61 @@ async function handleLogout() {
 
 const saving = ref(false)
 const saveMessage = ref('')
+
+const sideBarTableRef = ref(null)
+const addingShipment = ref(false)
+
+async function handleAddNewShipment() {
+    if (addingShipment.value || saving.value) return
+
+    const token = props.token || sessionStorage.getItem('authToken')
+
+    if (!token) {
+        saveMessage.value = 'Token autentikasi tidak tersedia.'
+        return
+    }
+
+    addingShipment.value = true
+    saveMessage.value = ''
+
+    try {
+        // 1. Buat baris baru melalui GAS.
+        const result = await addNewRow({
+            webAppUrl: config.value.webAppUrl,
+            token,
+
+            GSheetID: config.value.gsheetID,
+            sheetName: config.value.sheetName,
+
+            RowIDColumn: config.value.RowIDColumn,
+            ProjectIDColumn: config.value.ProjectIDColumn,
+
+            MainIDColumnID: config.value.MainIDColumnID,
+
+            columnIDRow: config.value.columnIDRow,
+            dataRange: config.value.dataRange,
+            startRow: 5
+        })
+
+        // 2. Reload tabel dan pilih baris berdasarkan UUID.
+        await sideBarTableRef.value.addAndSelectRow(result.newRowID)
+
+        // 3. Buka tab Shipment.
+        activeTab.value = 1
+
+        saveMessage.value = result.newMainID
+            ? `Shipment ${result.newMainID} berhasil ditambahkan.`
+            : 'Shipment baru berhasil ditambahkan.'
+
+    } catch (error) {
+        console.error('Gagal menambahkan Shipment:', error)
+
+        saveMessage.value = `Gagal menambahkan Shipment: ${error.message}`
+
+    } finally {
+        addingShipment.value = false
+    }
+}
 
 async function handleSave() {
     if (saving.value) return

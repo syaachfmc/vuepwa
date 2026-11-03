@@ -645,6 +645,72 @@ async function loadData() {
   }
 }
 
+
+async function addAndSelectRow(rowID) {
+  if (!rowID) {
+    throw new Error('RowID tidak tersedia.');
+  }
+
+  // Hapus pencarian dan filter agar baris baru bisa ditemukan.
+  searchText.value = '';
+
+  if (table) {
+    table.clearFilter(true);
+  }
+
+  // Muat ulang data dari Google Sheets.
+  await loadData();
+
+  if (sheetData.value.status !== 'success') {
+    throw new Error(
+      sheetData.value.error || 'Gagal memuat ulang data.'
+    );
+  }
+
+  if (!table) {
+    throw new Error('Tabulator belum siap.');
+  }
+
+  // Pastikan filter tidak menyembunyikan baris baru.
+  table.clearFilter(true);
+
+  const targetRow = table.getRows().find(row => {
+    return String(row.getData().__rowID) === String(rowID);
+  });
+
+  if (!targetRow) {
+    throw new Error(
+      `Baris baru dengan RowID ${rowID} tidak ditemukan di tabel.`
+    );
+  }
+
+  // Pilih dan scroll ke baris baru.
+  targetRow.select();
+
+  await targetRow.scrollTo();
+
+  const rowData = targetRow.getData();
+
+  // Perbarui SelectedRowStore.
+  SelectedRowStore.selectedRow.value = { ...rowData };
+
+  // Pertahankan mekanisme event row-selected yang sudah ada.
+  const firstColumnID = sheetData.value.columnIDs[4];
+  const firstColumnValue = firstColumnID
+    ? rowData[firstColumnID]
+    : '';
+
+  emit('row-selected', {
+    value: firstColumnValue,
+    rowID: rowData.__rowID || ''
+  });
+
+  return rowData;
+}
+
+
+
+
 function destroyTable() {
   if (table) {
     table.destroy();
@@ -679,6 +745,10 @@ onBeforeUnmount(() => {
   destroyTable();
 });
 
+defineExpose({
+  loadData,
+  addAndSelectRow
+});
 
 </script>
 
