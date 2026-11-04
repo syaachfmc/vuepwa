@@ -72,7 +72,7 @@ export async function loadDropdownList() {
 }
 
 // Mengembalikan ComputedRef agar komponen yang memanggilnya selalu update
-export function getDropdownOptions(columnID) {
+export function getGlobalDropdownOptions(columnID) {
   const key = String(columnID).trim();
 
   return computed(() => {

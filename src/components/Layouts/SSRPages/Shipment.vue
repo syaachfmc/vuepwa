@@ -19,13 +19,13 @@
 
         <ContainerB title="Arrange">
           <div class="dataItemContainer">
-            <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('9')"
+            <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('9')"
               :size="{ width: '150px', height: '32px' }" @change="handleShipmentTypeChange" />
-            <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('10')"
+            <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('10')"
               :size="{ width: '120px', height: '32px' }" @change="handleShipmentArrangedByChange" />
           </div>
           <div class="dataItemContainer">
-            <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getDropdownOptions('58')"
+            <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('58')"
               :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
             <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
               :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
@@ -47,7 +47,7 @@
         <ContainerB title="Delivery Term">
           <div class="dataItemContainer">
             <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
-              :options="getDropdownOptions('5')" />
+              :options="getGlobalDropdownOptions('5')" />
             <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
           </div>
           <div class="dataItemContainer">
@@ -80,7 +80,7 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
-import { loadDropdownList, getDropdownOptions, dropdownDataMap } from '../../../stores/dropdownStore.js'
+import { loadDropdownList, getGlobalDropdownOptions, dropdownDataMap } from '../../../stores/dropdownStore.js'
 
 
 onMounted(() => {

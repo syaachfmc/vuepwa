@@ -458,9 +458,6 @@ async function handleSave() {
             })
         )
 
-        // Reload Dropdown List
-        getOptionFromDataList()
-
         saveMessage.value = 'Data berhasil disimpan.'
 
 

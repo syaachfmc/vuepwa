@@ -26,7 +26,7 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
-import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
+import { loadDropdownList, getGlobalDropdownOptions } from '../../../stores/dropdownStore.js'
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
