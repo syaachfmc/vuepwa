@@ -1,31 +1,62 @@
+
 import { ref } from 'vue'
 
 export const TableStore = {
   // Menampung seluruh data baris terformat dari DataTable
   tableData: ref([]),
 
-  // Cache internal untuk menyimpan daftar opsi unik yang sudah dihitung
+  // Cache daftar opsi unik
   optionsCache: new Map(),
 
-  // Panggil fungsi ini saat data tabel selesai di-fetch
+  // Memuat seluruh data tabel
   setTableData(data) {
-    this.tableData.value = Array.isArray(data) ? data : []
-    // Reset cache setiap kali data tabel baru dimuat
     this.optionsCache.clear()
+
+    this.tableData.value = Array.isArray(data) ? data : []
   },
 
-  // Helper untuk mengambil opsi unik berdasarkan columnID (string/numeric)
-  getUniqueColumnOptions(columnId) {
+  // Memperbarui satu baris setelah Save
+  updateRow(savedData) {
+    if (!savedData || !savedData.__rowID) return false
 
+    const rowID = String(savedData.__rowID)
+
+    const index = this.tableData.value.findIndex(
+      row => String(row.__rowID) === rowID
+    )
+
+    if (index === -1) return false
+
+    // Buat array dan object baru agar Vue mendeteksi perubahan
+    const updatedData = [...this.tableData.value]
+
+    updatedData[index] = {
+      ...updatedData[index],
+      ...savedData
+    }
+
+    // Invalidate cache sebelum mengganti data
+    this.optionsCache.clear()
+
+    // Trigger reactivity
+    this.tableData.value = updatedData
+
+    return true
+  },
+
+  // Mengambil opsi unik berdasarkan Column ID
+  getUniqueColumnOptions(columnId) {
     const keyStr = String(columnId)
 
-    // Kembalikan dari cache jika sudah pernah dihitung sebelumnya
     if (this.optionsCache.has(keyStr)) {
       return this.optionsCache.get(keyStr)
     }
 
     const rawData = this.tableData.value || []
-    if (!Array.isArray(rawData) || rawData.length === 0) return []
+
+    if (!Array.isArray(rawData) || rawData.length === 0) {
+      return []
+    }
 
     const keyNum = Number(columnId)
 
@@ -34,11 +65,20 @@ export const TableStore = {
         rawData
           .map(row => {
             if (!row) return null
+
             if (row[keyStr] !== undefined) return row[keyStr]
-            if (!isNaN(keyNum) && row[keyNum] !== undefined) return row[keyNum]
+
+            if (!isNaN(keyNum) && row[keyNum] !== undefined) {
+              return row[keyNum]
+            }
+
             return null
           })
-          .filter(val => val !== null && val !== undefined && String(val).trim() !== '')
+          .filter(val =>
+            val !== null &&
+            val !== undefined &&
+            String(val).trim() !== ''
+          )
       )
     ]
 
@@ -47,7 +87,6 @@ export const TableStore = {
       value: val
     }))
 
-    // Simpan hasil kalkulasi ke dalam cache
     this.optionsCache.set(keyStr, result)
 
     return result

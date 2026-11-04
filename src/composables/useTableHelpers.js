@@ -1,8 +1,6 @@
-import { TableStore } from '../stores/tableStore.js'
-
 
 import { computed } from 'vue'
- 
+import { TableStore } from '../stores/tableStore.js'
 
 export function getOptionFromDataList() {
   const optionCache = new Map()
@@ -17,7 +15,8 @@ export function getOptionFromDataList() {
       )
     }
 
-    return optionCache.get(key).value
+    // Return array terbaru, bukan snapshot array saat pertama dipanggil.
+    return optionCache.get(key)
   }
 
   return {

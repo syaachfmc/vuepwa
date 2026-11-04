@@ -140,29 +140,29 @@ function handleSidebarResize() {
   }
 }
 
+
 function handleRowDataSaved(event) {
-  if (!table) return;
+  if (!table) return
 
-  const savedData = event?.detail?.data;
-  if (!savedData || !savedData.__rowID) return;
+  const savedData = event?.detail?.data
 
+  if (!savedData || !savedData.__rowID) return
+
+  // Update data Tabulator
   const row = table.getRows().find(
-    item => String(item.getData().__rowID) === String(savedData.__rowID)
-  );
+    item =>
+      String(item.getData().__rowID) ===
+      String(savedData.__rowID)
+  )
 
-  if (!row) return;
-
-  row.update(savedData);
-
-  // Sinkronkan juga data di TableStore.
-  const storeRow = TableStore.tableData.value.find(
-    item => String(item.__rowID) === String(savedData.__rowID)
-  );
-
-  if (storeRow) {
-    Object.assign(storeRow, savedData);
+  if (row) {
+    row.update(savedData)
   }
+
+  // Update TableStore sekaligus invalidate options cache
+  TableStore.updateRow(savedData)
 }
+
 
 
 function toggleWrap() {

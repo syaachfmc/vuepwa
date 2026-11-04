@@ -12,7 +12,7 @@
             <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
           </div>
           <div class="dataItemContainer">
-            <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9')"
+            <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9').value"
               :size="{ width: '480px', height: '32px' }" />
           </div>
         </ContainerB>
@@ -27,7 +27,7 @@
           <div class="dataItemContainer">
             <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('58')"
               :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
-            <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4')"
+            <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4').value"
               :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
           </div>
         </ContainerB>
@@ -41,7 +41,7 @@
           </div>
           <div class="dataItemContainer">
             <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable
-              :options="optionDataList('16')" />
+              :options="optionDataList('16').value" />
           </div>
         </ContainerB>
         <ContainerB title="Delivery Term">
