@@ -1,2 +1,5 @@
-mindahin fetch dari datatable.vue ke luar
-kluarin fungsi get dropdown semua
+mindahin fetch dari datatable.vue ke luar - done
+kluarin fungsi get dropdown semua - done
+
+PO blm ADD konek
+

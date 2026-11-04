@@ -1,17 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>test</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(max-content, 1fr));
+            /* Membuat 2 kolom sama besar */
+            gap: 16px;
+            background-color: #d8e7ff;
+            overflow: auto;
+        }
 
-    <script type="module">
-    import {test} from './test.js';
-</script>     
+        .item {
+            background-color: #3b82f6;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* Item di baris ke-3 melintasi 2 kolom */
+        .item-full {
+            grid-column: span 2;
+            /* Atau bisa ditulis: grid-column: 1 / -1; */
+            background-color: #10b981;
+        }
+    </style>
 </head>
+
 <body>
-s
-  
+    <div class="grid-container">
+        <div class="item">Baris 1 - Kolom 1</div>
+        <div class="item">Baris 1 - Kolom 2</div>
+        <div class="item">Baris 2 - Kolom 1</div>
+        <div class="item">Baris 2 - Kolom 2</div>
+        <div class="item item-full">Baris 3 - Satu Kolom (Penuh)</div>
+    </div>
 </body>
+
 </html>

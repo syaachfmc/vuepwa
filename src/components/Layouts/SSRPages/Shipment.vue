@@ -1,8 +1,7 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-
-      <div class="dataItemContainer container-row">
+      
         <ContainerB title="Shipment">
           <div class="dataItemContainer">
             <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
@@ -31,21 +30,22 @@
               :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
           </div>
         </ContainerB>
-      </div>
-      <div class="dataItemContainer container-row">
+      
+      
         <ContainerB title="PO">
           <div class="dataItemContainer">
-            <DataField id="12" type="dropdown" :reset-key="resetKey" 
-            :options="PODropdownOptions('2').value"
-            editable
-             @change="handlePOnumberChange"
-            />
+            <DataField id="12" type="dropdown" :reset-key="resetKey" :options="PODropdownOptions('2').value" editable
+              @change="handlePOnumberChange" />
             <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
-            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '80px', height: '32px' }" readOnly />
-            <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly />
+
+            <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly
+              flat />
           </div>
           <div class="dataItemContainer">
-            <DataField id="14" type="text" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" readOnly />
+            <DataField id="14" type="text" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" readOnly
+              flat />
+            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" readOnly
+              flat />
           </div>
         </ContainerB>
         <ContainerB title="Delivery Term">
@@ -60,16 +60,17 @@
           </div>
         </ContainerB>
 
-      </div>
-
+      
+       <div class="gridfullrow" >
       <ContainerB title="RSR">
         <div class="dataItemContainer">
           <DataField id="6" type="text" :reset-key="resetKey" />
           <DataField id="7" type="date" :reset-key="resetKey" />
           <DataField id="8" type="date" :reset-key="resetKey" />
         </div>
-
       </ContainerB>
+    </div>
+
     </div>
   </div>
 </template>
@@ -122,7 +123,7 @@ function handleShipmentTypeChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const typeCode = getDropdownMapping(globalDropdownDataMap,'9', '59', newValue)
+  const typeCode = getDropdownMapping(globalDropdownDataMap, '9', '59', newValue)
   if (!typeCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -204,9 +205,13 @@ function parseShipmentNumber(value) {
 /****************************** */
 
 
-function handlePOnumberChange(){
-  SelectedRowStore.selectedRow.value['16']=
-  getDropdownMapping(PODropdownDataMap,"2","6",SelectedRowStore.selectedRow.value['12'])
+function handlePOnumberChange() {
+  SelectedRowStore.selectedRow.value['16'] =
+    getDropdownMapping(PODropdownDataMap, "2", "6", SelectedRowStore.selectedRow.value['12'])
+  SelectedRowStore.selectedRow.value['14'] =
+    getDropdownMapping(PODropdownDataMap, "2", "4", SelectedRowStore.selectedRow.value['12'])
+  SelectedRowStore.selectedRow.value['15'] =
+    getDropdownMapping(PODropdownDataMap, "2", "7", SelectedRowStore.selectedRow.value['12'])
 }
 
 const {
@@ -342,9 +347,10 @@ watch(
 }
 
 .form-container {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(max-content, 1fr));
+  /* Membuat 2 kolom sama besar */
+  overflow: auto;
   gap: 12px;
   border: 1px solid #ccc;
   padding: 8px;
@@ -370,5 +376,9 @@ watch(
 .container-row>* {
   flex: 1 1 auto;
   min-width: max-content;
+}
+
+.gridfullrow{
+  grid-column: span 2;
 }
 </style>
