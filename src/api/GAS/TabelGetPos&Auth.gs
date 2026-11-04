@@ -125,8 +125,9 @@ function handleGSheetDataDoGet_(e) {
 
     const gSheetID = params.GSheetID || params.gsheetid || "";
     const sheetName = params.sheetName || params.sheetname || "";
+    const authenticatedProjectCode = String(auth.user.projectCode || "").trim();
 
-    const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username);
+    const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username, authenticatedProjectCode);
     if (!accessCheck.allowed) {
       return createJsonResponse_({
         status: "error",
@@ -161,7 +162,7 @@ function handleGSheetDataDoGet_(e) {
     if (requestedProjectID.toLowerCase() === "any") {
       projectID = "any"; // Menggunakan "any" khusus jika Vue mengirim "any"
     } else {
-      projectID = String(auth.user.projectCode || "").trim(); // Default menginduk ke session user
+      projectID = authenticatedProjectCode // Default menginduk ke session user
     }
 
     const projectIDColumn = String(params.ProjectIDColumn || params.projectidcolumn || "").trim();
@@ -220,59 +221,111 @@ function handleGSheetDataDoGet_(e) {
   }
 }
 
-function checkWorkbookUserAccess_(gSheetID, username) {
+
+function checkWorkbookUserAccess_(gSheetID, username, projectID) {
+  console.log("gSheetID", gSheetID)
+  console.log("username", username)
+  console.log("projectID", projectID)
   const ALLOWED_ROLES = ["VIEWER", "EDITOR", "DEVELOPER"];
 
-  if (!gSheetID || !username) {
-    return { allowed: false, message: "GSheetID dan username wajib dispesifikasikan." };
+  // 1. Validasi parameter
+  if (!gSheetID || !username || !projectID) {
+    return {
+      allowed: false,
+      message: "GSheetID, username, dan ProjectID wajib dispesifikasikan."
+    };
   }
 
+  // 2. Buka Workbook
   let ss;
   try {
     ss = SpreadsheetApp.openById(gSheetID.trim());
   } catch (e) {
-    return { allowed: false, message: "Spreadsheet target tidak ditemukan atau tidak dapat diakses." };
+    return {
+      allowed: false,
+      message: "Spreadsheet target tidak ditemukan atau tidak dapat diakses."
+    };
   }
 
+  // 3. Cari sheet User Access
   const userAccessSheet = ss.getSheetByName("User Access");
+
   if (!userAccessSheet) {
-    return { allowed: false, message: "Sheet 'User Access' tidak ditemukan pada Workbook ini." };
+    return {
+      allowed: false,
+      message: "Sheet 'User Access' tidak ditemukan pada Workbook ini."
+    };
   }
 
+  // 4. Periksa jumlah data
   const lastRow = userAccessSheet.getLastRow();
+
   if (lastRow < 2) {
-    return { allowed: false, message: "Akses ditolak. Belum ada daftar pengguna di sheet 'User Access'." };
+    return {
+      allowed: false,
+      message: "Akses ditolak. Belum ada daftar pengguna di sheet 'User Access'."
+    };
   }
 
-  const rows = userAccessSheet.getRange(2, 1, lastRow - 1, 6).getDisplayValues();
+  // 5. Ambil data kolom A sampai G
+  const rows = userAccessSheet
+    .getRange(2, 1, lastRow - 1, 7)
+    .getDisplayValues();
 
+  // 6. Normalisasi input
   const targetUsername = String(username).trim().toLowerCase();
+  const targetProjectID = String(projectID).trim().toLowerCase();
+
+  // 7. Cari kombinasi Username + Project ID
   const match = rows.find(function (row) {
-    return String(row[1] || "").trim().toLowerCase() === targetUsername;
+    const rowUsername = String(row[1] || "").trim().toLowerCase();
+    const rowProjectID = String(row[6] || "").trim().toLowerCase();
+
+    return (
+      rowUsername === targetUsername &&
+      rowProjectID === targetProjectID
+    );
   });
 
   if (!match) {
-    return { allowed: false, message: "Pengguna '" + username + "' tidak memiliki hak akses ke Workbook ini." };
+    return {
+      allowed: false,
+      message: "Pengguna '" + username +
+        "' tidak memiliki hak akses ke Project '" + projectID + "'."
+    };
   }
 
+  // 8. Periksa Active
   const role = String(match[4] || "").trim();
   const active = String(match[5] || "").trim().toUpperCase();
 
   if (active !== "TRUE") {
-    return { allowed: false, message: "Akses ditolak. Status akses pengguna di Workbook ini tidak aktif (FALSE)." };
+    return {
+      allowed: false,
+      message: "Akses ditolak. Status akses pengguna pada Project ini tidak aktif (FALSE)."
+    };
   }
 
+  // 9. Periksa Role
   const normalizedRole = role.toUpperCase();
+
   if (!ALLOWED_ROLES.includes(normalizedRole)) {
-    return { allowed: false, message: "Akses ditolak. Role '" + role + "' tidak memiliki hak akses untuk melihat data." };
+    return {
+      allowed: false,
+      message: "Akses ditolak. Role '" + role +
+        "' tidak memiliki hak akses untuk melihat data."
+    };
   }
 
+  // 10. Akses diberikan
   return {
     allowed: true,
-    role: role,
-    active: active
+    role: normalizedRole,
+    active: active,
+    projectID: String(match[6]).trim()
   };
 }
+
 
 function getGSheetData(GSheetID, sheetName, columnIDRow, columnTitleRow, columnTitleDescriptionRow, columnTypeRow, dataRange, RowIDColumn, ProjectID, ProjectIDColumn) {
   try {
@@ -550,13 +603,20 @@ function handleRowApiDoGet_(e) {
       return createRowApiError_("Unauthorized. Sesi tidak valid atau telah habis.");
     }
 
+ 
     const gSheetID = p.GSheetID || "";
-    const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username);
+    const projectCode = String(auth.user.projectCode || "").trim();
+
+    const accessCheck = checkWorkbookUserAccess_(
+      gSheetID,
+      auth.user.username,
+      projectCode
+    );
+
+
     if (!accessCheck.allowed) {
       return createRowApiError_("Forbidden: " + accessCheck.message);
     }
-
-    const projectCode = String(auth.user.projectCode || "").trim();
 
     if (!projectCode) {
       return createRowApiError_("Project Code tidak tersedia pada session.");
@@ -923,7 +983,7 @@ const AUTH_CONFIG = {
   SESSION_PREFIX: "AUTH_SESSION_"
 };
 
- 
+
 function jsonResponse_(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
@@ -960,19 +1020,29 @@ function getProjectList() {
     }
 
     // Ambil Kolom A (Project Code) dan Kolom B (Project Name) mulai baris ke-2
-    const rows = sheet.getRange(2, 1, lastRow - 1, 3).getDisplayValues();
+    const rows = sheet.getRange(2, 1, lastRow - 1, 10).getDisplayValues();
+    console.log(rows)
 
     const projects = rows
       .map(function (row) {
         return {
-          code: String(row[0] || "").trim(),
-          name: String(row[1] || "").trim(),
-          prefix: String(row[2] || "").trim()
+          projectID: String(row[0] || "").trim(),
+          projectName: String(row[1] || "").trim(),
+          shipmentNoPrefix: String(row[2] || "").trim(),
+          regEx: String(row[3] || "").trim(),
+          prop1: String(row[4] || "").trim(),
+          prop2: String(row[5] || "").trim(),
+          prop3: String(row[6] || "").trim(),
+          prop4: String(row[7] || "").trim(),
+          prop5: String(row[8] || "").trim(),
+          prop6: String(row[9] || "").trim()
+
         };
+
       })
       .filter(function (item) {
         // Hanya ambil baris yang memiliki Project Code (tidak kosong)
-        return item.code !== "";
+       return item.projectID !== "";
       });
 
     return {
@@ -1404,7 +1474,8 @@ function handleUpdateRow_(body) {
 
     var access = checkWorkbookUserAccess_(
       String(body.GSheetID),
-      String(username)
+      String(username),
+      authenticatedProjectCode
     );
 
     if (!access || !access.allowed) {
@@ -1695,9 +1766,11 @@ function updateRowJson_(data) {
 }
 
 
+
 /**
  * ============================================================================
- * ADD NEW ROW LOGIC (Dengan Generate UUID & Auto Increment Main ID per Project)
+ * ADD NEW ROW LOGIC (Generate UUID & Auto Increment Main ID per Project)
+ * MainIDColumn ditentukan berdasarkan Column ID pada metadata row.
  * ============================================================================
  */
 function handleAddNewRow_(body) {
@@ -1711,6 +1784,7 @@ function handleAddNewRow_(body) {
     }
 
     var auth = validateSession(String(body.token));
+
     if (!auth || auth.success !== true || !auth.user) {
       return jsonResponse_({
         success: false,
@@ -1719,6 +1793,7 @@ function handleAddNewRow_(body) {
     }
 
     var authUser = auth.user;
+
     if (authUser.active === false) {
       return jsonResponse_({
         success: false,
@@ -1739,7 +1814,8 @@ function handleAddNewRow_(body) {
     // 2. Validasi Hak Akses Workbook (Harus EDITOR atau DEVELOPER)
     var access = checkWorkbookUserAccess_(
       String(body.GSheetID || ""),
-      String(username)
+      String(username),
+      authenticatedProjectCode
     );
 
     if (!access || !access.allowed) {
@@ -1749,7 +1825,10 @@ function handleAddNewRow_(body) {
       });
     }
 
-    var role = String(access.role || authUser.role || "").trim().toUpperCase();
+    var role = String(access.role || authUser.role || "")
+      .trim()
+      .toUpperCase();
+
     if (role !== "EDITOR" && role !== "DEVELOPER") {
       return jsonResponse_({
         success: false,
@@ -1767,6 +1846,7 @@ function handleAddNewRow_(body) {
 
     for (var i = 0; i < requiredFields.length; i++) {
       var field = requiredFields[i];
+
       if (
         body[field] === undefined ||
         body[field] === null ||
@@ -1790,26 +1870,141 @@ function handleAddNewRow_(body) {
       });
     }
 
-    // 5. Hitung Indeks Kolom Target
-    var rowIDColumnNumber = columnLetterToNumber_(String(body.RowIDColumn).trim());
-    var projectIDColumnNumber = columnLetterToNumber_(String(body.ProjectIDColumn).trim());
+    // 5. Hitung Indeks Kolom UUID dan Project ID
+    var rowIDColumnNumber = columnLetterToNumber_(
+      String(body.RowIDColumn).trim()
+    );
 
-    if (rowIDColumnNumber < 1 || rowIDColumnNumber > sheet.getMaxColumns()) {
+    var projectIDColumnNumber = columnLetterToNumber_(
+      String(body.ProjectIDColumn).trim()
+    );
+
+    if (
+      rowIDColumnNumber < 1 ||
+      rowIDColumnNumber > sheet.getMaxColumns()
+    ) {
       return jsonResponse_({
         success: false,
         message: "RowIDColumn berada di luar batas sheet."
       });
     }
 
-    if (projectIDColumnNumber < 1 || projectIDColumnNumber > sheet.getMaxColumns()) {
+    if (
+      projectIDColumnNumber < 1 ||
+      projectIDColumnNumber > sheet.getMaxColumns()
+    ) {
       return jsonResponse_({
         success: false,
         message: "ProjectIDColumn berada di luar batas sheet."
       });
     }
 
-    // 6. Gunakan LockService untuk Mencegah Race Condition / Nomor Duplikat
+    // 6. Tentukan Kolom Main ID berdasarkan Column ID
+    var mainIDColumnNumber = 0;
+
+    var mainIDColumnID = String(
+      body.mainIDColumnID || ""
+    ).trim();
+
+    if (mainIDColumnID !== "") {
+
+      var columnIDRow = Number(body.columnIDRow || 1);
+      var dataRange = String(body.dataRange || "").trim();
+
+      if (!dataRange) {
+        return jsonResponse_({
+          success: false,
+          message: "Parameter dataRange wajib diisi untuk mencari mainIDColumnID."
+        });
+      }
+
+      if (
+        !Number.isInteger(columnIDRow) ||
+        columnIDRow < 1
+      ) {
+        return jsonResponse_({
+          success: false,
+          message: "columnIDRow tidak valid."
+        });
+      }
+
+      // Parse dataRange untuk mengetahui batas kolom metadata
+      var rangeInfo = parseRangeInfo(
+        dataRange,
+        sheet.getLastRow(),
+        sheet.getLastColumn()
+      );
+
+      if (!rangeInfo.success) {
+        return jsonResponse_({
+          success: false,
+          message: "dataRange tidak valid: " + dataRange
+        });
+      }
+
+      // Ambil metadata Column ID
+      var metadataValues = sheet.getRange(
+        columnIDRow,
+        rangeInfo.startCol,
+        1,
+        rangeInfo.endCol - rangeInfo.startCol + 1
+      ).getDisplayValues()[0];
+
+      var matchedColumns = [];
+
+      for (var m = 0; m < metadataValues.length; m++) {
+        var currentColumnID = String(
+          metadataValues[m] || ""
+        ).trim();
+
+        if (currentColumnID === mainIDColumnID) {
+          matchedColumns.push(rangeInfo.startCol + m);
+        }
+      }
+
+      if (matchedColumns.length === 0) {
+        return jsonResponse_({
+          success: false,
+          message: "Column ID MainID tidak ditemukan: " + mainIDColumnID
+        });
+      }
+
+      if (matchedColumns.length > 1) {
+        return jsonResponse_({
+          success: false,
+          message: "Column ID MainID ditemukan lebih dari satu kali: " + mainIDColumnID
+        });
+      }
+
+      mainIDColumnNumber = matchedColumns[0];
+
+    } else {
+
+      // Fallback: tetap mendukung parameter MainIDColumn berupa huruf kolom
+      var mainIDColumnLetter = String(
+        body.MainIDColumn || ""
+      ).trim();
+
+      if (mainIDColumnLetter !== "") {
+        mainIDColumnNumber = columnLetterToNumber_(
+          mainIDColumnLetter
+        );
+      }
+    }
+
+    if (
+      mainIDColumnNumber > 0 &&
+      mainIDColumnNumber > sheet.getMaxColumns()
+    ) {
+      return jsonResponse_({
+        success: false,
+        message: "MainIDColumn berada di luar batas sheet."
+      });
+    }
+
+    // 7. Gunakan LockService untuk Mencegah Race Condition / Nomor Duplikat
     var lock = LockService.getScriptLock();
+
     if (!lock.tryLock(10000)) {
       return jsonResponse_({
         success: false,
@@ -1818,95 +2013,158 @@ function handleAddNewRow_(body) {
     }
 
     var newRowID = "";
-    var newMainID = "";
+    var newMainIDValue = "";
     var targetRowIndex = 0;
 
     try {
+
       // Generate UUID v4
       newRowID = Utilities.getUuid();
+
       targetRowIndex = sheet.getLastRow() + 1;
 
-      // Logika Pemrosesan Auto-Increment Main ID jika MainIDColumn dikirimkan
-      var mainIDColumnLetter = String(body.MainIDColumn || "").trim();
-      if (mainIDColumnLetter !== "") {
-        var mainIDColumnNumber = columnLetterToNumber_(mainIDColumnLetter);
+      // 8. Auto-Increment Main ID
+      if (
+        mainIDColumnNumber >= 1 &&
+        mainIDColumnNumber <= sheet.getMaxColumns()
+      ) {
 
-        if (mainIDColumnNumber >= 1 && mainIDColumnNumber <= sheet.getMaxColumns()) {
-          var startDataRow = Number(body.startRow || 5); // Default data dimulai baris ke-5
-          var totalRows = targetRowIndex - startDataRow;
+        var startDataRow = Number(body.startRow || 5);
 
-          var maxSeq = 0;
-          var detectedPrefix = "SAPKTB-SIL-"; // Default fallback prefix jika belum ada data project ini
-          var numDigits = 5; // Default digit angka
+        if (
+          !Number.isInteger(startDataRow) ||
+          startDataRow < 1
+        ) {
+          throw new Error("startRow tidak valid.");
+        }
 
-          if (totalRows > 0) {
-            // Ambil data Main ID dan Project ID dari baris data yang sudah ada
-            var mainIDValues = sheet.getRange(startDataRow, mainIDColumnNumber, totalRows, 1).getDisplayValues();
-            var projectIDValues = sheet.getRange(startDataRow, projectIDColumnNumber, totalRows, 1).getDisplayValues();
+        var totalRows = targetRowIndex - startDataRow;
 
-            // Regex memisahkan: Prefix (group 1), Angka (group 2), dan Suffix Huruf Opsional (group 3)
-            var pattern = /^(.*?)(-?)(\d+)([A-Za-z]*)$/;
+        var maxSeq = 0;
+        var detectedPrefix = "";
+        var numDigits = 5;
 
-            for (var r = 0; r < totalRows; r++) {
-              var rowProjectCode = String(projectIDValues[r][0] || "").trim();
+        if (totalRows > 0) {
 
-              // === KHUSUS: Hanya cek baris yang memiliki Project ID sesuai ===
-              if (rowProjectCode !== authenticatedProjectCode) {
-                continue;
-              }
+          // Ambil Main ID dan Project ID dari seluruh baris data
+          var mainIDValues = sheet.getRange(
+            startDataRow,
+            mainIDColumnNumber,
+            totalRows,
+            1
+          ).getDisplayValues();
 
-              var val = String(mainIDValues[r][0] || "").trim();
-              if (!val) continue;
+          var projectIDValues = sheet.getRange(
+            startDataRow,
+            projectIDColumnNumber,
+            totalRows,
+            1
+          ).getDisplayValues();
 
-              var match = val.match(pattern);
-              if (match) {
-                var prefixPart = match[1] + match[2];
-                var numberPartStr = match[3];
-                var seqNum = parseInt(numberPartStr, 10);
+          // Prefix + optional hyphen + angka + optional suffix huruf
+          var pattern = /^(.*?)(-?)(\d+)([A-Za-z]*)$/;
 
-                if (seqNum > maxSeq) {
-                  maxSeq = seqNum;
-                  detectedPrefix = prefixPart;
-                  numDigits = numberPartStr.length; // Mengikuti panjang pad angka existing untuk project ini
-                }
+          for (var r = 0; r < totalRows; r++) {
+
+            var rowProjectCode = String(
+              projectIDValues[r][0] || ""
+            ).trim();
+
+            // Hanya periksa baris dengan Project ID sesuai session
+            if (rowProjectCode !== authenticatedProjectCode) {
+              continue;
+            }
+
+            var val = String(
+              mainIDValues[r][0] || ""
+            ).trim();
+
+            if (!val) continue;
+
+            var match = val.match(pattern);
+
+            if (match) {
+
+              var prefixPart = match[1] + match[2];
+              var numberPartStr = match[3];
+              var seqNum = parseInt(numberPartStr, 10);
+
+              if (seqNum > maxSeq) {
+
+                maxSeq = seqNum;
+                detectedPrefix = prefixPart;
+
+                // Mengikuti jumlah digit Main ID existing
+                numDigits = numberPartStr.length;
               }
             }
           }
-
-          var nextSeq = maxSeq + 1;
-          var formattedNumber = String(nextSeq).padStart(numDigits, "0");
-          newMainID = detectedPrefix + formattedNumber;
-
-          // Tulis Main ID baru ke kolom MainIDColumn
-          sheet.getRange(targetRowIndex, mainIDColumnNumber).setValue(newMainID);
         }
+
+        // Generate nomor berikutnya
+        var nextSeq = maxSeq + 1;
+
+        var formattedNumber = String(nextSeq).padStart(
+          numDigits,
+          "0"
+        );
+
+        newMainIDValue = detectedPrefix + formattedNumber;
+
+        console.log("Project Code:", authenticatedProjectCode);
+        console.log("MainIDColumn:", mainIDColumnNumber);
+        console.log("mainIDColumnID:", mainIDColumnID);
+        console.log("Detected Prefix:", detectedPrefix);
+        console.log("Max Sequence:", maxSeq);
+        console.log("New Main ID:", newMainIDValue);
+
+        // Tulis Main ID baru
+        sheet.getRange(
+          targetRowIndex,
+          mainIDColumnNumber
+        ).setValue(newMainIDValue);
       }
 
-      // Tulis UUID dan ProjectCode pada baris baru
-      sheet.getRange(targetRowIndex, rowIDColumnNumber).setValue(newRowID);
-      sheet.getRange(targetRowIndex, projectIDColumnNumber).setValue(authenticatedProjectCode);
+      // 9. Tulis UUID dan ProjectCode pada baris baru
+      sheet.getRange(
+        targetRowIndex,
+        rowIDColumnNumber
+      ).setValue(newRowID);
+
+      sheet.getRange(
+        targetRowIndex,
+        projectIDColumnNumber
+      ).setValue(authenticatedProjectCode);
 
       SpreadsheetApp.flush();
+
     } finally {
       lock.releaseLock();
     }
 
-    // 7. Kembalikan Respon Berhasil
+    // 10. Kembalikan Response Berhasil
     return jsonResponse_({
       success: true,
       message: "Baris baru berhasil ditambahkan.",
       newRowID: newRowID,
-      newMainID: newMainID,
+      newMainIDValue: newMainIDValue,
       rowIndex: targetRowIndex,
-      projectCode: authenticatedProjectCode
+      projectCode: authenticatedProjectCode,
+      mainIDColumnID: mainIDColumnID
+
     });
 
   } catch (error) {
+
+    console.error("handleAddNewRow_ error:", error);
+
     return jsonResponse_({
       success: false,
-      message: "Gagal menambah baris baru: " + (error.message || String(error))
+      message: "Gagal menambah baris baru: " +
+        (error.message || String(error))
     });
   }
+
 }
 
 /**
@@ -1966,7 +2224,9 @@ function testDoPostAddNewRow() {
     sheetName: "Data",                              // Ganti dengan nama sheet target
     RowIDColumn: "A",                                       // Kolom tempat UUID disimpan
     ProjectIDColumn: "B",                                   // Kolom tempat ProjectCode disimpan
-    MainIDColumn: "D",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
+    mainIDColumnID: "2",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
+    columnIDRow: 1,
+    dataRange: "B5:BY",
     startRow: 5                                             // Baris pertama data dimulai (opsional, default: 5)
   };
 
@@ -2056,4 +2316,7 @@ function testDoGetFetchDropdowns() {
 }
 
 
-
+function getprojlisttest() {
+  const a = getProjectList()
+  console.log(a)
+}
