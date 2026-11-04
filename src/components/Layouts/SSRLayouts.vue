@@ -148,6 +148,8 @@ import {
     resetAllForms
 } from '../../composables/useFormTracker.js'
 import { addNewRow } from '../../api/addNewRow.js'
+import { getOptionFromDataList } from '../../composables/useTableHelpers.js'
+
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -386,7 +388,7 @@ async function handleAddNewShipment() {
             startRow: 5
         })
 
-        
+
         // 2. Reload tabel dan pilih baris berdasarkan UUID.
         await sideBarTableRef.value.addAndSelectRow(result.newRowID, result.mainIDColumnID, result.newMainIDValue)
 
@@ -455,6 +457,9 @@ async function handleSave() {
                 }
             })
         )
+
+        // Reload Dropdown List
+        getOptionFromDataList()
 
         saveMessage.value = 'Data berhasil disimpan.'
 

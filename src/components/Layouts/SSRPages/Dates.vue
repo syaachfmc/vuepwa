@@ -24,7 +24,7 @@ import ContainerB from '../../inputs/ContainerB.vue'
 
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { useTableHelpers } from '../../../composables/useTableHelpers.js'
+import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
 import { loadDropdownList, getDropdownOptions } from '../../../stores/dropdownStore.js'
 
@@ -34,7 +34,7 @@ onMounted(() => {
 });
 
 
-const { optionDataList } = useTableHelpers()
+const { optionDataList } = getOptionFromDataList()
 
 const isSwitchingRow = ref(false)
 

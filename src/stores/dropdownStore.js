@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan path DataTable.js Anda
 
 export const dropdownDataMap = ref({});
@@ -21,6 +21,7 @@ const dropdownConfig = {
 };
 
 export async function loadDropdownList() {
+  console.log("loadDropdownList")
   if (isDropdownLoaded.value || isDropdownLoading.value) return;
 
   isDropdownLoading.value = true;
@@ -61,6 +62,7 @@ export async function loadDropdownList() {
 
       dropdownDataMap.value = map;
       isDropdownLoaded.value = true;
+      console.log("isDropdownLoaded",isDropdownLoaded.value )
     }
   } catch (err) {
     console.error('Gagal memuat Dropdown List:', err);
@@ -72,5 +74,8 @@ export async function loadDropdownList() {
 // Mengembalikan ComputedRef agar komponen yang memanggilnya selalu update
 export function getDropdownOptions(columnID) {
   const key = String(columnID).trim();
-  return dropdownDataMap.value[key] || [];
+
+  return computed(() => {
+    return dropdownDataMap.value[key] || [];
+  });
 }

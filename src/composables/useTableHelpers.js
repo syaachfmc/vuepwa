@@ -4,7 +4,7 @@ import { TableStore } from '../stores/tableStore.js'
 import { computed } from 'vue'
  
 
-export function useTableHelpers() {
+export function getOptionFromDataList() {
   const optionCache = new Map()
 
   function optionDataList(id) {

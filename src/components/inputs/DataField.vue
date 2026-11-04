@@ -9,28 +9,24 @@
     <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
       :type="type === 'number' ? 'number' : 'text'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
-      @change="$emit('change', $event)"
-      @dirty-change="(isDirty) =>  {}" />
+      @change="$emit('change', $event)" @dirty-change="(isDirty) => { }" />
 
     <!-- DatePicker -->
     <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'" :reset-key="internalResetKey" :width="width"
-      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" 
-      @change="$emit('change', $event)"
-      @dirty-change="(isDirty) => {}" />
-      
+      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @change="$emit('change', $event)"
+      @dirty-change="(isDirty) => { }" />
+
 
     <!-- Dropdown -->
     <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
       :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="internalResetKey"
       :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
-      @change="$emit('change', $event)"
-      @dirty-change="(isDirty) => {}" />
+      @change="$emit('change', $event)" @dirty-change="(isDirty) => { }" />
 
     <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="internalResetKey"
-      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
-      @change="$emit('change', $event)"
-      @dirty-change="(isDirty) => {}" />
+      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @change="$emit('change', $event)"
+      @dirty-change="(isDirty) => { }" />
 
     <!-- Fallback -->
     <input v-else :id="`col_${id}`" v-model="modelValue" :type="type" class="custom-input"
@@ -58,7 +54,7 @@ import checkBox from './checkBox.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 
 function textCliked() {
- 
+
 }
 
 
@@ -82,7 +78,7 @@ const props = defineProps({
     default: false
   },
   options: {
-    type: Array,
+    type: [Array, Object],
     default: () => []
   },
   editable: {
@@ -257,6 +253,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleViewportChange, true)
   window.removeEventListener('resize', handleViewportChange)
 })
+
 </script>
 
 <style scoped>
