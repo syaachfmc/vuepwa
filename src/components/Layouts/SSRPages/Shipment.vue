@@ -35,7 +35,11 @@
       <div class="dataItemContainer container-row">
         <ContainerB title="PO">
           <div class="dataItemContainer">
-            <DataField id="12" type="dropdown" :reset-key="resetKey" />
+            <DataField id="12" type="dropdown" :reset-key="resetKey" 
+            :options="PODropdownOptions('2').value"
+            editable
+             @change="handlePOnumberChange"
+            />
             <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
             <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '80px', height: '32px' }" readOnly />
             <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly />
@@ -76,16 +80,9 @@ import DataField from '../../inputs/DataField.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { getAllDropdownData } from '../../../composables/getAllDropdownData.js'
+import { getAllDropdownData, getDropdownMapping } from '../../../composables/getAllDropdownData.js'
 
-function getDropdownMapping(sourceID, targetID, value) {
-  const source = globalDropdownDataMap.value[String(sourceID)] || []
-  const target = globalDropdownDataMap.value[String(targetID)] || []
 
-  const index = source.indexOf(value)
-
-  return index !== -1 ? target[index] ?? null : null
-}
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
 // ========================================
@@ -108,23 +105,24 @@ const shipmentNoError = ref(false)
 const shipmentNoErrorMessage = ref('')
 
 
+
 function handleShipmentNoChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(newValue)) return
   const r = parseShipmentNumber(newValue)
   SelectedRowStore.selectedRow.value['10'] =
-    getDropdownMapping('59', '9', r.shipmentType)
+    getDropdownMapping(globalDropdownDataMap, '59', '9', r.shipmentType)
   SelectedRowStore.selectedRow.value['301'] =
-    getDropdownMapping('60', '58', r.docType)
+    getDropdownMapping(globalDropdownDataMap, '60', '58', r.docType)
   SelectedRowStore.selectedRow.value['11'] =
-    getDropdownMapping('60', '10', r.docType)
+    getDropdownMapping(globalDropdownDataMap, '60', '10', r.docType)
 }
 
 function handleShipmentTypeChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const typeCode = getDropdownMapping('9', '59', newValue)
+  const typeCode = getDropdownMapping(globalDropdownDataMap,'9', '59', newValue)
   if (!typeCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -141,8 +139,8 @@ function handleDocumentTypeChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMapping('58', '60', newValue)
-  const arrangedBy = getDropdownMapping('58', '10', newValue)
+  const docCode = getDropdownMapping(globalDropdownDataMap, '58', '60', newValue)
+  const arrangedBy = getDropdownMapping(globalDropdownDataMap, '58', '10', newValue)
   if (!docCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -160,8 +158,8 @@ function handleShipmentArrangedByChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMapping('10', '60', newValue)
-  const arrangedBy = getDropdownMapping('10', '58', newValue)
+  const docCode = getDropdownMapping(globalDropdownDataMap, '10', '60', newValue)
+  const arrangedBy = getDropdownMapping(globalDropdownDataMap, '10', '58', newValue)
   if (!docCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -205,10 +203,20 @@ function parseShipmentNumber(value) {
 
 /****************************** */
 
+
+function handlePOnumberChange(){
+  SelectedRowStore.selectedRow.value['16']=
+  getDropdownMapping(PODropdownDataMap,"2","6",SelectedRowStore.selectedRow.value['12'])
+}
+
 const {
   optionDataList,
+
   getGlobalDropdownOptions,
-  globalDropdownDataMap
+  globalDropdownDataMap,
+
+  PODropdownOptions,
+  PODropdownDataMap
 } = getAllDropdownData()
 
 const isSwitchingRow = ref(false)

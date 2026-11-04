@@ -1,0 +1,2 @@
+mindahin fetch dari datatable.vue ke luar
+kluarin fungsi get dropdown semua
