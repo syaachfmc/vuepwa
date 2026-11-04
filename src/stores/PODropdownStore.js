@@ -1,9 +1,9 @@
 import { ref, computed } from 'vue';
 import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan path DataTable.js Anda
 
-export const dropdownDataMap = ref({});
-export const isDropdownLoading = ref(false);
-export const isDropdownLoaded = ref(false);
+export const PODropdownDataMap = ref({});
+export const PODropdownisLoading = ref(false);
+export const PODropdownisLoaded = ref(false);
 const ProjectID = JSON.parse(sessionStorage.getItem("authProject") || "{}").projectID || '';
 
 const dropdownConfig = {
@@ -21,11 +21,11 @@ const dropdownConfig = {
   ProjectIDColumn: 'B'
 };
 
-export async function loadDropdownList() {
+export async function PODropdownLoadList() {
   
-  if (isDropdownLoaded.value || isDropdownLoading.value) return;
+  if (PODropdownisLoaded.value || PODropdownisLoading.value) return;
 
-  isDropdownLoading.value = true;
+  PODropdownisLoading.value = true;
   try {
     const result = await fetchGSheetData(
       dropdownConfig.webAppUrl,
@@ -61,22 +61,22 @@ export async function loadDropdownList() {
         });
       });
 
-      dropdownDataMap.value = map;
-      isDropdownLoaded.value = true;
+      PODropdownDataMap.value = map;
+      PODropdownisLoaded.value = true;
       
     }
   } catch (err) {
-    console.error('Gagal memuat Dropdown List:', err);
+    console.error('Gagal memuat PO Dropdown List:', err);
   } finally {
-    isDropdownLoading.value = false;
+    PODropdownisLoading.value = false;
   }
 }
 
 // Mengembalikan ComputedRef agar komponen yang memanggilnya selalu update
-export function getGlobalDropdownOptions(columnID) {
+export function PODropdownOptions(columnID) {
   const key = String(columnID).trim();
 
   return computed(() => {
-    return dropdownDataMap.value[key] || [];
+    return PODropdownDataMap.value[key] || [];
   });
 }

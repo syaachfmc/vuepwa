@@ -81,11 +81,13 @@ import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
 import { globalDropdownLoadList, getGlobalDropdownOptions, globalDropdownDataMap } from '../../../stores/globalDropdownStore.js'
+import { PODropdownLoadList, PODropdownOptions, PODropdownDataMap } from '../../../stores/PODropdownStore.js'
 
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
   globalDropdownLoadList();
+  PODropdownLoadList();
 });
 
 function getDropdownMapping(sourceID, targetID, value) {

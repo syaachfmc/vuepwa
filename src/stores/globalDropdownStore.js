@@ -65,7 +65,7 @@ export async function globalDropdownLoadList() {
       
     }
   } catch (err) {
-    console.error('Gagal memuat Dropdown List:', err);
+    console.error('Gagal memuat Global Dropdown List:', err);
   } finally {
     globalDropdownisLoading.value = false;
   }
