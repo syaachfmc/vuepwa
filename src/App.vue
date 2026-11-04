@@ -49,8 +49,6 @@ function handleLoginSuccess(data) {
   sessionStorage.setItem("authToken", data.token);
   sessionStorage.setItem("authUser", JSON.stringify(data.user));
 
-  console.log("Login sukses");
-
   currentView.value = "ssr-layouts";
 }
 

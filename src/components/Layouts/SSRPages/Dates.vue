@@ -63,7 +63,7 @@ const projectPrefix = authProject.shipmentNoPrefix || '';
 const shipmentPattern = new RegExp(
   `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
 );
-console.log("projectPrefix---",projectPrefix)
+
 // Error state Shipment Number
 const shipmentNoError = ref(false)
 const shipmentNoErrorMessage = ref('')

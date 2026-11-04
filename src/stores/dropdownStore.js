@@ -21,7 +21,7 @@ const dropdownConfig = {
 };
 
 export async function loadDropdownList() {
-  console.log("loadDropdownList")
+  
   if (isDropdownLoaded.value || isDropdownLoading.value) return;
 
   isDropdownLoading.value = true;
@@ -62,7 +62,7 @@ export async function loadDropdownList() {
 
       dropdownDataMap.value = map;
       isDropdownLoaded.value = true;
-      console.log("isDropdownLoaded",isDropdownLoaded.value )
+      
     }
   } catch (err) {
     console.error('Gagal memuat Dropdown List:', err);
