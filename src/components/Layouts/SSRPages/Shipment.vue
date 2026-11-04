@@ -15,7 +15,7 @@
               :size="{ width: '480px', height: '32px' }" />
           </div>
         </ContainerB>
-
+ 
         <ContainerB title="Arrange">
           <div class="dataItemContainer">
             <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('9')"

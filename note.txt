@@ -3,3 +3,6 @@ kluarin fungsi get dropdown semua - done
 
 PO blm ADD konek
 
+blm konek po add dgn po  desc
+
+po num blm unik
