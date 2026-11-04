@@ -73,22 +73,10 @@
 <script setup>
 import { watch, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import DataField from '../../inputs/DataField.vue'
-
 import ContainerB from '../../inputs/ContainerB.vue'
-
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
-
-import { globalDropdownLoadList, getGlobalDropdownOptions, globalDropdownDataMap } from '../../../stores/globalDropdownStore.js'
-import { PODropdownLoadList, PODropdownOptions, PODropdownDataMap } from '../../../stores/PODropdownStore.js'
-
-
-onMounted(() => {
-  // Ambil data dropdown saat komponen dimuat
-  globalDropdownLoadList();
-  PODropdownLoadList();
-});
+import { getAllDropdownData } from '../../../composables/getAllDropdownData.js'
 
 function getDropdownMapping(sourceID, targetID, value) {
   const source = globalDropdownDataMap.value[String(sourceID)] || []
@@ -217,7 +205,11 @@ function parseShipmentNumber(value) {
 
 /****************************** */
 
-const { optionDataList } = getOptionFromDataList()
+const {
+  optionDataList,
+  getGlobalDropdownOptions,
+  globalDropdownDataMap
+} = getAllDropdownData()
 
 const isSwitchingRow = ref(false)
 
