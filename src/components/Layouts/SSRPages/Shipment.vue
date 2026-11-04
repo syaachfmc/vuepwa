@@ -35,13 +35,13 @@
       <div class="dataItemContainer container-row">
         <ContainerB title="PO">
           <div class="dataItemContainer">
-            <DataField id="12" type="text" :reset-key="resetKey" />
+            <DataField id="12" type="dropdown" :reset-key="resetKey" />
             <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
-            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '100px', height: '32px' }" />
+            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '80px', height: '32px' }" readOnly />
+            <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly />
           </div>
           <div class="dataItemContainer">
-            <DataField id="16" type="dropdown" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" editable
-              :options="optionDataList('16').value" />
+            <DataField id="14" type="text" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" readOnly />
           </div>
         </ContainerB>
         <ContainerB title="Delivery Term">
@@ -80,17 +80,17 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
-import { loadDropdownList, getGlobalDropdownOptions, dropdownDataMap } from '../../../stores/dropdownStore.js'
+import { globalDropdownLoadList, getGlobalDropdownOptions, globalDropdownDataMap } from '../../../stores/globalDropdownStore.js'
 
 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
-  loadDropdownList();
+  globalDropdownLoadList();
 });
 
 function getDropdownMapping(sourceID, targetID, value) {
-  const source = dropdownDataMap.value[String(sourceID)] || []
-  const target = dropdownDataMap.value[String(targetID)] || []
+  const source = globalDropdownDataMap.value[String(sourceID)] || []
+  const target = globalDropdownDataMap.value[String(targetID)] || []
 
   const index = source.indexOf(value)
 
@@ -112,14 +112,14 @@ const projectPrefix = authProject.shipmentNoPrefix || '';
 const shipmentPattern = new RegExp(
   `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
 );
- 
+
 // Error state Shipment Number
 const shipmentNoError = ref(false)
 const shipmentNoErrorMessage = ref('')
 
 
 function handleShipmentNoChange(newValue) {
-  if(!SelectedRowStore.selectedRow.value)return  
+  if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(newValue)) return
   const r = parseShipmentNumber(newValue)
   SelectedRowStore.selectedRow.value['10'] =
@@ -131,9 +131,9 @@ function handleShipmentNoChange(newValue) {
 }
 
 function handleShipmentTypeChange(newValue) {
-  if(!SelectedRowStore.selectedRow.value)return  
+  if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])  
+  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const typeCode = getDropdownMapping('9', '59', newValue)
   if (!typeCode) return
   const newShipmentNo =
@@ -148,7 +148,7 @@ function handleShipmentTypeChange(newValue) {
 }
 
 function handleDocumentTypeChange(newValue) {
-  if(!SelectedRowStore.selectedRow.value)return  
+  if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const docCode = getDropdownMapping('58', '60', newValue)
@@ -167,7 +167,7 @@ function handleDocumentTypeChange(newValue) {
 }
 
 function handleShipmentArrangedByChange(newValue) {
-  if(!SelectedRowStore.selectedRow.value)return  
+  if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
   const docCode = getDropdownMapping('10', '60', newValue)

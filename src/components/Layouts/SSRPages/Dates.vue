@@ -31,17 +31,17 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
 
-import { loadDropdownList, getGlobalDropdownOptions, dropdownDataMap } from '../../../stores/dropdownStore.js'
+import {  globalDropdownLoadList, getGlobalDropdownOptions,  globalDropdownDataMap } from '../../../stores/globalDropdownStore.js'
 
-
+ 
 onMounted(() => {
   // Ambil data dropdown saat komponen dimuat
-  loadDropdownList();
+  globalDropdownLoadList();
 });
 
 function getDropdownMapping(sourceID, targetID, value) {
-  const source = dropdownDataMap.value[String(sourceID)] || []
-  const target = dropdownDataMap.value[String(targetID)] || []
+  const source = globalDropdownDataMap.value[String(sourceID)] || []
+  const target = globalDropdownDataMap.value[String(targetID)] || []
 
   const index = source.indexOf(value)
 

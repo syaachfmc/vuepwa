@@ -4,19 +4,20 @@ import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan 
 export const dropdownDataMap = ref({});
 export const isDropdownLoading = ref(false);
 export const isDropdownLoaded = ref(false);
+const ProjectID = JSON.parse(sessionStorage.getItem("authProject") || "{}").projectID || '';
 
 const dropdownConfig = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
 
   gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
-  sheetName: 'Dropdowns',
+  sheetName: 'PO',
   columnIDRow: 1,
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'B5:BJ',
+  dataRange: 'B5:AA',
   RowIDColumn: 'A',
-  ProjectID: 'any',
+  ProjectID: ProjectID,
   ProjectIDColumn: 'B'
 };
 

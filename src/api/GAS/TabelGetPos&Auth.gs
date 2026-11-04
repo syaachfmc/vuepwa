@@ -2275,7 +2275,7 @@ function testDoGetFetchDropdowns() {
   const token = loginResult.token;
   Logger.log("✅ Token berhasil didapat: " + token);
 
-  // 2. Simulasi parameter HTTP GET e.parameter dari vue/dropdownStore.js
+  // 2. Simulasi parameter HTTP GET e.parameter dari vue/globalDropdownStore.js
   const e = {
     parameter: {
       token: token,
