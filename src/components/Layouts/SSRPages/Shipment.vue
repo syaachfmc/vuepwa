@@ -36,7 +36,8 @@
           <div class="dataItemContainer">
             <DataField id="12" type="dropdown" :reset-key="resetKey" :options="PODropdownOptions('2').value" editable
               @change="handlePOnumberChange" />
-            <DataField id="13" type="text" :reset-key="resetKey" :size="{ width: '70px', height: '32px' }" />
+              <DataField id="13" type="dropdown" :reset-key="resetKey" :options="PONumberOptions" editable
+              @change="handlePOnumberChange" />
 
             <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly
               flat />
@@ -76,12 +77,12 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { watch, ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue'
 import DataField from '../../inputs/DataField.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { getAllDropdownData, getDropdownMapping } from '../../../composables/getAllDropdownData.js'
+import { getAllDropdownData, getDropdownMapping, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
 
 
 
@@ -206,12 +207,16 @@ function parseShipmentNumber(value) {
 
 
 function handlePOnumberChange() {
+  
+  console.log(  getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12']))
+
   SelectedRowStore.selectedRow.value['16'] =
     getDropdownMapping(PODropdownDataMap, "2", "6", SelectedRowStore.selectedRow.value['12'])
   SelectedRowStore.selectedRow.value['14'] =
     getDropdownMapping(PODropdownDataMap, "2", "4", SelectedRowStore.selectedRow.value['12'])
   SelectedRowStore.selectedRow.value['15'] =
     getDropdownMapping(PODropdownDataMap, "2", "7", SelectedRowStore.selectedRow.value['12'])
+   
 }
 
 const {
@@ -223,6 +228,10 @@ const {
   PODropdownOptions,
   PODropdownDataMap
 } = getAllDropdownData()
+
+const PONumberOptions = computed(() =>
+  getDropdownMappingList( PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12']  )
+)
 
 const isSwitchingRow = ref(false)
 
