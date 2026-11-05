@@ -1,12 +1,8 @@
 mindahin fetch dari datatable.vue ke luar - done
 kluarin fungsi get dropdown semua - done
-
 PO blm ADD konek - done
-
 blm konek po add dgn po  desc - done
-
 po num blm unik - done
+dropdoen enter ke buka - done
+saat relogin  pertama ngk bisa save <---------
 
-saat relogin  pertama ngk bisa save
-
-dropdoen enter ke buka

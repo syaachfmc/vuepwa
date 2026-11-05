@@ -6,39 +6,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>test</title>
     <style>
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(max-content, 1fr));
-            /* Membuat 2 kolom sama besar */
-            gap: 16px;
-            background-color: #d8e7ff;
-            overflow: auto;
+        /* Background belakang (bisa warna atau gambar) */
+        .container-bg {
+            background: linear-gradient(90deg, #0051ff 50%, #ff0000 50%);
+            padding: 50px;
+            display: flex;
+            justify-content: center;
         }
 
-        .item {
-            background-color: #3b82f6;
+        /* Kotak Utama */
+        .box-invert {
+            position: relative;
+            padding: 20px 40px;
+            font-family: sans-serif;
+            font-weight: bold;
             color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
+            /* Teks juga bisa ikut ter-invert jika pakai blend mode */
         }
 
-        /* Item di baris ke-3 melintasi 2 kolom */
-        .item-full {
-            grid-column: span 2;
-            /* Atau bisa ditulis: grid-column: 1 / -1; */
-            background-color: #10b981;
+        /* Membuat Border Invert dengan Pseudo-element */
+        .box-invert::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            /* Mengisi seluruh area box */
+
+            /* Buat border putih */
+            border: 4px solid #d10000;
+
+            /* Efek pembalik warna dari elemen belakangnya */
+            mix-blend-mode:multiply;
+
+            pointer-events: none;
+            /* Agar tidak menghalangi klik ke dalam box */
         }
     </style>
 </head>
 
 <body>
-    <div class="grid-container">
-        <div class="item">Baris 1 - Kolom 1</div>
-        <div class="item">Baris 1 - Kolom 2</div>
-        <div class="item">Baris 2 - Kolom 1</div>
-        <div class="item">Baris 2 - Kolom 2</div>
-        <div class="item item-full">Baris 3 - Satu Kolom (Penuh)</div>
+    <div class="container-bg">
+        <div class="box-invert">
+            Teks di dalam kotak
+        </div>
     </div>
 </body>
 

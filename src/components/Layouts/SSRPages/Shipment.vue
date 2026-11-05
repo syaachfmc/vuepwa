@@ -372,10 +372,7 @@ watch(
   { deep: true }
 )
 
-
-
 </script>
-
 
 <style scoped>
 .shipment-page {
@@ -393,9 +390,9 @@ watch(
   /* Membuat 2 kolom sama besar */
   overflow: auto;
   gap: 12px;
-  border: 1px  solid  #919fa1;
+  border: 1px solid #919fa13f;
   padding: 8px;
-  background: rgba(221, 247, 255, 0.199);
+
 
 }
 
