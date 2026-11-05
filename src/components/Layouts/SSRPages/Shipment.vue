@@ -1,76 +1,76 @@
 <template>
   <div class="shipment-page">
     <div class="form-container">
-      
-        <ContainerB title="Shipment">
-          <div class="dataItemContainer">
-            <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
-              :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" :error="shipmentNoError"
-              :errorMessage="shipmentNoErrorMessage" />
-            <DataField id="5" type="date" :reset-key="resetKey" />
-            <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
-          </div>
-          <div class="dataItemContainer">
-            <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9').value"
-              :size="{ width: '480px', height: '32px' }" />
-          </div>
-        </ContainerB>
- 
-        <ContainerB title="Arrange">
-          <div class="dataItemContainer">
-            <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('9')"
-              :size="{ width: '150px', height: '32px' }" @change="handleShipmentTypeChange" />
-            <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('10')"
-              :size="{ width: '120px', height: '32px' }" @change="handleShipmentArrangedByChange" />
-          </div>
-          <div class="dataItemContainer">
-            <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('58')"
-              :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
-            <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4').value"
-              :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
-          </div>
-        </ContainerB>
-      
-      
-        <ContainerB title="PO">
-          <div class="dataItemContainer">
-            <DataField id="12" type="dropdown" :reset-key="resetKey" :options="PODropdownOptions('2').value" editable
-              @change="handlePOnumberChange" />
-              <DataField id="13" type="dropdown" :reset-key="resetKey" :options="PONumberOptions" editable
-              @change="handlePOnumberChange" />
 
-            <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly
-              flat />
-          </div>
-          <div class="dataItemContainer">
-            <DataField id="14" type="text" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" readOnly
-              flat />
-            <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" readOnly
-              flat />
-          </div>
-        </ContainerB>
-        <ContainerB title="Delivery Term">
-          <div class="dataItemContainer">
-            <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
-              :options="getGlobalDropdownOptions('5')" />
-            <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
-          </div>
-          <div class="dataItemContainer">
-            <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" />
-            <DataField id="41" type="checkbox" :reset-key="resetKey" />
-          </div>
-        </ContainerB>
-
-      
-       <div class="gridfullrow" >
-      <ContainerB title="RSR">
+      <ContainerB title="Shipment">
         <div class="dataItemContainer">
-          <DataField id="6" type="text" :reset-key="resetKey" />
-          <DataField id="7" type="date" :reset-key="resetKey" />
-          <DataField id="8" type="date" :reset-key="resetKey" />
+          <DataField id="2" type="text" :reset-key="resetKey" :font="{ weight: '800' }"
+            :size="{ width: '170px', height: '32px' }" @change="handleShipmentNoChange" :error="shipmentNoError"
+            :errorMessage="shipmentNoErrorMessage" />
+          <DataField id="5" type="date" :reset-key="resetKey" />
+          <DataField id="3" type="text" :reset-key="resetKey" :size="{ width: '140px', height: '32px' }" />
+        </div>
+        <div class="dataItemContainer">
+          <DataField id="9" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('9').value"
+            :size="{ width: '480px', height: '32px' }" />
         </div>
       </ContainerB>
-    </div>
+
+      <ContainerB title="Arrange">
+        <div class="dataItemContainer">
+          <DataField id="10" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('9')"
+            :size="{ width: '150px', height: '32px' }" @change="handleShipmentTypeChange" />
+          <DataField id="11" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('10')"
+            :size="{ width: '120px', height: '32px' }" @change="handleShipmentArrangedByChange" />
+        </div>
+        <div class="dataItemContainer">
+          <DataField id="301" type="dropdown" :reset-key="resetKey" editable :options="getGlobalDropdownOptions('58')"
+            :size="{ width: '150px', height: '32px' }" @change="handleDocumentTypeChange" />
+          <DataField id="4" type="dropdown" :reset-key="resetKey" editable :options="optionDataList('4').value"
+            :size="{ width: '120px', height: '32px' }" :font="{ weight: '800' }" />
+        </div>
+      </ContainerB>
+
+
+      <ContainerB title="PO">
+        <div class="dataItemContainer">
+          <DataField id="12" type="dropdown" :reset-key="resetKey" :options="unique(PODropdownOptions('2').value)"
+            editable @change="handlePOnumberChange" />
+          <DataField id="13" type="dropdown" :reset-key="resetKey" :options="POAddendumList" editable
+            @change="handlePOAddendumChange" />
+
+          <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly
+            flat />
+        </div>
+        <div class="dataItemContainer">
+          <DataField id="14" type="text" :reset-key="resetKey" :size="{ width: '390px', height: '32px' }" readOnly
+            flat />
+          <DataField id="15" type="text" :reset-key="resetKey" :size="{ width: '90px', height: '32px' }" readOnly
+            flat />
+        </div>
+      </ContainerB>
+      <ContainerB title="Delivery Term">
+        <div class="dataItemContainer">
+          <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
+            :options="getGlobalDropdownOptions('5')" />
+          <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
+        </div>
+        <div class="dataItemContainer">
+          <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" />
+          <DataField id="41" type="checkbox" :reset-key="resetKey" />
+        </div>
+      </ContainerB>
+
+
+      <div class="gridfullrow">
+        <ContainerB title="RSR">
+          <div class="dataItemContainer">
+            <DataField id="6" type="text" :reset-key="resetKey" />
+            <DataField id="7" type="date" :reset-key="resetKey" />
+            <DataField id="8" type="date" :reset-key="resetKey" />
+          </div>
+        </ContainerB>
+      </div>
 
     </div>
   </div>
@@ -83,7 +83,7 @@ import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getAllDropdownData, getDropdownMapping, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
-
+import { unique } from '../../../utils/tools.js'
 
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
@@ -207,17 +207,25 @@ function parseShipmentNumber(value) {
 
 
 function handlePOnumberChange() {
-  
-  console.log(  getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12']))
+  SelectedRowStore.selectedRow.value['13'] =
+    getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12'])[0] ?? ''
+  handlePONoAndAddChange()
 
+}
+
+function handlePOAddendumChange() {
+  handlePONoAndAddChange()
+}
+
+function handlePONoAndAddChange() {
   SelectedRowStore.selectedRow.value['16'] =
     getDropdownMapping(PODropdownDataMap, "2", "6", SelectedRowStore.selectedRow.value['12'])
   SelectedRowStore.selectedRow.value['14'] =
     getDropdownMapping(PODropdownDataMap, "2", "4", SelectedRowStore.selectedRow.value['12'])
   SelectedRowStore.selectedRow.value['15'] =
     getDropdownMapping(PODropdownDataMap, "2", "7", SelectedRowStore.selectedRow.value['12'])
-   
 }
+
 
 const {
   optionDataList,
@@ -229,9 +237,10 @@ const {
   PODropdownDataMap
 } = getAllDropdownData()
 
-const PONumberOptions = computed(() =>
-  getDropdownMappingList( PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12']  )
+const POAddendumList = computed(() =>
+  unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12']))
 )
+
 
 const isSwitchingRow = ref(false)
 
@@ -387,7 +396,7 @@ watch(
   min-width: max-content;
 }
 
-.gridfullrow{
+.gridfullrow {
   grid-column: span 2;
 }
 </style>

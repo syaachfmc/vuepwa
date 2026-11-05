@@ -11,3 +11,18 @@ export function formatTanggal  (date)  {
     return `${day} ${month} ${year}`
   }
   
+  export function unique(data) {
+    if (Array.isArray(data)) {
+      return [...new Set(data)];
+    }
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(key => {
+        if (Array.isArray(data[key])) {
+          data[key] = [...new Set(data[key])];
+        }
+      });
+      return data;
+    }
+    return data;
+  }
+  

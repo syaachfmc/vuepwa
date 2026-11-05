@@ -22,7 +22,7 @@ const dropdownConfig = {
 };
 
 export async function PODropdownLoadList() {
-  
+
   if (PODropdownisLoaded.value || PODropdownisLoading.value) return;
 
   PODropdownisLoading.value = true;
@@ -40,7 +40,7 @@ export async function PODropdownLoadList() {
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
     );
-  
+
     if (result.status === 'success') {
       const map = {};
 
@@ -51,10 +51,12 @@ export async function PODropdownLoadList() {
       });
 
       // Map isi baris data ke masing-masing key columnID
+      // Map isi baris data ke masing-masing key columnID
       (result.data || []).forEach(row => {
         result.columnIDs.forEach((colID, colIndex) => {
           const key = String(colID).trim();
           const val = row[colIndex];
+
           if (val !== undefined && val !== null && String(val).trim() !== '') {
             map[key].push(String(val).trim());
           }
@@ -63,7 +65,7 @@ export async function PODropdownLoadList() {
 
       PODropdownDataMap.value = map;
       PODropdownisLoaded.value = true;
-      
+
     }
   } catch (err) {
     console.error('Gagal memuat PO Dropdown List:', err);
@@ -71,7 +73,7 @@ export async function PODropdownLoadList() {
     PODropdownisLoading.value = false;
   }
 }
- 
+
 // Mengembalikan ComputedRef agar komponen yang memanggilnya selalu update
 export function PODropdownOptions(columnID) {
   const key = String(columnID).trim();

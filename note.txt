@@ -6,3 +6,5 @@ PO blm ADD konek
 blm konek po add dgn po  desc
 
 po num blm unik
+
+saat relogin  pertama ngk bisa save
