@@ -20,21 +20,23 @@ import {
   PlacesDropdownDataMap
 } from '../stores/PlacesDropdownStore.js'
 
-  // Reload seluruh global dropdown
-  export async function reloadDropdownData() {
-    console.log('Reload seluruh dropdown')
-  
-    await Promise.all([
-      globalDropdownLoadList(true),
-      PODropdownLoadList(true),
-      PlacesDropdownLoadList(true)
-    ])
-  
-    console.log(
-      'Global Dropdown:',
-      getGlobalDropdownOptions('58').value
-    )
-  }
+import {
+  CompaniesDropdownLoadList,
+  CompaniesDropdownOptions,
+  CompaniesDropdownDataMap
+} from '../stores/CompaniesDropdownStore.js'
+
+// Reload seluruh global dropdown
+export async function reloadDropdownData() {
+
+
+  await Promise.all([
+    globalDropdownLoadList(true),
+    PODropdownLoadList(true),
+    PlacesDropdownLoadList(true),
+    CompaniesDropdownLoadList(true)
+  ])
+}
 
 export function getAllDropdownData() {
 
@@ -45,7 +47,7 @@ export function getAllDropdownData() {
   onMounted(() => {
     reloadDropdownData()
   })
-  
+
   return {
     optionDataList,
     getGlobalDropdownOptions,
@@ -54,7 +56,9 @@ export function getAllDropdownData() {
     PODropdownDataMap,
     PlacesDropdownOptions,
     PlacesDropdownDataMap,
-    reloadDropdownData
+    reloadDropdownData,
+    CompaniesDropdownOptions,
+    CompaniesDropdownDataMap
   }
 }
 

@@ -21,7 +21,7 @@ const dropdownConfig = {
 };
 
 export async function globalDropdownLoadList(force = false) {
-  console.log('globalDropdownLoadList', { force })
+  
 
   // Jika sudah pernah load, hentikan hanya jika bukan force reload
   if (!force && globalDropdownisLoaded.value) return
@@ -72,7 +72,7 @@ export async function globalDropdownLoadList(force = false) {
       globalDropdownDataMap.value = map
       globalDropdownisLoaded.value = true
 
-      console.log('Global Dropdown berhasil diperbarui')
+ 
     } else {
       console.error('Gagal memuat Global Dropdown:', result.error)
     }

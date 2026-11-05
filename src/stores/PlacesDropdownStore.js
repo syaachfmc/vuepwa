@@ -51,8 +51,7 @@ export async function PlacesDropdownLoadList(force = false) {
         map[key] = [];
       });
 
-      // Map isi baris data ke masing-masing key columnID
-      // Map isi baris data ke masing-masing key columnID
+       // Map isi baris data ke masing-masing key columnID
       (result.data || []).forEach(row => {
         result.columnIDs.forEach((colID, colIndex) => {
           const key = String(colID).trim();

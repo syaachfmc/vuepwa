@@ -1,35 +1,35 @@
 <template>
   <div class="form-group">
-    <label v-if="columnTitle && !noLabel" ref="labelElement" :for="`col_${id}`" class="label" @mouseenter="showTooltip"
-      @mouseleave="hideTooltip">
+    <label v-if="columnTitle && !noLabel" ref="labelElement" :for="`col_${dataID}`" class="label"
+      @mouseenter="showTooltip" @mouseleave="hideTooltip">
       {{ columnTitle }}
     </label>
 
     <!-- Textbox -->
-    <textbox v-if="type === 'text' || type === 'number'" :id="`col_${id}`" v-model="modelValue"
+    <textbox v-if="type === 'text' || type === 'number'" :dataID="`col_${dataID}`" v-model="modelValue"
       :type="type === 'number' ? 'number' : 'text'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @click="textCliked"
       @change="$emit('change', $event)" @dirty-change="(isDirty) => { }" />
 
     <!-- DatePicker -->
-    <DatePicker v-else-if="type === 'date' || type === 'datetime'" :id="`col_${id}`" v-model="modelValue"
+    <DatePicker v-else-if="type === 'date' || type === 'datetime'" :dataID="`col_${dataID}`" v-model="modelValue"
       :enable-time-picker="enableTime || type === 'datetime'" :reset-key="internalResetKey" :width="width"
       v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @change="$emit('change', $event)"
       @dirty-change="(isDirty) => { }" />
 
 
     <!-- Dropdown -->
-    <dropdown v-else-if="type === 'dropdown'" :id="`col_${id}`" v-model="modelValue"
+    <dropdown v-else-if="type === 'dropdown'" :dataID="`col_${dataID}`" v-model="modelValue"
       :options="Array.isArray(options) ? options : options.value" :editable="editable" :reset-key="internalResetKey"
       :width="width" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
       @change="$emit('change', $event)" @dirty-change="(isDirty) => { }" />
 
-    <checkBox v-else-if="type === 'checkbox'" :id="`col_${id}`" v-model="modelValue" :reset-key="internalResetKey"
-      v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" @change="$emit('change', $event)"
-      @dirty-change="(isDirty) => { }" />
+    <checkBox v-else-if="type === 'checkbox'" :dataID="`col_${dataID}`" v-model="modelValue"
+      :reset-key="internalResetKey" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }"
+      @change="$emit('change', $event)" @dirty-change="(isDirty) => { }" />
 
     <!-- Fallback -->
-    <input v-else :id="`col_${id}`" v-model="modelValue" :type="type" class="custom-input"
+    <input v-else :dataID="`col_${dataID}`" v-model="modelValue" :type="type" class="custom-input"
       :style="{ width: customWidth }" v-bind="{ ...$attrs, disabled: !hasSelectedRow || $attrs.disabled }" />
   </div>
 
@@ -58,17 +58,27 @@ function textCliked() {
 }
 
 
-const emit = defineEmits(['change'])
+const emit = defineEmits(['change', 'update:textValue'])
 
 defineOptions({
   inheritAttrs: false
 })
 
 const props = defineProps({
-  id: {
+  dataID: {
     type: [String, Number],
-    required: true
+    default: undefined
   },
+  textValue: {
+    type: [String, Number],
+    default: ''
+  },
+
+  labelText: {
+    type: String,
+    default: ''
+  },
+
   type: {
     type: String,
     default: 'text'
@@ -137,15 +147,19 @@ const hasSelectedRow = computed(() => {
 
 const modelValue = computed({
   get() {
+    // Mode textValue
+    if (props.dataID === undefined || props.dataID === null || props.dataID === '') {
+      return props.textValue
+    }
 
+    // Mode SelectedRowStore
     const value =
-      SelectedRowStore.selectedRow.value?.[String(props.id)] ?? ''
+      SelectedRowStore.selectedRow.value?.[String(props.dataID)] ?? ''
 
-    // Konversi khusus untuk checkbox
-    // Kosongkan field jika belum ada row dipilih
     if (!hasSelectedRow.value) {
       return props.type === 'checkbox' ? false : ''
     }
+
     if (props.type === 'checkbox') {
       return value === true ||
         String(value).toUpperCase() === 'TRUE'
@@ -155,20 +169,31 @@ const modelValue = computed({
   },
 
   set(val) {
-    // Jangan izinkan perubahan jika belum ada row
+    // Mode textValue
+    if (props.dataID === undefined || props.dataID === null || props.dataID === '') {
+      emit('update:textValue', val)
+      return
+    }
+
+    // Mode SelectedRowStore
     if (!hasSelectedRow.value) return
 
-    SelectedRowStore.selectedRow.value[String(props.id)] = val
+    SelectedRowStore.selectedRow.value[String(props.dataID)] = val
   }
 })
 
-
 // Judul kolom
 const columnTitle = computed(() => {
+  // Jika dataID tidak tersedia, gunakan labelText
+  if (props.dataID === undefined || props.dataID === null || props.dataID === '') {
+    return props.labelText
+  }
 
+  // Jika dataID tersedia, ambil dari SelectedRowStore
   const col = SelectedRowStore.columns.value?.find(
-    c => String(c.id) === String(props.id)
+    c => String(c.id) === String(props.dataID)
   )
+
   return col ? col.title : ''
 })
 
@@ -180,7 +205,7 @@ const columnTooltips = computed(() => {
   }
 
   const col = SelectedRowStore.columns.value?.find(
-    c => String(c.id) === String(props.id)
+    c => String(c.id) === String(props.dataID)
   )
 
   return col?.tooltips || ''
