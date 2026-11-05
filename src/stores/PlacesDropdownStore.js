@@ -21,9 +21,10 @@ const dropdownConfig = {
   ProjectIDColumn: 'B'
 };
 
-export async function PlacesDropdownLoadList() {
 
-  if (PlacesDropdownisLoaded.value || PlacesDropdownisLoading.value) return;
+export async function PlacesDropdownLoadList(force = false) {
+  if (!force && PlacesDropdownisLoaded.value) return
+  if (PlacesDropdownisLoading.value) return
 
   PlacesDropdownisLoading.value = true;
   try {
@@ -65,7 +66,7 @@ export async function PlacesDropdownLoadList() {
 
       PlacesDropdownDataMap.value = map;
       PlacesDropdownisLoaded.value = true;
-     
+
     }
   } catch (err) {
     console.error('Gagal memuat PO Dropdown List:', err);

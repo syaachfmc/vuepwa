@@ -56,11 +56,14 @@
           </button>
 
           <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
-            :title="loading ? 'Loading...' : 'Refresh'">
+            :title="loading ? 'Loading...' : 'Reload All Data'">
             <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
           </button>
 
-
+          <button type="button" class="filter-button" :disabled="reloadingDropdown" @click="handleReloadDropdownData"
+            :title="reloadingDropdown ? 'Reloading dropdown...' : 'Reload Dropdown'">
+            <AppIcon name="refresh-cw" :size="12" :class="{ spinning: reloadingDropdown }" />
+          </button>
 
         </div>
       </div>
@@ -85,6 +88,7 @@ import AppIcon from './../AppIcon.vue';
 import { SelectedRowStore } from '../../stores/selectedRowStore.js';
 import { TableStore } from '../../stores/tableStore.js';
 import { pageSidebarWidth } from '../../stores/constStore.js'
+import { reloadDropdownData } from '../../composables/getAllDropdownData.js'
 
 const props = defineProps({
   config: {
@@ -98,6 +102,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['row-selected', 'relogin']);
+
+const reloadingDropdown = ref(false)
 
 const loading = ref(false);
 const progressPercent = ref(0);
@@ -126,6 +132,21 @@ let requestSequence = 0;
 
 const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
+
+async function handleReloadDropdownData() {
+  
+  if (reloadingDropdown.value) return
+
+  reloadingDropdown.value = true
+
+  try {
+    await reloadDropdownData()
+  } catch (error) {
+    console.error('Gagal reload dropdown:', error)
+  } finally {
+    reloadingDropdown.value = false
+  }
+}
 
 function handleRelogin() {
   sessionStorage.removeItem("authToken");
@@ -572,6 +593,7 @@ async function loadData() {
   loading.value = true;
 
   startProgressSimulation();
+  handleReloadDropdownData();
 
   try {
     const config = props.config;
@@ -693,7 +715,7 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
 
   // Perbarui SelectedRowStore.
   SelectedRowStore.selectedRow.value = { ...rowData };
-   
+
 
   // Pertahankan mekanisme event row-selected yang sudah ada.
   const firstColumnID = sheetData.value.columnIDs[4];
@@ -1146,5 +1168,20 @@ defineExpose({
 
   box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
   pointer-events: none;
+}
+
+.filter-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

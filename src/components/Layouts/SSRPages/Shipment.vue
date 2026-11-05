@@ -80,14 +80,13 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue'
+import { watch, ref, nextTick, onBeforeUnmount, computed } from 'vue'
 import DataField from '../../inputs/DataField.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getAllDropdownData, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
 import { unique } from '../../../utils/tools.js'
-import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
@@ -250,7 +249,8 @@ const {
   PODropdownOptions,
   PODropdownDataMap,
   PlacesDropdownOptions,
-  PlacesDropdownDataMap
+  PlacesDropdownDataMap,
+  reloadDropdownData
 } = getAllDropdownData()
 
 const POAddendumList = computed(() =>

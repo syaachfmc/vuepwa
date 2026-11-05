@@ -21,9 +21,9 @@ const dropdownConfig = {
   ProjectIDColumn: 'B'
 };
 
-export async function PODropdownLoadList() {
-
-  if (PODropdownisLoaded.value || PODropdownisLoading.value) return;
+export async function PODropdownLoadList(force = false) {
+  if (!force && PODropdownisLoaded.value) return
+  if (PODropdownisLoading.value) return
 
   PODropdownisLoading.value = true;
   try {

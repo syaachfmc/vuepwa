@@ -14,26 +14,38 @@ import {
   PODropdownDataMap
 } from '../stores/PODropdownStore.js'
 
-
 import {
   PlacesDropdownLoadList,
   PlacesDropdownOptions,
   PlacesDropdownDataMap
 } from '../stores/PlacesDropdownStore.js'
 
+  // Reload seluruh global dropdown
+  export async function reloadDropdownData() {
+    console.log('Reload seluruh dropdown')
+  
+    await Promise.all([
+      globalDropdownLoadList(true),
+      PODropdownLoadList(true),
+      PlacesDropdownLoadList(true)
+    ])
+  
+    console.log(
+      'Global Dropdown:',
+      getGlobalDropdownOptions('58').value
+    )
+  }
+
 export function getAllDropdownData() {
 
   // Dropdown dari Data List
   const { optionDataList } = getOptionFromDataList()
 
-  // Load seluruh global dropdown
+  // Initial load
   onMounted(() => {
-    globalDropdownLoadList()
-    PODropdownLoadList()
-    PlacesDropdownLoadList()
-    
+    reloadDropdownData()
   })
-
+  
   return {
     optionDataList,
     getGlobalDropdownOptions,
@@ -41,11 +53,10 @@ export function getAllDropdownData() {
     PODropdownOptions,
     PODropdownDataMap,
     PlacesDropdownOptions,
-    PlacesDropdownDataMap
+    PlacesDropdownDataMap,
+    reloadDropdownData
   }
 }
-
-
 
 export function getDropdownMappingList(
   DataMap,
@@ -56,7 +67,6 @@ export function getDropdownMappingList(
 ) {
   const map = DataMap.value || {}
 
-  // Normalisasi: single value maupun array
   const keyColumns = Array.isArray(keyColumnID)
     ? keyColumnID.map(String)
     : [String(keyColumnID)]
@@ -67,15 +77,12 @@ export function getDropdownMappingList(
 
   const targets = map[String(targetColumnID)] || []
 
-  // Pastikan jumlah criteria sama
   if (keyColumns.length !== keyValues.length) {
     return isList ? [] : null
   }
 
-  // Ambil source columns
   const sources = keyColumns.map(id => map[id] || [])
 
-  // Cari baris yang memenuhi semua criteria
   const matched = []
 
   const rowCount = Math.min(...sources.map(source => source.length))

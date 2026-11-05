@@ -20,11 +20,17 @@ const dropdownConfig = {
   ProjectIDColumn: 'B'
 };
 
-export async function globalDropdownLoadList() {
-  
-  if (globalDropdownisLoaded.value || globalDropdownisLoading.value) return;
+export async function globalDropdownLoadList(force = false) {
+  console.log('globalDropdownLoadList', { force })
 
-  globalDropdownisLoading.value = true;
+  // Jika sudah pernah load, hentikan hanya jika bukan force reload
+  if (!force && globalDropdownisLoaded.value) return
+
+  // Hindari request bersamaan
+  if (globalDropdownisLoading.value) return
+
+  globalDropdownisLoading.value = true
+
   try {
     const result = await fetchGSheetData(
       dropdownConfig.webAppUrl,
@@ -38,36 +44,43 @@ export async function globalDropdownLoadList() {
       dropdownConfig.RowIDColumn,
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
-    );
-  
+    )
+
     if (result.status === 'success') {
-      const map = {};
+      const map = {}
 
-      // Normalize key columnIDs ke String rapi
       result.columnIDs.forEach(colID => {
-        const key = String(colID).trim();
-        map[key] = [];
-      });
+        const key = String(colID).trim()
+        map[key] = []
+      })
 
-      // Map isi baris data ke masing-masing key columnID
-      (result.data || []).forEach(row => {
+      ;(result.data || []).forEach(row => {
         result.columnIDs.forEach((colID, colIndex) => {
-          const key = String(colID).trim();
-          const val = row[colIndex];
-          if (val !== undefined && val !== null && String(val).trim() !== '') {
-            map[key].push(String(val).trim());
-          }
-        });
-      });
+          const key = String(colID).trim()
+          const val = row[colIndex]
 
-      globalDropdownDataMap.value = map;
-      globalDropdownisLoaded.value = true;
-      
+          if (
+            val !== undefined &&
+            val !== null &&
+            String(val).trim() !== ''
+          ) {
+            map[key].push(String(val).trim())
+          }
+        })
+      })
+
+      globalDropdownDataMap.value = map
+      globalDropdownisLoaded.value = true
+
+      console.log('Global Dropdown berhasil diperbarui')
+    } else {
+      console.error('Gagal memuat Global Dropdown:', result.error)
     }
+
   } catch (err) {
-    console.error('Gagal memuat Global Dropdown List:', err);
+    console.error('Gagal memuat Global Dropdown List:', err)
   } finally {
-    globalDropdownisLoading.value = false;
+    globalDropdownisLoading.value = false
   }
 }
 
