@@ -412,6 +412,13 @@ const selectedLabel = computed(() => {
   return found ? found.label : ''
 })
 
+const dropdownWidth = computed(() => ({
+  ...props.size,
+  width: resizedListSize.value?.width
+    ? `${resizedListSize.value.width}px`
+    : props.size.width
+}))
+
 const displayOptions = computed(() => {
   if (!isFiltering.value || !props.modelValue) {
     return normalizedOptions.value
@@ -465,6 +472,10 @@ watch(displayOptions, () => {
 watch(isOpen, newVal => {
   if (!newVal) {
     focusedIndex.value = -1
+
+    // Reset ukuran list setiap dropdown ditutup
+    resizedListSize.value = null
+
     window.removeEventListener('scroll', updateDropdownRect, true)
     window.removeEventListener('resize', updateDropdownRect)
   } else {
@@ -690,7 +701,7 @@ const dropdownStyle = computed(() => {
   }
 
   return {
-    width: size.width,
+    width: dropdownWidth.value.width,
     height: size.height,
     fontFamily: font.family,
     fontSize: font.size,

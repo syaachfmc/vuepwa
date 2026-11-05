@@ -36,8 +36,8 @@
         <div class="dataItemContainer">
           <DataField id="12" type="dropdown" :reset-key="resetKey" :options="unique(PODropdownOptions('2').value)"
             editable @change="handlePOnumberChange" />
-          <DataField id="13" type="dropdown" :reset-key="resetKey" :options="POAddendumList" editable
-            @change="handlePOAddendumChange" />
+          <DataField id="13" type="dropdown" :reset-key="resetKey" :options="POAddendumList"
+            :size="{ width: '60px', height: '32px' }" editable @change="handlePOAddendumChange" />
 
           <DataField id="16" type="text" :reset-key="resetKey" :size="{ width: '200px', height: '32px' }" readOnly
             flat />
@@ -54,12 +54,12 @@
           <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
             :options="getGlobalDropdownOptions('5')" />
           <DataField id="39" type="dropdown" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }"
-            :options="PlacesList" editable 
-            @change="handleDeliveryTermLocationNameChange"
-            />
+            :options="PlacesNameList" editable @input="handleDeliveryTermLocationNameChange"
+            @change="handleDeliveryTermLocationNameChange" />
         </div>
         <div class="dataItemContainer">
-          <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" readOnly flat/>
+          <DataField id="40" type="dropdown" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }"
+            :options="PlacesCountryList" editable />
           <DataField id="41" type="checkbox" :reset-key="resetKey" />
         </div>
       </ContainerB>
@@ -223,6 +223,8 @@ function handlePOAddendumChange() {
 }
 
 function handlePONo_And_AddChange() {
+  const selectedRow = SelectedRowStore.selectedRow.value
+  if (!selectedRow) return
   SelectedRowStore.selectedRow.value['16'] =
     getDropdownMappingList(PODropdownDataMap, ["2", "3"], "6", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
   SelectedRowStore.selectedRow.value['14'] =
@@ -232,8 +234,13 @@ function handlePONo_And_AddChange() {
 }
 
 
-function handleDeliveryTermLocationNameChange(){
-  
+function handleDeliveryTermLocationNameChange() {
+  const selectedRow = SelectedRowStore.selectedRow.value
+  if (!selectedRow) return
+  SelectedRowStore.selectedRow.value['40'] =
+    getDropdownMappingList(PlacesDropdownDataMap, "3", "5", SelectedRowStore.selectedRow.value['39'])
+
+
 }
 
 const {
@@ -250,11 +257,13 @@ const POAddendumList = computed(() =>
   unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12'], true))
 )
 
-const PlacesList = computed(() =>
+const PlacesNameList = computed(() =>
   unique(PlacesDropdownOptions("3").value)
 )
- console.log(PlacesList)
 
+const PlacesCountryList = computed(() =>
+  unique(PlacesDropdownOptions("5").value)
+)
 
 const isSwitchingRow = ref(false)
 
@@ -384,9 +393,9 @@ watch(
   /* Membuat 2 kolom sama besar */
   overflow: auto;
   gap: 12px;
-  border: 1px solid #ccc;
+  border: 1px  solid  #919fa1;
   padding: 8px;
-
+  background: rgba(221, 247, 255, 0.199);
 
 }
 
@@ -395,19 +404,6 @@ watch(
   flex-direction: row;
   gap: 10px;
 
-}
-
-.container-row {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  width: 100%;
-  align-items: stretch;
-}
-
-.container-row>* {
-  flex: 1 1 auto;
-  min-width: max-content;
 }
 
 .gridfullrow {

@@ -693,6 +693,7 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
 
   // Perbarui SelectedRowStore.
   SelectedRowStore.selectedRow.value = { ...rowData };
+   
 
   // Pertahankan mekanisme event row-selected yang sudah ada.
   const firstColumnID = sheetData.value.columnIDs[4];

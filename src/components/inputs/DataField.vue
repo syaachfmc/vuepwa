@@ -266,7 +266,8 @@ onBeforeUnmount(() => {
 
 .label {
   cursor: help;
-  font-size: 1em;
+  font-size: .95em;
+  font-style: italic;
 }
 </style>
 
