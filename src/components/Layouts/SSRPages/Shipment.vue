@@ -36,7 +36,7 @@
 
       <ContainerB title="PO">
         <div class="dataItemContainer">
-          <DataField dataID="12" type="dropdown" :reset-key="resetKey" :options="unique(PODropdownOptions('2').value)"
+          <DataField dataID="12" type="dropdown" :reset-key="resetKey" :options="PODropdownList"
             editable @change="handlePOnumberChange" />
           <DataField dataID="13" type="dropdown" :reset-key="resetKey" :options="POAddendumList"
             :size="{ width: '60px', height: '32px' }" editable @change="handlePOAddendumChange" />
@@ -78,9 +78,9 @@
           <div class="dataItemContainer">
             <DataField dataID="17" type="dropdown" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }"
               :options="CompaniesNameList" editable />
-            <DataField v-model:textValue="rText" type="dropdown" :reset-key="resetKey"
+            <!-- <DataField v-model:textValue="rText" type="dropdown" :reset-key="resetKey"
               :size="{ width: '250px', height: '32px' }" :options="CompaniesNameList" editable
-              labelText="Shipper Countrry" />
+              labelText="Shipper Countrry" /> -->
           </div>
         </ContainerB>
       </div>
@@ -96,161 +96,7 @@ import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
 import { getAllDropdownData, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
 import { unique } from '../../../utils/tools.js'
-
-
-/***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
-// ========================================
-// PROJECT PREFIX
-// ========================================
-const authProject = JSON.parse(
-  sessionStorage.getItem("authProject") || "{}"
-);
-const projectPrefix = authProject.shipmentNoPrefix || '';
-
-
-// Regex untuk membaca Shipment Number
-
-const shipmentPattern = new RegExp(
-  `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
-);
-
-// Error state Shipment Number
-const shipmentNoError = ref(false)
-const shipmentNoErrorMessage = ref('')
-const rText = ref('')
-
-watch(rText, (newVal, oldVal) => { console.log(newVal, oldVal) })
-
-function handleShipmentNoChange(newValue) {
-  if (!SelectedRowStore.selectedRow.value) return
-  if (!checkValidateShipmentNo(newValue)) return
-  const r = parseShipmentNumber(newValue)
-  SelectedRowStore.selectedRow.value['10'] =
-    getDropdownMappingList(globalDropdownDataMap, '59', '9', r.shipmentType)
-  SelectedRowStore.selectedRow.value['301'] =
-    getDropdownMappingList(globalDropdownDataMap, '60', '58', r.docType)
-  SelectedRowStore.selectedRow.value['11'] =
-    getDropdownMappingList(globalDropdownDataMap, '60', '10', r.docType)
-}
-
-function handleShipmentTypeChange(newValue) {
-  if (!SelectedRowStore.selectedRow.value) return
-  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const typeCode = getDropdownMappingList(globalDropdownDataMap, '9', '59', newValue)
-  if (!typeCode) return
-  const newShipmentNo =
-    r.projectSuffix +
-    '-S' +
-    r.docType +
-    typeCode +
-    '-' +
-    r.sequence +
-    r.grouping
-  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
-}
-
-function handleDocumentTypeChange(newValue) {
-  if (!SelectedRowStore.selectedRow.value) return
-  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMappingList(globalDropdownDataMap, '58', '60', newValue)
-  const arrangedBy = getDropdownMappingList(globalDropdownDataMap, '58', '10', newValue)
-  if (!docCode) return
-  const newShipmentNo =
-    r.projectSuffix +
-    '-S' +
-    docCode +
-    r.shipmentType +
-    '-' +
-    r.sequence +
-    r.grouping
-  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
-  SelectedRowStore.selectedRow.value['11'] = arrangedBy
-}
-
-function handleShipmentArrangedByChange(newValue) {
-  if (!SelectedRowStore.selectedRow.value) return
-  if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
-  const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMappingList(globalDropdownDataMap, '10', '60', newValue)
-  const arrangedBy = getDropdownMappingList(globalDropdownDataMap, '10', '58', newValue)
-  if (!docCode) return
-  const newShipmentNo =
-    r.projectSuffix +
-    '-S' +
-    docCode +
-    r.shipmentType +
-    '-' +
-    r.sequence +
-    r.grouping
-  SelectedRowStore.selectedRow.value['2'] = newShipmentNo
-  SelectedRowStore.selectedRow.value['301'] = arrangedBy
-}
-
-function checkValidateShipmentNo(value) {
-  const r = parseShipmentNumber(value)
-
-  if (!r) {
-    shipmentNoError.value = true
-    shipmentNoErrorMessage.value = 'Shipment Number tidak valid'
-    return false
-  }
-
-  shipmentNoError.value = false
-  shipmentNoErrorMessage.value = ''
-
-  return true
-}
-
-function parseShipmentNumber(value) {
-  if (typeof value !== 'string') return null
-  const match = value.trim().match(shipmentPattern)
-  if (!match) return null
-  return {
-    projectSuffix: match[1] ?? '',
-    docType: match[2]?.[1] ?? '',
-    shipmentType: match[2]?.[2] ?? '',
-    sequence: match[3] ?? '',
-    grouping: match[4] ?? ''
-  }
-}
-
-/****************************** */
-
-
-function handlePOnumberChange() {
-  const selectedRow = SelectedRowStore.selectedRow.value
-  if (!selectedRow) return
-  SelectedRowStore.selectedRow.value['13'] =
-    getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12'], true)[0]
-  handlePONo_And_AddChange()
-}
-
-function handlePOAddendumChange() {
-  handlePONo_And_AddChange()
-}
-
-function handlePONo_And_AddChange() {
-  const selectedRow = SelectedRowStore.selectedRow.value
-  if (!selectedRow) return
-  SelectedRowStore.selectedRow.value['16'] =
-    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "6", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
-  SelectedRowStore.selectedRow.value['14'] =
-    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "4", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
-  SelectedRowStore.selectedRow.value['15'] =
-    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "7", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
-}
-
-
-function handleDeliveryTermLocationNameChange() {
-  const selectedRow = SelectedRowStore.selectedRow.value
-  if (!selectedRow) return
-  SelectedRowStore.selectedRow.value['40'] =
-    getDropdownMappingList(PlacesDropdownDataMap, "3", "5", SelectedRowStore.selectedRow.value['39'])
-
-
-}
+import { createDataFieldChangeHandlers } from './handleDataFieldChange.js'
 
 const {
   optionDataList,
@@ -265,8 +111,32 @@ const {
   CompaniesDropdownDataMap
 } = getAllDropdownData()
 
+ 
+const {
+  shipmentNoError,
+  shipmentNoErrorMessage,
+  handleShipmentNoChange,
+  handleShipmentTypeChange,
+  handleDocumentTypeChange,
+  handleShipmentArrangedByChange,
+  checkValidateShipmentNo,
+  parseShipmentNumber,
+  handlePOnumberChange,
+  handlePOAddendumChange,
+  handlePONo_And_AddChange,
+  handleDeliveryTermLocationNameChange
+} = createDataFieldChangeHandlers({
+  globalDropdownDataMap,
+  PODropdownDataMap,
+  PlacesDropdownDataMap
+})
+
 const POAddendumList = computed(() =>
   unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12'], true))
+)
+
+const PODropdownList = computed(() =>
+  unique(PODropdownOptions('2').value)
 )
 
 const PlacesNameList = computed(() =>
