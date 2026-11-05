@@ -13,16 +13,15 @@ export function formatTanggal  (date)  {
   
   export function unique(data) {
     if (Array.isArray(data)) {
-      return [...new Set(data)];
-    }
+      return [...new Set(data)].sort();
+    }  
     if (data && typeof data === 'object') {
       Object.keys(data).forEach(key => {
         if (Array.isArray(data[key])) {
-          data[key] = [...new Set(data[key])];
+          data[key] = [...new Set(data[key])].sort();
         }
       });
       return data;
-    }
+    }  
     return data;
   }
-  

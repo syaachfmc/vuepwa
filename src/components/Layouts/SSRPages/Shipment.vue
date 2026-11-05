@@ -53,10 +53,13 @@
         <div class="dataItemContainer">
           <DataField id="38" type="dropdown" editable :reset-key="resetKey" :size="{ width: '90px', height: '32px' }"
             :options="getGlobalDropdownOptions('5')" />
-          <DataField id="39" type="text" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }" />
+          <DataField id="39" type="dropdown" :reset-key="resetKey" :size="{ width: '250px', height: '32px' }"
+            :options="PlacesList" editable 
+            @change="handleDeliveryTermLocationNameChange"
+            />
         </div>
         <div class="dataItemContainer">
-          <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" />
+          <DataField id="40" type="text" :reset-key="resetKey" :size="{ width: '300px', height: '32px' }" readOnly flat/>
           <DataField id="41" type="checkbox" :reset-key="resetKey" />
         </div>
       </ContainerB>
@@ -82,8 +85,9 @@ import DataField from '../../inputs/DataField.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { getAllDropdownData, getDropdownMapping, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
+import { getAllDropdownData, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
 import { unique } from '../../../utils/tools.js'
+import { ChartNoAxesColumnIcon } from 'lucide-vue-next'
 
 
 /***********HANDLE PERUBAHAN KODE NOMOR SHIPMENT DOM/IMP - SI/SR */
@@ -113,18 +117,18 @@ function handleShipmentNoChange(newValue) {
   if (!checkValidateShipmentNo(newValue)) return
   const r = parseShipmentNumber(newValue)
   SelectedRowStore.selectedRow.value['10'] =
-    getDropdownMapping(globalDropdownDataMap, '59', '9', r.shipmentType)
+    getDropdownMappingList(globalDropdownDataMap, '59', '9', r.shipmentType)
   SelectedRowStore.selectedRow.value['301'] =
-    getDropdownMapping(globalDropdownDataMap, '60', '58', r.docType)
+    getDropdownMappingList(globalDropdownDataMap, '60', '58', r.docType)
   SelectedRowStore.selectedRow.value['11'] =
-    getDropdownMapping(globalDropdownDataMap, '60', '10', r.docType)
+    getDropdownMappingList(globalDropdownDataMap, '60', '10', r.docType)
 }
 
 function handleShipmentTypeChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const typeCode = getDropdownMapping(globalDropdownDataMap, '9', '59', newValue)
+  const typeCode = getDropdownMappingList(globalDropdownDataMap, '9', '59', newValue)
   if (!typeCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -141,8 +145,8 @@ function handleDocumentTypeChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMapping(globalDropdownDataMap, '58', '60', newValue)
-  const arrangedBy = getDropdownMapping(globalDropdownDataMap, '58', '10', newValue)
+  const docCode = getDropdownMappingList(globalDropdownDataMap, '58', '60', newValue)
+  const arrangedBy = getDropdownMappingList(globalDropdownDataMap, '58', '10', newValue)
   if (!docCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -160,8 +164,8 @@ function handleShipmentArrangedByChange(newValue) {
   if (!SelectedRowStore.selectedRow.value) return
   if (!checkValidateShipmentNo(SelectedRowStore.selectedRow.value['2'])) return
   const r = parseShipmentNumber(SelectedRowStore.selectedRow.value['2'])
-  const docCode = getDropdownMapping(globalDropdownDataMap, '10', '60', newValue)
-  const arrangedBy = getDropdownMapping(globalDropdownDataMap, '10', '58', newValue)
+  const docCode = getDropdownMappingList(globalDropdownDataMap, '10', '60', newValue)
+  const arrangedBy = getDropdownMappingList(globalDropdownDataMap, '10', '58', newValue)
   if (!docCode) return
   const newShipmentNo =
     r.projectSuffix +
@@ -207,39 +211,49 @@ function parseShipmentNumber(value) {
 
 
 function handlePOnumberChange() {
+  const selectedRow = SelectedRowStore.selectedRow.value
+  if (!selectedRow) return
   SelectedRowStore.selectedRow.value['13'] =
-    getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12'])[0] ?? ''
-  handlePONoAndAddChange()
-
+    getDropdownMappingList(PODropdownDataMap, "2", "3", SelectedRowStore.selectedRow.value['12'], true)[0]
+  handlePONo_And_AddChange()
 }
 
 function handlePOAddendumChange() {
-  handlePONoAndAddChange()
+  handlePONo_And_AddChange()
 }
 
-function handlePONoAndAddChange() {
+function handlePONo_And_AddChange() {
   SelectedRowStore.selectedRow.value['16'] =
-    getDropdownMapping(PODropdownDataMap, "2", "6", SelectedRowStore.selectedRow.value['12'])
+    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "6", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
   SelectedRowStore.selectedRow.value['14'] =
-    getDropdownMapping(PODropdownDataMap, "2", "4", SelectedRowStore.selectedRow.value['12'])
+    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "4", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
   SelectedRowStore.selectedRow.value['15'] =
-    getDropdownMapping(PODropdownDataMap, "2", "7", SelectedRowStore.selectedRow.value['12'])
+    getDropdownMappingList(PODropdownDataMap, ["2", "3"], "7", [SelectedRowStore.selectedRow.value['12'], SelectedRowStore.selectedRow.value['13']])
 }
 
+
+function handleDeliveryTermLocationNameChange(){
+  
+}
 
 const {
   optionDataList,
-
   getGlobalDropdownOptions,
   globalDropdownDataMap,
-
   PODropdownOptions,
-  PODropdownDataMap
+  PODropdownDataMap,
+  PlacesDropdownOptions,
+  PlacesDropdownDataMap
 } = getAllDropdownData()
 
 const POAddendumList = computed(() =>
-  unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12']))
+  unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12'], true))
 )
+
+const PlacesList = computed(() =>
+  unique(PlacesDropdownOptions("3").value)
+)
+ console.log(PlacesList)
 
 
 const isSwitchingRow = ref(false)

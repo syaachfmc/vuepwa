@@ -493,9 +493,10 @@ watch(isOpen, newVal => {
 function onKeydownEditable(event) {
   if (!props.enabled) return
 
+  // Buka list dengan ArrowDown, ArrowUp, atau Enter
   if (
     !isOpen.value &&
-    ['ArrowDown', 'ArrowUp'].includes(event.key)
+    ['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)
   ) {
     event.preventDefault()
     isOpen.value = true
@@ -514,6 +515,7 @@ function onKeydownEditable(event) {
       (focusedIndex.value + 1) % displayOptions.value.length
 
     scrollToFocusedOption()
+
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
 
@@ -524,6 +526,7 @@ function onKeydownEditable(event) {
       displayOptions.value.length
 
     scrollToFocusedOption()
+
   } else if (event.key === 'Enter') {
     event.preventDefault()
 
@@ -533,6 +536,7 @@ function onKeydownEditable(event) {
     ) {
       selectOption(displayOptions.value[focusedIndex.value])
     }
+
   } else if (event.key === 'Escape') {
     isOpen.value = false
     isFiltering.value = false
