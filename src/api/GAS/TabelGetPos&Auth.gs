@@ -603,7 +603,7 @@ function handleRowApiDoGet_(e) {
       return createRowApiError_("Unauthorized. Sesi tidak valid atau telah habis.");
     }
 
- 
+
     const gSheetID = p.GSheetID || "";
     const projectCode = String(auth.user.projectCode || "").trim();
 
@@ -1042,7 +1042,7 @@ function getProjectList() {
       })
       .filter(function (item) {
         // Hanya ambil baris yang memiliki Project Code (tidak kosong)
-       return item.projectID !== "";
+        return item.projectID !== "";
       });
 
     return {
@@ -2275,7 +2275,7 @@ function testDoGetFetchDropdowns() {
   const token = loginResult.token;
   Logger.log("✅ Token berhasil didapat: " + token);
 
-  // 2. Simulasi parameter HTTP GET e.parameter dari vue/globalDropdownStore.js
+  // 2. Simulasi parameter HTTP GET e.parameter dari vue/dropdownStore.js
   const e = {
     parameter: {
       token: token,
