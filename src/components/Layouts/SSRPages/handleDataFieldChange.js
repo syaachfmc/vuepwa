@@ -32,17 +32,19 @@ export function handleDataFieldChange() {
   const shipmentNoError = ref(false)
   const shipmentNoErrorMessage = ref('')
 
-  const authProject = JSON.parse(
-    sessionStorage.getItem('authProject') || '{}'
-  )
-
-  const projectPrefix = authProject.shipmentNoPrefix || ''
-
-  const shipmentPattern = new RegExp(
-    `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
-  )
 
   function parseShipmentNumber(value) {
+    const authProject = JSON.parse(
+      sessionStorage.getItem('authProject') || '{}'
+    )
+  
+    const projectPrefix = authProject.shipmentNoPrefix || ''
+  
+    const shipmentPattern = new RegExp(
+      `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
+    )
+  
+    console.log("parseShipmentNumber", authProject.shipmentNoPrefix,value)
     if (typeof value !== 'string') return null
 
     const match = value.trim().match(shipmentPattern)

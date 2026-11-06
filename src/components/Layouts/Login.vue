@@ -57,6 +57,8 @@ function saveAuthProject(projectCode) {
 
   // Sinkronisasi config
   config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
+  config.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
+  
   config.value.ProjectID = authProject.projectID;
 }
 

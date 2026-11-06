@@ -18,4 +18,5 @@ export const config = ref({
   FrozenColumnIndex: ['2'],
   tableDateFormat: 'dd MMM yy',
   mainIDColumnID: '2',
+  shipmentNoPrefix: JSON.parse(sessionStorage.getItem("authProject") || "{}").shipmentNoPrefix || '', 
 })

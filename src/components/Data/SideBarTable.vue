@@ -28,8 +28,8 @@ function handleLoginSuccess() {
         sessionStorage.getItem('authProject') || '{}'
     );
 
-    config.value.gsheetID =
-        authProject.ShipmentDataGSheetID || '';
+    config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
+    config.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
 
     isLoggedIn.value = true;
 }
