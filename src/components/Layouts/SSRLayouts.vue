@@ -31,7 +31,8 @@
             </div>
 
             <!-- MAIN AREA -->
-            <main v-if="!isSidebarFullWidth" class="main-area">
+            <main v-if="!isSidebarFullWidth" class="main-area" :class="{ 'data-loading': isDataTableLoading }"
+                :inert="isDataTableLoading" :aria-busy="isDataTableLoading">
                 <div class="ShipmentNo">
                     <label for="col_2" class="label">{{ shipmentColumnTitle }}:</label>
                     <label id="col_2" class="shipment-no-title">
@@ -57,7 +58,9 @@
             </main>
 
             <!-- SIDEBAR FULL WIDTH CONTENT -->
-            <main v-if="isSidebarFullWidth" class="main-area sidebar-full-content">
+            <main v-if="isSidebarFullWidth" class="main-area sidebar-full-content"
+                :class="{ 'data-loading': isDataTableLoading }" :inert="isDataTableLoading"
+                :aria-busy="isDataTableLoading">
                 <section class="MainContent">
                     SideBar Full Width
                 </section>
@@ -94,7 +97,8 @@
 
 
 
-            <div class="footer-actions">
+            <div class="footer-actions" :class="{ 'data-loading': isDataTableLoading }" :inert="isDataTableLoading"
+                :aria-busy="isDataTableLoading">
 
                 <button class="footer-action-button" :disabled="addingShipment || saving" @click="handleAddNewShipment">
                     {{ addingShipment ? 'Menambahkan...' : 'Add New Shipment' }}
@@ -167,7 +171,10 @@ const previousSidebarWidth = ref(defaultSidebarWidth)
 const isSidebarFullWidth = ref(false)
 const isResizing = ref(false)
 
-
+const isDataTableLoading = ref(true)
+function handleDataTableLoading(event) {
+    isDataTableLoading.value = event.detail?.loading === true
+}
 
 
 let resizeObserver = null
@@ -290,17 +297,28 @@ function maximizeSidebar() {
 // OBSERVER UNTUK TABULATOR AUTORESIZE
 // ========================================
 onMounted(() => {
+    window.addEventListener(
+        'data-table-loading',
+        handleDataTableLoading
+    )
+
     if (sidebarRef.value) {
         resizeObserver = new ResizeObserver(() => {
-            // Memicu event custom agar komponen SideBarTable/Tabulator melakukan redraw
             window.dispatchEvent(new Event('sidebar-resized'))
         })
+
         resizeObserver.observe(sidebarRef.value)
     }
 })
 
 onBeforeUnmount(() => {
+    window.removeEventListener(
+        'data-table-loading',
+        handleDataTableLoading
+    )
+
     stopResize()
+
     if (resizeObserver && sidebarRef.value) {
         resizeObserver.unobserve(sidebarRef.value)
     }
@@ -790,7 +808,44 @@ function handleReset() {
     flex-shrink: 0;
 }
 
+/* ========================================
+   DATATABLE LOADING STATE
+======================================== */
 
+.main-area {
+    position: relative;
+    transition: filter 0.2s ease;
+}
+
+.main-area.data-loading>*,
+.footer-actions.data-loading>* {
+    filter: blur(2px);
+    pointer-events: none;
+    user-select: none;
+    cursor: wait;
+}
+
+.main-area.data-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.116);
+    z-index: 999;
+    pointer-events: auto;
+
+}
+
+.footer-actions {
+    position: relative;
+}
+
+.footer-actions.data-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 999;
+    background: rgba(100, 100, 100, 0.32);
+}
 /* ========================================
    RESPONSIVE
 ======================================== */

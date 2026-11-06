@@ -64,7 +64,6 @@
             :title="reloadingDropdown ? 'Reloading dropdown...' : 'Reload Dropdown'">
             <AppIcon name="refresh-cw" :size="12" :class="{ spinning: reloadingDropdown }" />
           </button>
-
         </div>
       </div>
     </div>
@@ -87,8 +86,8 @@ import { APP_COLORS } from '../../constants/colors.js';
 import AppIcon from './../AppIcon.vue';
 import { SelectedRowStore } from '../../stores/selectedRowStore.js';
 import { TableStore } from '../../stores/tableStore.js';
-import { pageSidebarWidth } from '../../stores/constStore.js'
-import { reloadDropdownData } from '../../composables/getAllDropdownData.js'
+import { pageSidebarWidth } from '../../stores/constStore.js';
+import { reloadDropdownData } from '../../composables/getAllDropdownData.js';
 
 const props = defineProps({
   config: {
@@ -103,7 +102,7 @@ const props = defineProps({
 
 const emit = defineEmits(['row-selected', 'relogin']);
 
-const reloadingDropdown = ref(false)
+const reloadingDropdown = ref(false);
 
 const loading = ref(false);
 const progressPercent = ref(0);
@@ -134,17 +133,16 @@ const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 async function handleReloadDropdownData() {
+  if (reloadingDropdown.value) return;
 
-  if (reloadingDropdown.value) return
-
-  reloadingDropdown.value = true
+  reloadingDropdown.value = true;
 
   try {
-    await reloadDropdownData()
+    await reloadDropdownData();
   } catch (error) {
-    console.error('Gagal reload dropdown:', error)
+    console.error('Gagal reload dropdown:', error);
   } finally {
-    reloadingDropdown.value = false
+    reloadingDropdown.value = false;
   }
 }
 
@@ -161,30 +159,23 @@ function handleSidebarResize() {
   }
 }
 
-
 function handleRowDataSaved(event) {
-  if (!table) return
+  if (!table) return;
 
-  const savedData = event?.detail?.data
+  const savedData = event?.detail?.data;
 
-  if (!savedData || !savedData.__rowID) return
+  if (!savedData || !savedData.__rowID) return;
 
-  // Update data Tabulator
   const row = table.getRows().find(
-    item =>
-      String(item.getData().__rowID) ===
-      String(savedData.__rowID)
-  )
+    item => String(item.getData().__rowID) === String(savedData.__rowID)
+  );
 
   if (row) {
-    row.update(savedData)
+    row.update(savedData);
   }
 
-  // Update TableStore sekaligus invalidate options cache
-  TableStore.updateRow(savedData)
+  TableStore.updateRow(savedData);
 }
-
-
 
 function toggleWrap() {
   wrapText.value = !wrapText.value;
@@ -483,8 +474,6 @@ async function renderTable() {
     table = new Tabulator(tableElement.value, {
       data,
       columns,
-
-
       selectableRows: 1,
       layout: 'fitData',
       autoResize: false,
@@ -591,10 +580,16 @@ function stopProgressSimulation() {
 }
 
 async function loadData() {
-  // Reset pilihan row sebelum refresh atau load ulang
-  SelectedRowStore.selectedRow.value = null
+  SelectedRowStore.selectedRow.value = null;
+
   const currentRequest = ++requestSequence;
   loading.value = true;
+
+  window.dispatchEvent(
+    new CustomEvent('data-table-loading', {
+      detail: { loading: true }
+    })
+  );
 
   startProgressSimulation();
   handleReloadDropdownData();
@@ -638,7 +633,6 @@ async function loadData() {
     progressPercent.value = 100;
     sheetData.value = result;
 
-    // SIMPAN DATA TERFORMAT KE TABLESTORE
     const formattedTableData = buildTableData(result);
     TableStore.setTableData(formattedTableData);
 
@@ -646,9 +640,7 @@ async function loadData() {
 
     await renderTable();
 
-    // Pilih baris terakhir setelah data selesai dimuat
     await selectLastRow();
-
 
   } catch (error) {
     if (currentRequest !== requestSequence) return;
@@ -669,27 +661,34 @@ async function loadData() {
   } finally {
     if (currentRequest === requestSequence) {
       stopProgressSimulation();
+
       setTimeout(() => {
+        if (currentRequest !== requestSequence) return;
+
         loading.value = false;
+
+        window.dispatchEvent(
+          new CustomEvent('data-table-loading', {
+            detail: { loading: false }
+          })
+        );
+
       }, 150);
     }
   }
 }
-
 
 async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
   if (!rowID) {
     throw new Error('RowID tidak tersedia.');
   }
 
-  // Hapus pencarian dan filter agar baris baru bisa ditemukan.
   searchText.value = '';
 
   if (table) {
     table.clearFilter(true);
   }
 
-  // Muat ulang data dari Google Sheets.
   await loadData();
 
   if (sheetData.value.status !== 'success') {
@@ -702,7 +701,6 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
     throw new Error('Tabulator belum siap.');
   }
 
-  // Pastikan filter tidak menyembunyikan baris baru.
   table.clearFilter(true);
 
   const targetRow = table.getRows().find(row => {
@@ -715,18 +713,13 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
     );
   }
 
-  // Pilih dan scroll ke baris baru.
   targetRow.select();
-
   await targetRow.scrollTo();
 
   const rowData = targetRow.getData();
 
-  // Perbarui SelectedRowStore.
   SelectedRowStore.selectedRow.value = { ...rowData };
 
-
-  // Pertahankan mekanisme event row-selected yang sudah ada.
   const firstColumnID = sheetData.value.columnIDs[4];
   const firstColumnValue = firstColumnID
     ? rowData[firstColumnID]
@@ -740,14 +733,43 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
   return rowData;
 }
 
-
-
-
 function destroyTable() {
   if (table) {
     table.destroy();
     table = null;
   }
+}
+
+async function selectLastRow() {
+  if (!table) return null;
+
+  const rows = table.getRows();
+
+  if (!rows.length) {
+    SelectedRowStore.selectedRow.value = null;
+    return null;
+  }
+
+  const lastRow = rows[rows.length - 1];
+
+  lastRow.select();
+  await lastRow.scrollTo();
+
+  const rowData = lastRow.getData();
+
+  SelectedRowStore.selectedRow.value = { ...rowData };
+
+  const firstColumnID = sheetData.value.columnIDs[4];
+  const firstColumnValue = firstColumnID
+    ? rowData[firstColumnID]
+    : '';
+
+  emit('row-selected', {
+    value: firstColumnValue,
+    rowID: rowData.__rowID || ''
+  });
+
+  return rowData;
 }
 
 watch(searchText, () => {
@@ -781,43 +803,6 @@ defineExpose({
   loadData,
   addAndSelectRow
 });
-
-
-async function selectLastRow() {
-  if (!table) return null;
-
-  const rows = table.getRows();
-
-  if (!rows.length) {
-    SelectedRowStore.selectedRow.value = null;
-    return null;
-  }
-
-  const lastRow = rows[rows.length - 1];
-
-  // Pilih dan scroll ke baris terakhir
-  lastRow.select();
-  await lastRow.scrollTo();
-
-  const rowData = lastRow.getData();
-
-  // Update SelectedRowStore
-  SelectedRowStore.selectedRow.value = { ...rowData };
-
-  // Emit event row-selected
-  const firstColumnID = sheetData.value.columnIDs[4];
-  const firstColumnValue = firstColumnID
-    ? rowData[firstColumnID]
-    : '';
-
-  emit('row-selected', {
-    value: firstColumnValue,
-    rowID: rowData.__rowID || ''
-  });
-
-  return rowData;
-}
-
 </script>
 
 <style scoped>
@@ -1107,12 +1092,11 @@ async function selectLastRow() {
 .data-table :deep(.tabulator-row:hover) {
   background: v-bind('APP_COLORS.bgGradHover');
   color: v-bind('APP_COLORS.bgGradTextHover');
-
 }
 
 .data-table :deep(.tabulator-row.tabulator-selected) {
   background: v-bind('APP_COLORS.bgGradSelected');
-  color: v-bind('APP_COLORS.bgGradTextSelected')
+  color: v-bind('APP_COLORS.bgGradTextSelected');
 }
 
 .data-table :deep(.tabulator-cell) {
@@ -1120,7 +1104,6 @@ async function selectLastRow() {
   white-space: normal;
   background: transparent !important;
   border: 1px dotted v-bind('APP_COLORS.borderDefault');
-
 }
 
 .data-table :deep(.tabulator-col-content) {
@@ -1181,36 +1164,26 @@ async function selectLastRow() {
   }
 }
 
-/* Garis sisi kiri kolom frozen */
 .data-table :deep(.tabulator-frozen) {
   border-left: 1px solid v-bind('APP_COLORS.textPrimaryAksen20') !important;
   border-right: 1px solid v-bind('APP_COLORS.textPrimaryAksen20') !important;
-
 }
-
-
 
 :global(.custom-tooltip) {
   position: fixed;
   z-index: 99999;
-
   max-width: min(320px, calc(100vw - 16px));
   padding: 7px 10px;
-
   color: #222;
   background: #fff;
-
   border: 1px solid #ccc;
   border-radius: 5px;
-
   font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
   line-height: 1.5;
-
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-
   box-shadow: 0 3px 10px rgb(0 0 0 / 15%);
   pointer-events: none;
 }
