@@ -390,7 +390,11 @@ async function handleAddNewShipment() {
 
 
         // 2. Reload tabel dan pilih baris berdasarkan UUID.
-        await sideBarTableRef.value.addAndSelectRow(result.newRowID, result.mainIDColumnID, result.newMainIDValue)
+        await sideBarTableRef.value.addAndSelectRow(
+            result.newRowID,
+            result.mainIDColumnID,
+            result.newMainIDValue
+        )
 
         const today = new Date().toLocaleDateString('en-GB', {
             day: '2-digit',
@@ -398,11 +402,12 @@ async function handleAddNewShipment() {
             year: 'numeric'
         }).replace(',', '')
 
-        SelectedRowStore.selectedRow.value['5']=today
+        SelectedRowStore.selectedRow.value['5'] = today
+        handleShipmentNoChange();
 
         // 3. Buka tab Shipment.
         activeTab.value = 1
-        
+
         saveMessage.value = result.newMainID
             ? `Shipment ${result.newMainID} berhasil ditambahkan.`
             : 'Shipment baru berhasil ditambahkan.'

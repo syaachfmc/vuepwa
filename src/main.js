@@ -4,6 +4,8 @@ import App from './App.vue'
 // ICONS
 import AppIcon from './components/AppIcon.vue'
 
+//FORMS
+import './assets/styles/form-layout.css'
 
 // Styles lokal
 import './assets/styles/main.css'

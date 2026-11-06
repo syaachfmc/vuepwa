@@ -6,3 +6,4 @@ po num blm unik - done
 dropdoen enter ke buka - done
 saat relogin  pertama ngk bisa save <---------
 
+computed unique blm di pindahkan

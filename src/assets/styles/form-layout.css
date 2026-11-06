@@ -1,0 +1,31 @@
+/* ========================================
+   FORM PAGE LAYOUT
+======================================== */
+
+.shipment-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px;
+    width: 100%;
+
+  }
+  
+  .form-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(max-content, 1fr));
+    overflow: auto;
+    gap: 12px;
+    border: 1px solid #919fa13f;
+    padding: 8px;    
+  }
+  
+  .dataItemContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  
+  .gridfullrow {
+    grid-column: span 2;
+  }

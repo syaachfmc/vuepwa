@@ -134,7 +134,7 @@ const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 async function handleReloadDropdownData() {
-  
+
   if (reloadingDropdown.value) return
 
   reloadingDropdown.value = true
@@ -525,8 +525,11 @@ async function renderTable() {
       }
     });
 
-    table.on('tableBuilt', () => {
-      applySearch();
+    await new Promise(resolve => {
+      table.on('tableBuilt', () => {
+        applySearch();
+        resolve();
+      });
     });
 
     table.on('rowClick', (e, row) => {
@@ -542,6 +545,7 @@ async function renderTable() {
         rowID: rowID
       });
     });
+
   } else {
     await table.setColumns(columns);
     await table.replaceData(data);
@@ -641,6 +645,11 @@ async function loadData() {
     lastUpdated.value = new Date().toLocaleString('id-ID');
 
     await renderTable();
+
+    // Pilih baris terakhir setelah data selesai dimuat
+    await selectLastRow();
+
+
   } catch (error) {
     if (currentRequest !== requestSequence) return;
 
@@ -772,6 +781,42 @@ defineExpose({
   loadData,
   addAndSelectRow
 });
+
+
+async function selectLastRow() {
+  if (!table) return null;
+
+  const rows = table.getRows();
+
+  if (!rows.length) {
+    SelectedRowStore.selectedRow.value = null;
+    return null;
+  }
+
+  const lastRow = rows[rows.length - 1];
+
+  // Pilih dan scroll ke baris terakhir
+  lastRow.select();
+  await lastRow.scrollTo();
+
+  const rowData = lastRow.getData();
+
+  // Update SelectedRowStore
+  SelectedRowStore.selectedRow.value = { ...rowData };
+
+  // Emit event row-selected
+  const firstColumnID = sheetData.value.columnIDs[4];
+  const firstColumnValue = firstColumnID
+    ? rowData[firstColumnID]
+    : '';
+
+  emit('row-selected', {
+    value: firstColumnValue,
+    rowID: rowData.__rowID || ''
+  });
+
+  return rowData;
+}
 
 </script>
 

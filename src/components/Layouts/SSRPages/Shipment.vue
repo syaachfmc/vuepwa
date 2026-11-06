@@ -1,5 +1,5 @@
 <template>
-  <div class="shipment-page">
+  <div class="form-page">
     <div class="form-container">
 
       <ContainerB title="Shipment">
@@ -36,8 +36,8 @@
 
       <ContainerB title="PO">
         <div class="dataItemContainer">
-          <DataField dataID="12" type="dropdown" :reset-key="resetKey" :options="PODropdownList"
-            editable @change="handlePOnumberChange" />
+          <DataField dataID="12" type="dropdown" :reset-key="resetKey" :options="PODropdownList" editable
+            @change="handlePOnumberChange" />
           <DataField dataID="13" type="dropdown" :reset-key="resetKey" :options="POAddendumList"
             :size="{ width: '60px', height: '32px' }" editable @change="handlePOAddendumChange" />
 
@@ -89,208 +89,49 @@
 </template>
 
 <script setup>
-import { watch, ref, nextTick, onBeforeUnmount, computed } from 'vue'
+import { ref } from 'vue'
+import { useSelectedRowForm } from '../../../composables/useSelectedRowForm.js'
 import DataField from '../../inputs/DataField.vue'
 import ContainerB from '../../inputs/ContainerB.vue'
 import { SelectedRowStore } from '../../../stores/selectedRowStore.js'
-import { useFormTracker } from '../../../composables/useFormTracker.js'
-import { getAllDropdownData, getDropdownMappingList } from '../../../composables/getAllDropdownData.js'
-import { unique } from '../../../utils/tools.js'
-import { createDataFieldChangeHandlers } from './handleDataFieldChange.js'
+import { getOptionFromDataList } from '../../../composables/useTableHelpers.js'
+import { getGlobalDropdownOptions } from '../../../stores/globalDropdownStore.js'
+import { handleDataFieldChange } from './handleDataFieldChange.js'
 
-const {
-  optionDataList,
-  getGlobalDropdownOptions,
-  globalDropdownDataMap,
-  PODropdownOptions,
-  PODropdownDataMap,
-  PlacesDropdownOptions,
-  PlacesDropdownDataMap,
-  reloadDropdownData,
-  CompaniesDropdownOptions,
-  CompaniesDropdownDataMap
-} = getAllDropdownData()
 
- 
+const { optionDataList } = getOptionFromDataList()
+
 const {
   shipmentNoError,
   shipmentNoErrorMessage,
+
+  POAddendumList,
+  PODropdownList,
+  PlacesNameList,
+  PlacesCountryList,
+  CompaniesNameList,
+
   handleShipmentNoChange,
   handleShipmentTypeChange,
   handleDocumentTypeChange,
   handleShipmentArrangedByChange,
   checkValidateShipmentNo,
-  parseShipmentNumber,
   handlePOnumberChange,
   handlePOAddendumChange,
-  handlePONo_And_AddChange,
   handleDeliveryTermLocationNameChange
-} = createDataFieldChangeHandlers({
-  globalDropdownDataMap,
-  PODropdownDataMap,
-  PlacesDropdownDataMap
-})
 
-const POAddendumList = computed(() =>
-  unique(getDropdownMappingList(PODropdownDataMap, '2', '3', SelectedRowStore.selectedRow.value?.['12'], true))
-)
-
-const PODropdownList = computed(() =>
-  unique(PODropdownOptions('2').value)
-)
-
-const PlacesNameList = computed(() =>
-  unique(PlacesDropdownOptions("3").value)
-)
-
-const PlacesCountryList = computed(() =>
-  unique(PlacesDropdownOptions("5").value)
-)
-
-const CompaniesNameList = computed(() =>
-  unique(CompaniesDropdownOptions("2").value)
-)
+} = handleDataFieldChange()
 
 
-const isSwitchingRow = ref(false)
-
-// Inisialisasi Tracker & Handler
 const resetKey = ref(0)
 
-const {
-  form,
-  isDirty,
-  commitOriginal,
-  resetToOriginal,
-  unregister
-} = useFormTracker(SelectedRowStore.selectedRow.value, {
-  refresh: () => resetKey.value++
-})
-
-onBeforeUnmount(() => {
-  unregister()
-})
-
-
-// Snapshot untuk mendeteksi field yang benar-benar berubah
-function cloneFormData(data) {
-  if (data instanceof Date) return new Date(data.getTime())
-
-  if (Array.isArray(data)) {
-    return data.map(item => cloneFormData(item))
-  }
-
-  if (data && typeof data === 'object') {
-    const result = {}
-    Object.keys(data).forEach(key => {
-      result[key] = cloneFormData(data[key])
-    })
-    return result
-  }
-
-  return data
-}
-
-function isSameValue(a, b) {
-  if (a instanceof Date || b instanceof Date) {
-    const dateA = a == null || a === '' ? null : new Date(a).getTime()
-    const dateB = b == null || b === '' ? null : new Date(b).getTime()
-    return dateA === dateB
-  }
-
-  if (a === b) return true
-
-  if (
-    a === null ||
-    b === null ||
-    typeof a !== 'object' ||
-    typeof b !== 'object'
-  ) {
-    return false
-  }
-
-  return JSON.stringify(a) === JSON.stringify(b)
-}
-
-let lastSyncedForm = {}
-
-// Saat baris yang dipilih berubah
-watch(
-  () => SelectedRowStore.selectedRow.value,
-  async (newRow) => {
-    if (!newRow || Object.keys(newRow).length === 0) return
-
-    isSwitchingRow.value = true
-
-    // Validasi Shipment Number dari row yang dipilih     
+useSelectedRowForm({
+  selectedRow: SelectedRowStore.selectedRow,
+  resetKey,
+  onRowChange: (newRow) => {
     checkValidateShipmentNo(newRow['2'])
+  }
+})
 
-    commitOriginal([], newRow)
-    lastSyncedForm = cloneFormData(newRow)
-    resetKey.value++
-
-    await nextTick()
-    isSwitchingRow.value = false
-  },
-  { deep: false, immediate: true }
-)
-
-// Sinkronkan hanya field yang berubah
-
-watch(
-  form,
-  (newForm) => {
-
-    if (isSwitchingRow.value) return
-
-    const selectedRow = SelectedRowStore.selectedRow.value
-    if (!selectedRow || Object.keys(selectedRow).length === 0) return
-
-    Object.keys(newForm).forEach(key => {
-      if (key.startsWith('__')) return
-
-      if (!isSameValue(newForm[key], lastSyncedForm[key])) {
-        selectedRow[key] = cloneFormData(newForm[key])
-      }
-    })
-
-    lastSyncedForm = cloneFormData(newForm)
-  },
-  { deep: true }
-)
 
 </script>
-
-<style scoped>
-.shipment-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 8px;
-  width: 100%;
-
-}
-
-.form-container {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(max-content, 1fr));
-  /* Membuat 2 kolom sama besar */
-  overflow: auto;
-  gap: 12px;
-  border: 1px solid #919fa13f;
-  padding: 8px;
-
-
-}
-
-.dataItemContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-
-}
-
-.gridfullrow {
-  grid-column: span 2;
-}
-</style>
