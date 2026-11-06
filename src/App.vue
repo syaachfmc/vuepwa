@@ -50,6 +50,7 @@ function handleLoginSuccess(data) {
   sessionStorage.setItem("authUser", JSON.stringify(data.user));
 
   currentView.value = "ssr-layouts";
+   
 }
 
 // Logout berhasil

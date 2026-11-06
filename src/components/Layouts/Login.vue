@@ -37,8 +37,7 @@ function saveAuthProject(projectCode) {
   );
 
   if (!project) {
-    console.error("Project tidak ditemukan:", projectCode);
-    return;
+    throw new Error(`Project ${projectCode} tidak ditemukan.`);
   }
 
   const authProject = {
@@ -46,15 +45,25 @@ function saveAuthProject(projectCode) {
     projectName: project.projectName,
     shipmentNoPrefix: project.shipmentNoPrefix,
     regEx: project.regEx,
+    ShipmentDataGSheetID: project.ShipmentDataGSheetID,
+    POGSheetID: project.POGSheetID,
+    CompaniesGSheetID: project.CompaniesGSheetID,
+    PlacesGSheetID: project.PlacesGSheetID,
+    DropdownsGsheetID: project.DropdownsGsheetID,
     prop1: project.prop1,
-    prop2: project.prop2,
-    prop3: project.prop3,
-
   };
 
   sessionStorage.setItem("authProject", JSON.stringify(authProject));
-}
 
+  // Sinkronisasi config
+  config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
+  config.value.ProjectID = authProject.projectID;
+
+  console.log("Project config updated:", {
+    ProjectID: config.value.ProjectID,
+    GSheetID: config.value.gsheetID
+  });
+}
 
 async function handleLogin() {
   errorMessage.value = "";
@@ -77,15 +86,10 @@ async function handleLogin() {
     sessionStorage.setItem("authToken", result.token);
     sessionStorage.setItem("authUser", JSON.stringify(result.user));
     saveAuthProject(result.user.projectCode);
-
+    
     token.value = result.token;
     user.value = result.user;
-
-    // Set ProjectID di config secara dinamis saat Login Berhasil
-    if (result.user && result.user.projectCode) {
-      config.value.ProjectID = result.user.projectCode;
-    }
-
+   
     username.value = "";
     password.value = "";
     projectCode.value = "";

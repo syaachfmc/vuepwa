@@ -24,6 +24,13 @@ const selectedDataGSheet = ref('');
 const dataTableRef = ref(null);
 
 function handleLoginSuccess() {
+    const authProject = JSON.parse(
+        sessionStorage.getItem('authProject') || '{}'
+    );
+
+    config.value.gsheetID =
+        authProject.ShipmentDataGSheetID || '';
+
     isLoggedIn.value = true;
 }
 
