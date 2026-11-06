@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { login, validateSession, getProjectList } from "../../api/auth.js";
 import { config } from "../../config/ssrConfig.js";
+import { APP_COLORS } from '../../constants/colors.js'
 
 const emit = defineEmits(["login-success", "close"]);
 
@@ -18,6 +19,7 @@ const password = ref("");
 const projectCode = ref("");
 const loading = ref(false);
 const errorMessage = ref("");
+const projectError = ref("");
 
 // State Dinamis Opsi Project
 const projectOptions = ref([]);
@@ -46,7 +48,7 @@ function saveAuthProject(projectCode) {
     regEx: project.regEx,
     prop1: project.prop1,
     prop2: project.prop2,
-    prop3: project.prop3,    
+    prop3: project.prop3,
 
   };
 
@@ -101,19 +103,29 @@ async function handleLogin() {
 async function fetchProjects() {
   try {
     loadingProjects.value = true;
+    projectError.value = "";
+
     const projectRes = await getProjectList();
 
     if (projectRes.success && Array.isArray(projectRes.data)) {
       projectOptions.value = projectRes.data;
+
+      if (projectOptions.value.length === 0) {
+        projectError.value = "Daftar project kosong.";
+      }
     } else {
-      console.warn("Daftar project gagal dimuat:", projectRes.message);
+      projectError.value =
+        projectRes.message || "Gagal memuat daftar project.";
     }
   } catch (error) {
     console.error("Gagal mengambil daftar project:", error);
+    projectError.value =
+      "Koneksi gagal. Tidak dapat mengambil daftar project.";
   } finally {
     loadingProjects.value = false;
   }
 }
+
 
 onMounted(async () => {
   // 1. Jalankan pemanggilan daftar project secara independen (non-blocking)
@@ -159,9 +171,7 @@ onMounted(async () => {
 
     <div v-else class="card">
       <!-- Tombol Close (X) -->
-      <button type="button" class="close-btn" @click="handleClose" aria-label="Tutup">
-        &times;
-      </button>
+ 
 
       <h1>Login</h1>
       <p>Masukkan akun dan pilih Project Code.</p>
@@ -177,22 +187,39 @@ onMounted(async () => {
 
         <!-- Dropdown Project Code Dinamis -->
         <label for="projectCode">Project Code</label>
-        <select id="projectCode" v-model="projectCode" :disabled="loadingProjects" required>
+
+        <select id="projectCode" v-model="projectCode" :disabled="loadingProjects || projectOptions.length === 0"
+          required>
           <option value="" disabled>
-            {{ loadingProjects ? "Memuat daftar project..." : "-- Pilih Project Code --" }}
+            {{ loadingProjects
+              ? "Memuat daftar project..."
+              : "-- Pilih Project Code --"
+            }}
           </option>
+
           <option v-for="proj in projectOptions" :key="proj.projectID" :value="proj.projectID">
             {{ proj.projectID }}{{ proj.projectName ? ` - ${proj.projectName}` : '' }}
           </option>
         </select>
 
+        <!-- Project Error -->
+        <div v-if="projectError" class="project-error">
+          <p>{{ projectError }}</p>
+
+          <button type="button" class="retry-btn" :disabled="loadingProjects" @click="fetchProjects">
+            {{ loadingProjects ? "Mencoba kembali..." : "↻ Retry" }}
+          </button>
+        </div>
+
+
         <p v-if="errorMessage" class="error">
           {{ errorMessage }}
         </p>
 
-        <button type="submit" class="submit-btn" :disabled="loading || loadingProjects">
+        <button type="submit" class="submit-btn" :disabled="loading || loadingProjects || projectOptions.length === 0">
           {{ loading ? "Memproses..." : "Login" }}
         </button>
+
       </form>
     </div>
   </div>
@@ -221,7 +248,7 @@ select:disabled {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 9999;
@@ -247,29 +274,15 @@ select:disabled {
   padding: 28px;
   border-radius: 12px;
   box-sizing: border-box;
-  background: var(--color-bgPrimaryGrad, #ffffff);
-  box-shadow: 10px 12px 14px 0px var(--color-shadowColorNormal, rgba(0, 0, 0, 0.2));
-}
+  background: v-bind('APP_COLORS.bgPrimaryGrad');
 
-.close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  line-height: 1;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
+  /* Shadow */
+  box-shadow:
+    0 12px 25px rgba(0, 0, 0, 0.25),
+    0 4px 10px rgba(0, 0, 0, 0.15);
 }
-
-.close-btn:hover {
-  color: #111827;
-  background: #f3f4f6;
-}
-
+ 
+ 
 h1 {
   margin-top: 0;
 }
@@ -308,5 +321,38 @@ input {
 .error {
   color: #dc2626;
   margin-top: 10px;
+}
+
+.project-error {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.project-error p {
+  margin: 0 0 8px;
+}
+
+.retry-btn {
+  padding: 6px 12px;
+  border: 1px solid #dc2626;
+  border-radius: 5px;
+  background: white;
+  color: #dc2626;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  background: #fee2e2;
+}
+
+.retry-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 </style>
