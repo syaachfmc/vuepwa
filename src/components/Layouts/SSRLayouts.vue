@@ -530,7 +530,6 @@ function handleReset() {
     box-sizing: border-box;
     font-family: "Courier New", monospace;
     background: v-bind('APP_COLORS.bgPrimaryGrad');
-
 }
 
 .app-layout *,
