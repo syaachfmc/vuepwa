@@ -3,6 +3,7 @@
     <div v-html="trapesiumSvgRaw"></div>
 
     <div class="app-layout" :class="{ 'is-resizing': isResizing }">
+        <LoadingProgress :show="isDataTableLoading" message="Loading data..." />
 
         <!-- TOP BAR -->
         <header class="TopBar">
@@ -152,7 +153,7 @@ import {
     resetAllForms
 } from '../../composables/useFormTracker.js'
 import { addNewRow } from '../../api/addNewRow.js'
-import { getOptionFromDataList } from '../../composables/useTableHelpers.js'
+import LoadingProgress from '../LoadingProgress.vue'
 
 
 // ========================================
@@ -846,6 +847,7 @@ function handleReset() {
     z-index: 999;
     background: rgba(100, 100, 100, 0.32);
 }
+
 /* ========================================
    RESPONSIVE
 ======================================== */
