@@ -58,11 +58,6 @@ function saveAuthProject(projectCode) {
   // Sinkronisasi config
   config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
   config.value.ProjectID = authProject.projectID;
-
-  console.log("Project config updated:", {
-    ProjectID: config.value.ProjectID,
-    GSheetID: config.value.gsheetID
-  });
 }
 
 async function handleLogin() {
