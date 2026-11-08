@@ -149,7 +149,7 @@ import Dates from '../../components/Layouts/SSRPages/Dates.vue'
 import { logout } from '../../api/auth.js'
 import { pageSidebarWidth } from '../../stores/constStore.js'
 import AppIcon from './../AppIcon.vue';
-import { config } from '../../config/ssrConfig.js'
+import { ShipmentsConfig } from '../../config/ssrConfig.js'
 import { updateGSheetRow } from '../../api/updateGSheetRow.js'
 import {
     saveAllForms,
@@ -411,19 +411,19 @@ async function handleAddNewShipment() {
     try {
         // 1. Buat baris baru melalui GAS.
         const result = await addNewRow({
-            webAppUrl: config.value.webAppUrl,
+            webAppUrl: ShipmentsConfig.value.webAppUrl,
             token,
 
-            GSheetID: config.value.gsheetID,
-            sheetName: config.value.sheetName,
+            GSheetID: ShipmentsConfig.value.gsheetID,
+            sheetName: ShipmentsConfig.value.sheetName,
 
-            RowIDColumn: config.value.RowIDColumn,
-            ProjectIDColumn: config.value.ProjectIDColumn,
+            RowIDColumn: ShipmentsConfig.value.RowIDColumn,
+            ProjectIDColumn: ShipmentsConfig.value.ProjectIDColumn,
 
-            mainIDColumnID: config.value.mainIDColumnID,
+            mainIDColumnID: ShipmentsConfig.value.mainIDColumnID,
 
-            columnIDRow: config.value.columnIDRow,
-            dataRange: config.value.dataRange,
+            columnIDRow: ShipmentsConfig.value.columnIDRow,
+            dataRange: ShipmentsConfig.value.dataRange,
             startRow: 5
         })
 
@@ -485,16 +485,16 @@ async function handleSave() {
 
     try {
         await updateGSheetRow({
-            webAppUrl: config.value.webAppUrl,
+            webAppUrl: ShipmentsConfig.value.webAppUrl,
             token,
-            GSheetID: config.value.gsheetID,
-            sheetName: config.value.sheetName,
-            dataRange: config.value.dataRange,
-            RowIDColumn: config.value.RowIDColumn,
+            GSheetID: ShipmentsConfig.value.gsheetID,
+            sheetName: ShipmentsConfig.value.sheetName,
+            dataRange: ShipmentsConfig.value.dataRange,
+            RowIDColumn: ShipmentsConfig.value.RowIDColumn,
             RowID: currentData.__rowID,
-            columnIDRow: config.value.columnIDRow,
-            ProjectID: config.value.ProjectID,
-            ProjectIDColumn: config.value.ProjectIDColumn,
+            columnIDRow: ShipmentsConfig.value.columnIDRow,
+            ProjectID: ShipmentsConfig.value.ProjectID,
+            ProjectIDColumn: ShipmentsConfig.value.ProjectIDColumn,
             changes
         })
 

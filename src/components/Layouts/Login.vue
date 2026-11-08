@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { login, validateSession, getProjectList } from "../../api/auth.js";
-import { config } from "../../config/ssrConfig.js";
+import { ShipmentsConfig } from "../../config/ssrConfig.js";
 import { APP_COLORS } from '../../constants/colors.js'
 
 const emit = defineEmits(["login-success", "close"]);
@@ -56,10 +56,10 @@ function saveAuthProject(projectCode) {
   sessionStorage.setItem("authProject", JSON.stringify(authProject));
 
   // Sinkronisasi config
-  config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
-  config.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
+  ShipmentsConfig.value.gsheetID = authProject.ShipmentDataGSheetID || '';
+  ShipmentsConfig.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
   
-  config.value.ProjectID = authProject.projectID;
+  ShipmentsConfig.value.ProjectID = authProject.projectID;
 }
 
 async function handleLogin() {
@@ -146,7 +146,7 @@ onMounted(async () => {
       sessionStorage.setItem("authUser", JSON.stringify(result.user));
 
       if (result.user && result.user.projectCode) {
-        config.value.ProjectID = result.user.projectCode;
+        ShipmentsConfig.value.ProjectID = result.user.projectCode;
         await projectsPromise;
         saveAuthProject(result.user.projectCode);
       }

@@ -4,7 +4,7 @@
         <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
 
         <!-- Tampilkan DataTable jika pengguna sudah terotentikasi -->
-        <DataTable v-else ref="dataTableRef" :config="config" :tableDateFormat="config.tableDateFormat"
+        <DataTable v-else ref="dataTableRef" :config="ShipmentsConfig" :tableDateFormat="ShipmentsConfig.tableDateFormat"
             @row-selected="handleRowSelected" @relogin="handleRelogin" />
     </main>
 </template>
@@ -13,7 +13,7 @@
 import { ref } from 'vue';
 import DataTable from './DataTable.vue';
 import Login from './../Layouts/Login.vue';
-import { config } from '../../config/ssrConfig.js';
+import { ShipmentsConfig } from '../../config/ssrConfig.js';
 
 const isLoggedIn = ref(Boolean(sessionStorage.getItem("authToken")));
 
@@ -28,8 +28,8 @@ function handleLoginSuccess() {
         sessionStorage.getItem('authProject') || '{}'
     );
 
-    config.value.gsheetID = authProject.ShipmentDataGSheetID || '';
-    config.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
+    ShipmentsConfig.value.gsheetID = authProject.ShipmentDataGSheetID || '';
+    ShipmentsConfig.value.shipmentNoPrefix = authProject.shipmentNoPrefix || '';
 
     isLoggedIn.value = true;
 }
