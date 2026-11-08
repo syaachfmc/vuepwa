@@ -1,3 +1,4 @@
+// getAllDropdownData.js
 
 import { onMounted } from 'vue'
 import { getOptionFromDataList } from './useTableHelpers.js'
@@ -28,14 +29,20 @@ import {
 
 // Reload seluruh global dropdown
 export async function reloadDropdownData() {
+  try {
+    await Promise.all([
+      globalDropdownLoadList(true),
+      PODropdownLoadList(true),
+      PlacesDropdownLoadList(true),
+      CompaniesDropdownLoadList(true)
+    ])
 
+    return { status: 'success' }
 
-  await Promise.all([
-    globalDropdownLoadList(true),
-    PODropdownLoadList(true),
-    PlacesDropdownLoadList(true),
-    CompaniesDropdownLoadList(true)
-  ])
+  } catch (err) {
+    
+    throw err
+  }
 }
 
 export function getAllDropdownData() {

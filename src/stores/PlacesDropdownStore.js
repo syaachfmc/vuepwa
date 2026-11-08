@@ -68,7 +68,8 @@ export async function PlacesDropdownLoadList(force = false) {
 
     }
   } catch (err) {
-    console.error('Gagal memuat PO Dropdown List:', err);
+   
+    throw err;    
   } finally {
     PlacesDropdownisLoading.value = false;
   }

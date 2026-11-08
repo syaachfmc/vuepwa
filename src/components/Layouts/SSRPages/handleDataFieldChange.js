@@ -44,7 +44,7 @@ export function handleDataFieldChange() {
       `^(${projectPrefix})-(S[IR][ILEO])-(\\d{5})([A-Z])?$`
     )
   
-    console.log("parseShipmentNumber", authProject.shipmentNoPrefix,value)
+ 
     if (typeof value !== 'string') return null
 
     const match = value.trim().match(shipmentPattern)

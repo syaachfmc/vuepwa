@@ -68,7 +68,8 @@ export async function PODropdownLoadList(force = false) {
 
     }
   } catch (err) {
-    console.error('Gagal memuat PO Dropdown List:', err);
+  
+    throw err;
   } finally {
     PODropdownisLoading.value = false;
   }

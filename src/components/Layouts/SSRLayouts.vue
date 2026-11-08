@@ -1,3 +1,5 @@
+<!-- SSRLayouts.vue  -->
+
 <template>
     <!-- 1. SVG ClipPath (Tetap di atas) Render raw SVG string secara inline -->
     <div v-html="trapesiumSvgRaw"></div>
@@ -128,6 +130,9 @@
 
         </footer>
 
+        <ErrorModal v-model="showError" :title="errorTitle" :message="errorMessage" :show-retry="showRetry"
+            :show-relogin="showRelogin" @retry="handleRetry" @relogin="handleRelogin" />
+
     </div>
 </template>
 
@@ -155,6 +160,21 @@ import {
 import { addNewRow } from '../../api/addNewRow.js'
 import LoadingProgress from '../LoadingProgress.vue'
 
+import ErrorModal from '../../components/ErrorModal.vue';
+import { useErrorModal } from '../../composables/useErrorModal.js';
+
+// ERROR Handler
+const {
+    showError,
+    errorTitle,
+    errorMessage,
+    showRetry,
+    showRelogin,
+    openError,
+    closeError,
+    handleRetry,
+    handleRelogin
+} = useErrorModal();
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -348,7 +368,6 @@ const props = defineProps({
 
 const emit = defineEmits(["logout-success"]);
 const loading = ref(false);
-const errorMessage = ref("");
 
 async function handleLogout() {
     loading.value = true;
@@ -360,6 +379,7 @@ async function handleLogout() {
         }
     } catch (error) {
         console.error("Logout server gagal:", error);
+        throw error
     } finally {
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
@@ -422,7 +442,6 @@ async function handleAddNewShipment() {
         }).replace(',', '')
 
         SelectedRowStore.selectedRow.value['5'] = today
-        handleShipmentNoChange();
 
         // 3. Buka tab Shipment.
         activeTab.value = 1
@@ -431,11 +450,12 @@ async function handleAddNewShipment() {
             ? `Shipment ${result.newMainID} berhasil ditambahkan.`
             : 'Shipment baru berhasil ditambahkan.'
 
-    } catch (error) {
-        console.error('Gagal menambahkan Shipment:', error)
-
-        saveMessage.value = `Gagal menambahkan Shipment: ${error.message}`
-
+    } catch (error) {   
+        openError({
+            title: 'Gagal Menambahkan Shipment',
+            message: error.message,
+            retry: handleAddNewShipment
+        });
     } finally {
         addingShipment.value = false
     }
@@ -493,9 +513,12 @@ async function handleSave() {
         saveMessage.value = 'Data berhasil disimpan.'
 
 
-    } catch (error) {
-        console.error('Gagal menyimpan data:', error)
-        saveMessage.value = `Gagal menyimpan: ${error.message}`
+    } catch (error) {     
+        openError({
+            title: 'Gagal Menyimpan Data',
+            message: error.message,
+            retry: handleSave
+        });
     } finally {
         saving.value = false
     }

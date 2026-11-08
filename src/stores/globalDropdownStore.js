@@ -74,11 +74,13 @@ export async function globalDropdownLoadList(force = false) {
 
  
     } else {
-      console.error('Gagal memuat Global Dropdown:', result.error)
+      
+      throw result.error;
     }
 
-  } catch (err) {
-    console.error('Gagal memuat Global Dropdown List:', err)
+  } catch (err) {   
+    
+    throw err;
   } finally {
     globalDropdownisLoading.value = false
   }

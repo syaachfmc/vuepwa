@@ -1,4 +1,6 @@
+<!-- DataTable.vue -->
 <template>
+
   <div class="data-table-container">
     <div v-show="sheetData.status === 'success' && totalRows > 0" class="table-wrapper">
       <div ref="tableElement" class="data-table"></div>
@@ -19,19 +21,7 @@
           <span class="progress-text">Memuat data... {{ progressPercent }}%</span>
         </div>
 
-        <div v-else-if="sheetData.status === 'error'" class="status-box error">
-          <span class="error-message">{{ sheetData.error }}</span>
-          <button type="button" class="refresh-button" @click="loadData">
-            Coba Lagi
-          </button>
-          <button type="button" class="relogin-button" @click="handleRelogin">
-            Relogin
-          </button>
-        </div>
-
-        <div v-else-if="sheetData.status === 'success' && totalRows === 0" class="status-box empty-state">
-          Tidak ada data untuk ditampilkan.
-        </div>
+        <div v-else-if="sheetData.status === 'error'"></div>
 
         <div v-else class="action-controls">
           <input v-model="searchText" type="text" class="table-search" placeholder="Cari data..." />
@@ -67,6 +57,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -88,6 +79,10 @@ import { SelectedRowStore } from '../../stores/selectedRowStore.js';
 import { TableStore } from '../../stores/tableStore.js';
 import { pageSidebarWidth } from '../../stores/constStore.js';
 import { reloadDropdownData } from '../../composables/getAllDropdownData.js';
+
+import { useErrorModal } from '../../composables/useErrorModal.js';
+const { openError } = useErrorModal();
+
 
 const props = defineProps({
   config: {
@@ -133,6 +128,7 @@ const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 async function handleReloadDropdownData() {
+  
   if (reloadingDropdown.value) return;
 
   reloadingDropdown.value = true;
@@ -140,7 +136,13 @@ async function handleReloadDropdownData() {
   try {
     await reloadDropdownData();
   } catch (error) {
-    console.error('Gagal reload dropdown:', error);
+   
+
+    openError({
+      title: 'Gagal Memuat Dropdown',
+      message: error.message || 'Gagal memperbarui data dropdown.',
+      retry: handleReloadDropdownData
+    });
   } finally {
     reloadingDropdown.value = false;
   }
@@ -624,7 +626,12 @@ async function loadData() {
         data: [],
         rowIDs: []
       };
-
+      openError({
+        title: 'Gagal Memuat Data',
+        message: sheetData.value.error || 'Gagal mengambil data.',
+        retry: loadData,
+        relogin: handleRelogin
+      });
       TableStore.setTableData([]);
       destroyTable();
       return;
@@ -655,7 +662,12 @@ async function loadData() {
       data: [],
       rowIDs: []
     };
-
+    openError({
+      title: 'Gagal Memuat Data',
+      message: sheetData.value.error || 'Gagal mengambil data.',
+      retry: loadData,
+      relogin: handleRelogin
+    });
     TableStore.setTableData([]);
     destroyTable();
   } finally {

@@ -22,19 +22,29 @@ export async function fetchGSheetData(
   columnTitleRow,
   columnTitleDescriptionRow,
   columnTypeRow,
-  dataRange ,
+  dataRange,
   rowIDColumn,
-  projectID ,
-  projectIDColumn 
+  projectID,
+  projectIDColumn
 ) {
   const url = new URL(webAppUrl);
 
   // Ambil token dari sessionStorage
   const token = sessionStorage.getItem("authToken") || "";
-  const authUser = JSON.parse(sessionStorage.getItem('authUser') || '{}');
-  
-  if (projectID !== 'any') projectID = authUser.projectCode || '';
-  
+
+
+  let authUser = {};
+
+  try {
+    authUser = JSON.parse(sessionStorage.getItem('authUser') || '{}');
+  } catch {
+    authUser = {};
+  }
+
+  if (projectID !== 'any') {
+    projectID = authUser.projectCode || '';
+  }
+
   url.searchParams.append("token", token);
   url.searchParams.append("GSheetID", gsheetID);
   url.searchParams.append("sheetName", sheetName);
@@ -46,7 +56,7 @@ export async function fetchGSheetData(
   if (rowIDColumn) {
     url.searchParams.append("RowIDColumn", rowIDColumn);
   }
-  
+
   if (projectID !== undefined && projectID !== null && projectID !== '') {
 
     url.searchParams.append("ProjectID", projectID);
@@ -64,29 +74,27 @@ export async function fetchGSheetData(
     if (!response.ok) {
       return attachClientWrapper({
         status: "error",
-        error: `HTTP Error ${response.status}: ${response.statusText}`,
-        columnIDs: [],
-        columnTitles: [],
-        columnDescriptions: [],
-        columnTypes: [],
-        data: [],
-        rowIDs: []
+        error: `HTTP Error ${response.status}: ${response.statusText}`
       });
     }
 
-    const rawResult = await response.json();
+    let rawResult;
+
+    try {
+      rawResult = await response.json();
+    } catch (err) {
+      return attachClientWrapper({
+        status: "error",
+        error: "Respons API tidak valid atau bukan JSON."
+      });
+    }
+
     return attachClientWrapper(rawResult);
 
   } catch (err) {
     return attachClientWrapper({
       status: "error",
-      error: "Gagal terhubung ke API: " + err.message,
-      columnIDs: [],
-      columnTitles: [],
-      columnDescriptions: [],
-      columnTypes: [],
-      data: [],
-      rowIDs: []
+      error: "Gagal terhubung ke API: " + err.message
     });
   }
 }
