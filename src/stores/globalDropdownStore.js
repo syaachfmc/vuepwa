@@ -4,11 +4,12 @@ import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan 
 export const globalDropdownDataMap = ref({});
 export const globalDropdownisLoading = ref(false);
 export const globalDropdownisLoaded = ref(false);
+const authProject = JSON.parse(sessionStorage.getItem("authProject") || "{}");
 
 const dropdownConfig = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
 
-  gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
+  gsheetID:  authProject.DropdownsGsheetID || '',
   sheetName: 'Dropdowns',
   columnIDRow: 1,
   columnTitleRow: 2,

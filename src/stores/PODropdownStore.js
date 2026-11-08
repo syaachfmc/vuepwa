@@ -4,12 +4,12 @@ import { fetchGSheetData } from '../components/Data/DataTable.js'; // Sesuaikan 
 export const PODropdownDataMap = ref({});
 export const PODropdownisLoading = ref(false);
 export const PODropdownisLoaded = ref(false);
-const ProjectID = JSON.parse(sessionStorage.getItem("authProject") || "{}").projectID || '';
+const authProject = JSON.parse(sessionStorage.getItem("authProject") || "{}");
 
 const dropdownConfig = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
 
-  gsheetID: '1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo',
+  gsheetID: authProject.POGSheetID || '',
   sheetName: 'PO',
   columnIDRow: 1,
   columnTitleRow: 2,
@@ -17,7 +17,7 @@ const dropdownConfig = {
   columnTypeRow: 4,
   dataRange: 'B5:AA',
   RowIDColumn: 'A',
-  ProjectID: ProjectID,
+  ProjectID: authProject.projectID || '',
   ProjectIDColumn: 'B'
 };
 
@@ -50,7 +50,6 @@ export async function PODropdownLoadList(force = false) {
         map[key] = [];
       });
 
-      // Map isi baris data ke masing-masing key columnID
       // Map isi baris data ke masing-masing key columnID
       (result.data || []).forEach(row => {
         result.columnIDs.forEach((colID, colIndex) => {
