@@ -46,7 +46,7 @@
           </button>
 
           <button type="button" class="refresh-button" :disabled="loading" @click="loadData"
-            :title="loading ? 'Loading...' : 'Reload All Data'">
+            :title="loading ? 'Reload All Data' : 'Reload All Data'">
             <AppIcon :name="loading ? 'refresh-cw' : 'refresh-ccw'" :size="12" />
           </button>
 
@@ -227,7 +227,7 @@ function toggleWrap() {
 
 function toggleFrozenColumns() {
   freezeColumns.value = !freezeColumns.value;
-
+ 
   if (!table || sheetData.value.status !== 'success') return;
 
   const columns = buildColumns(sheetData.value);
@@ -798,6 +798,23 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
   if (!table) {
     throw new Error('Tabulator belum siap.');
   }
+
+  // Pastikan baris baru disaring berdasarkan ShipmentRowID yang sedang aktif di SelectedRowStore
+  const allFormattedData = buildTableData(sheetData.value);
+  const newRowRecord = allFormattedData.find(row => String(row.__rowID) === String(rowID));
+
+  if (newRowRecord && newRowRecord.ShipmentRowID) {
+    // Jika baris baru membawa ShipmentRowID yang berbeda, perbarui SelectedRowStore agar filter RSR cocok
+    if (String(SelectedRowStore.selectedRow.value?.rowID) !== String(newRowRecord.ShipmentRowID)) {
+      SelectedRowStore.selectedRow.value = {
+        ...(SelectedRowStore.selectedRow.value || {}),
+        rowID: newRowRecord.ShipmentRowID
+      };
+    }
+  }
+
+  // Perbarui isi data tabel sesuai ShipmentRowID yang aktif
+  RSRforSelectedShipment();
 
   table.clearFilter(true);
 

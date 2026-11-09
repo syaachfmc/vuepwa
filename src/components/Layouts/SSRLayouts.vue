@@ -345,7 +345,6 @@ onBeforeUnmount(() => {
     }
 })
 
-// ----------HANDLE LOGOUT-------------
 
 const props = defineProps({
     user: {
@@ -363,6 +362,7 @@ const props = defineProps({
 });
 
 
+// ----------HANDLE LOGOUT-------------
 
 
 

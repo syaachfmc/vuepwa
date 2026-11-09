@@ -31,12 +31,13 @@ export const RSRConfig = ref({
   columnTitleRow: 2,
   columnTitleDescriptionRow: 3,
   columnTypeRow: 4,
-  dataRange: 'B5:F',
+  dataRange: 'B5:Z',
   RowIDColumn: 'A',
   ProjectID: '',
   ProjectIDColumn: 'B',
   FrozenColumnIndex: ['2'],
   tableDateFormat: 'dd MMM yy',
-  mainIDColumnID: '2',
+  mainIDColumnID: 'SerialNo',
   shipmentNoPrefix: JSON.parse(sessionStorage.getItem("authProject") || "{}").shipmentNoPrefix || '', 
+  foreignKey :'' 
 })

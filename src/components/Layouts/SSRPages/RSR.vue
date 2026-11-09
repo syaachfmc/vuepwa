@@ -1,5 +1,5 @@
 <template>
- 
+
     <!-- BODY -->
     <div class="layout-body" :class="{ 'sidebar-full': isSidebarFullWidth }">
 
@@ -62,23 +62,23 @@
 
 
 
-        <!-- <div class="footer-actions" :class="{ 'data-loading': isDataTableLoading }" :inert="isDataTableLoading"
+        <div class="footer-actions" :class="{ 'data-loading': isDataTableLoading }" :inert="isDataTableLoading"
             :aria-busy="isDataTableLoading">
 
-            <button class="footer-action-button" :disabled="addingShipment || saving" @click="handleAddNewShipment">
-                {{ addingShipment ? 'Menambahkan...' : 'Add New Shipment' }}
+            <button class="footer-action-button" :disabled="addingRSR || saving" @click="handleAddNewRow">
+                {{ addingRSR ? 'Menambahkan...' : 'Add New Shipment' }}
             </button>
 
-            <button class="footer-action-button" :disabled="saving || addingShipment" @click="handleSave">
+            <button class="footer-action-button" :disabled="saving || addingRSR" @click="handleSave">
                 {{ saving ? 'Menyimpan...' : 'Simpan' }}
             </button>
 
-            <button class="footer-action-button" :disabled="saving || addingShipment" @click="handleReset">
+            <button class="footer-action-button" :disabled="saving || addingRSR" @click="handleReset">
                 Reset
             </button>
 
             <span v-if="saveMessage">{{ saveMessage }}</span>
-        </div> -->
+        </div>
 
         <span>
             {{ isSidebarFullWidth
@@ -97,9 +97,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, markRaw } from 'vue'
 import SideBarTable from '../../../components/Data/RSR_SideBarTable.vue';
-import { SelectedRowStore, RSR_SelectedRowStore  } from '../../../stores/selectedRowStore.js'
+import { SelectedRowStore, RSR_SelectedRowStore } from '../../../stores/selectedRowStore.js'
 import { RSR_pageSidebarWidth } from '../../../stores/constStore.js'
 import { APP_COLORS } from '../../../constants/colors.js'
+import { addNewRow } from '../../../api/addNewRow.js'
+import { RSRConfig } from '../../../config/ssrConfig.js'
+
+const addingRSR = ref(false)
+
+
 
 // ========================================
 // REFS & LAYOUT SETTINGS
@@ -248,6 +254,171 @@ onBeforeUnmount(() => {
         resizeObserver.unobserve(sidebarRef.value)
     }
 })
+
+const RSR_props = defineProps({
+    user: {
+        type: Object,
+        required: false
+    },
+    token: {
+        type: String,
+        required: false
+    },
+    projectOptions: {
+        type: Array,
+        default: () => []
+    }
+});
+
+const sideBarTableRef = ref(null)
+const saving = ref(false)
+const saveMessage = ref('')
+
+async function handleAddNewRow() {
+    if (addingRSR.value || saving.value) return
+
+    const token = RSR_props.token || sessionStorage.getItem('authToken')
+
+    if (!token) {
+        saveMessage.value = 'Token autentikasi tidak tersedia.'
+        return
+    }
+
+    addingRSR.value = true
+    saveMessage.value = ''
+
+ 
+
+    try {
+        // 1. Buat baris baru melalui GAS.
+        const result = await addNewRow({
+            webAppUrl: RSRConfig.value.webAppUrl,
+            token,
+
+            GSheetID: RSRConfig.value.gsheetID,
+            sheetName: RSRConfig.value.sheetName,
+
+            RowIDColumn: RSRConfig.value.RowIDColumn,
+            ProjectIDColumn: RSRConfig.value.ProjectIDColumn,
+
+            mainIDColumnID: RSRConfig.value.mainIDColumnID,
+
+            columnIDRow: RSRConfig.value.columnIDRow,
+            dataRange: RSRConfig.value.dataRange,
+            startRow: 5,
+            
+        })
+
+
+        // 2. Reload tabel dan pilih baris berdasarkan UUID.
+        await sideBarTableRef.value.addAndSelectRow(
+            result.newRowID,
+            result.mainIDColumnID,
+            result.newMainIDValue
+        )
+
+        const today = new Date().toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace(',', '')
+
+        SelectedRowStore.selectedRow.value['5'] = today
+
+        // 3. Buka tab Shipment.
+        activeTab.value = 1
+
+        saveMessage.value = result.newMainID
+            ? `Shipment ${result.newMainID} berhasil ditambahkan.`
+            : 'Shipment baru berhasil ditambahkan.'
+
+    } catch (error) {
+        // openError({
+        //     title: 'Gagal Menambahkan Shipment',
+        //     message: error.message,
+        //     retry: handleAddNewRow
+        // });
+        throw error
+    } finally {
+        addingRSR.value = false
+    }
+}
+
+async function handleSave() {
+    if (saving.value) return
+
+    const currentData = SelectedRowStore.selectedRow.value
+
+    if (!currentData || !currentData.__rowID) {
+        saveMessage.value = 'Pilih baris data terlebih dahulu.'
+        return
+    }
+
+    const changes = collectDirtyChanges(currentData)
+
+    if (Object.keys(changes).length === 0) {
+        saveMessage.value = 'Tidak ada perubahan untuk disimpan.'
+        return
+    }
+
+    const token = RSR_props.token || sessionStorage.getItem('authToken')
+
+    saving.value = true
+    saveMessage.value = ''
+
+    try {
+        await updateGSheetRow({
+            webAppUrl: RSRConfig.value.webAppUrl,
+            token,
+            GSheetID: RSRConfig.value.gsheetID,
+            sheetName: RSRConfig.value.sheetName,
+            dataRange: RSRConfig.value.dataRange,
+            RowIDColumn: RSRConfig.value.RowIDColumn,
+            RowID: currentData.__rowID,
+            columnIDRow: RSRConfig.value.columnIDRow,
+            ProjectID: RSRConfig.value.ProjectID,
+            ProjectIDColumn: RSRConfig.value.ProjectIDColumn,
+            changes
+        })
+
+
+        markRowSaved(currentData)
+
+        // Beri tahu DataTable bahwa penyimpanan berhasil.
+        window.dispatchEvent(
+            new CustomEvent('row-data-saved', {
+                detail: {
+                    data: { ...currentData }
+                }
+            })
+        )
+
+        saveMessage.value = 'Data berhasil disimpan.'
+
+
+    } catch (error) {
+        openError({
+            title: 'Gagal Menyimpan Data',
+            message: error.message,
+            retry: handleSave
+        });
+    } finally {
+        saving.value = false
+    }
+}
+
+function handleReset() {
+    const currentData = SelectedRowStore.selectedRow.value
+
+    if (!currentData || !currentData.__rowID) {
+        saveMessage.value = 'Pilih baris data terlebih dahulu.'
+        return
+    }
+
+    resetAllForms(currentData)
+    saveMessage.value = 'Perubahan lokal dikembalikan ke data tersimpan.'
+}
+
 </script>
 
 <style scoped>

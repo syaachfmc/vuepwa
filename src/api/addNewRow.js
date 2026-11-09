@@ -6,9 +6,10 @@ export async function addNewRow({
     RowIDColumn,
     ProjectIDColumn,
     mainIDColumnID,
-    columnIDRow = 1,
+    columnIDRow,
     dataRange,
-    startRow = 5
+    startRow,
+    foreignKey
 }) {
     if (!token) {
         throw new Error('Token autentikasi tidak tersedia.');
@@ -24,7 +25,9 @@ export async function addNewRow({
         mainIDColumnID,
         columnIDRow,
         dataRange,
-        startRow
+        startRow,
+        foreignKey
+
     };
 
     const response = await fetch(webAppUrl, {
