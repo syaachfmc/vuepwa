@@ -20,7 +20,7 @@
         <div class="layout-body" :class="{ 'sidebar-full': isSidebarFullWidth }">
 
             <!-- SIDE BAR (DIV-2 & DIV-5 Tempat Tabulator) -->
-            <aside class="SideBar" ref="sidebarRef" :style="sidebarStyle">
+            <aside class="SideBarClass" ref="sidebarRef" :style="sidebarStyle">
                 <div class="sidebar-content">
                     <SideBarTable ref="sideBarTableRef" />
                 </div>
@@ -142,7 +142,7 @@ import trapesiumSvgRaw from '../../assets/trapesium.svg?raw'
 
 import { APP_COLORS } from '../../constants/colors.js'
 import SideBarTable from '../../components/Data/SideBarTable.vue'
-import POInformation from '../../components/Layouts/SSRPages/PO.vue'
+import RSRLayouts from '../../components/Layouts/SSRPages/RSR.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import Shipment from '../../components/Layouts/SSRPages/Shipment.vue'
 import Dates from '../../components/Layouts/SSRPages/Dates.vue'
@@ -212,7 +212,7 @@ const shipmentColumnTitle = computed(() => {
 // Dynamic components dikemas dengan markRaw untuk mencegah overhead reaksi Vue
 const tabs = ref([
     { id: 1, label: 'Shipment', component: markRaw(Shipment) },
-    { id: 2, label: 'PO', component: markRaw(POInformation) },
+    { id: 2, label: 'RSR', component: markRaw(RSRLayouts) },
     { id: 3, label: 'Dates', component: markRaw(Dates) },
 
 ])
@@ -617,7 +617,7 @@ function handleReset() {
 /* ========================================
    SIDE BAR (MEMBANGKITKAN AUTO FIT TABULATOR)
 ======================================== */
-.SideBar {
+.SideBarClass {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -788,7 +788,7 @@ function handleReset() {
     display: flex;
 }
 
-.sidebar-full .SideBar {
+.sidebar-full .SideBarClass {
     width: 100%;
 }
 
@@ -799,7 +799,7 @@ function handleReset() {
 /* ========================================
    RESIZING STATE
 ======================================== */
-.is-resizing .SideBar {
+.is-resizing .SideBarClass {
     transition: none;
 }
 
@@ -808,7 +808,7 @@ function handleReset() {
 }
 
 /* Matikan pointer-events pada isi sidebar saat drag berlangsung */
-.app-layout.is-resizing .SideBar {
+.app-layout.is-resizing .SideBarClass {
     pointer-events: none !important;
     user-select: none !important;
     transition: none !important;

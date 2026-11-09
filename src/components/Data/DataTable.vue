@@ -128,7 +128,7 @@ const totalRows = computed(() => sheetData.value.data.length);
 const totalColumns = computed(() => sheetData.value.columnTitles.length);
 
 async function handleReloadDropdownData() {
-  
+
   if (reloadingDropdown.value) return;
 
   reloadingDropdown.value = true;
@@ -136,7 +136,7 @@ async function handleReloadDropdownData() {
   try {
     await reloadDropdownData();
   } catch (error) {
-   
+
 
     openError({
       title: 'Gagal Memuat Dropdown',
@@ -525,7 +525,11 @@ async function renderTable() {
 
     table.on('rowClick', (e, row) => {
       const rowData = row.getData();
-      SelectedRowStore.selectedRow.value = { ...rowData };
+
+      SelectedRowStore.selectedRow.value = {
+        ...rowData,
+        rowID: rowData.__rowID || ''
+      };
 
       const firstColumnID = sheetData.value.columnIDs[4];
       const firstColumnValue = firstColumnID ? rowData[firstColumnID] : '';
@@ -730,7 +734,10 @@ async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
 
   const rowData = targetRow.getData();
 
-  SelectedRowStore.selectedRow.value = { ...rowData };
+  SelectedRowStore.selectedRow.value = {
+    ...rowData,
+    rowID: rowData.__rowID || ''
+  };
 
   const firstColumnID = sheetData.value.columnIDs[4];
   const firstColumnValue = firstColumnID
@@ -769,7 +776,10 @@ async function selectLastRow() {
 
   const rowData = lastRow.getData();
 
-  SelectedRowStore.selectedRow.value = { ...rowData };
+  SelectedRowStore.selectedRow.value = {
+    ...rowData,
+    rowID: rowData.__rowID || ''
+  };
 
   const firstColumnID = sheetData.value.columnIDs[4];
   const firstColumnValue = firstColumnID
