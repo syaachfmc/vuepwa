@@ -39,5 +39,5 @@ export const RSRConfig = ref({
   tableDateFormat: 'dd MMM yy',
   mainIDColumnID: 'SerialNo',
   shipmentNoPrefix: JSON.parse(sessionStorage.getItem("authProject") || "{}").shipmentNoPrefix || '', 
-  foreignKey :'' 
+  foreignKey :{'ShipmentRowID' : 'x'}
 })
