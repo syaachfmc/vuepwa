@@ -64,7 +64,7 @@ export async function globalDropdownLoadList(force = false) {
       dropdownConfig.ProjectIDColumn
     );
 
-    console.log("result", result.error, result.status);
+   
 
     if (result.status === 'success') {
       const map = {};

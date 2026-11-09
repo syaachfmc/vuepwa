@@ -24,12 +24,12 @@ function doGet(e) {
     // 3. Fallback ke GAS3 (Auth API status check)
     return jsonResponse_({
       success: true,
-      message: "Authentication API is running."
+      message: "Authentication API is running. " + JSON.stringify(params)
     });
 
   } catch (err) {
     return createJsonResponse_({
-      status: "error",
+      status: "error 7",
       error: "Terjadi kesalahan pada Server: " + (err.message || String(err)),
       code: "INTERNAL_ERROR"
     });
@@ -111,7 +111,7 @@ function handleGSheetDataDoGet_(e) {
 
     if (!auth || auth.success !== true || !auth.user) {
       return createJsonResponse_({
-        status: "error",
+        status: "error 1",
         error: auth?.message || "Unauthorized. Token tidak valid.",
         code: "UNAUTHORIZED",
         columnIDs: [],
@@ -130,7 +130,7 @@ function handleGSheetDataDoGet_(e) {
     const accessCheck = checkWorkbookUserAccess_(gSheetID, auth.user.username, authenticatedProjectCode);
     if (!accessCheck.allowed) {
       return createJsonResponse_({
-        status: "error",
+        status: "error 2",
         error: accessCheck.message,
         code: "FORBIDDEN",
         columnIDs: [],
@@ -169,7 +169,7 @@ function handleGSheetDataDoGet_(e) {
 
     if (!projectID || !projectIDColumn) {
       return createJsonResponse_({
-        status: "error",
+        status: "error 3",
         error: "Project Code atau ProjectIDColumn tidak tersedia pada konfigurasi autentikasi.",
         code: "PROJECT_SCOPE_REQUIRED",
         columnIDs: [],
@@ -208,7 +208,7 @@ function handleGSheetDataDoGet_(e) {
     console.error("Data API request failed.");
 
     return createJsonResponse_({
-      status: "error",
+      status: "error 4",
       error: "Terjadi kesalahan pada Data API: " + (err.message || String(err)),
       code: "INTERNAL_ERROR",
       columnIDs: [],
@@ -491,7 +491,7 @@ function createSuccessResult(columnIDs, columnTitles, columnDescriptions, column
 
 function createErrorResult(errorMessage) {
   return {
-    status: "error",
+    status: "error 5",
     error: errorMessage,
     columnIDs: [],
     columnTitles: [],
@@ -960,7 +960,7 @@ function createRowApiSuccess_(result) {
 function createRowApiError_(message) {
   return ContentService
     .createTextOutput(JSON.stringify({
-      status: "error",
+      status: "error 6",
       error: String(message),
       data: [],
       rowCount: 0
@@ -1030,12 +1030,13 @@ function getProjectList() {
           projectName: String(row[1] || "").trim(),
           shipmentNoPrefix: String(row[2] || "").trim(),
           regEx: String(row[3] || "").trim(),
-          prop1: String(row[4] || "").trim(),
-          prop2: String(row[5] || "").trim(),
-          prop3: String(row[6] || "").trim(),
-          prop4: String(row[7] || "").trim(),
-          prop5: String(row[8] || "").trim(),
-          prop6: String(row[9] || "").trim()
+          ShipmentDataGSheetID: String(row[4] || "").trim(),
+          POGSheetID: String(row[5] || "").trim(),
+          CompaniesGSheetID: String(row[6] || "").trim(),
+          PlacesGSheetID: String(row[7] || "").trim(),
+          DropdownsGsheetID: String(row[8] || "").trim(),
+          prop1: String(row[9] || "").trim() 
+          
 
         };
 
@@ -1766,11 +1767,11 @@ function updateRowJson_(data) {
 }
 
 
-
 /**
  * ============================================================================
  * ADD NEW ROW LOGIC (Generate UUID & Auto Increment Main ID per Project)
  * MainIDColumn ditentukan berdasarkan Column ID pada metadata row.
+ * Mendukung penulisan ForeignKey opsional: {"ColumnID": "Value"}
  * ============================================================================
  */
 function handleAddNewRow_(body) {
@@ -1899,66 +1900,50 @@ function handleAddNewRow_(body) {
       });
     }
 
+    // Cache Metadata Header jika dibutuhkan (oleh mainIDColumnID atau foreignKey)
+    var metadataValues = null;
+    var rangeInfo = null;
+    var columnIDRow = Number(body.columnIDRow || 1);
+    var dataRange = String(body.dataRange || "").trim();
+
+    function getMetadata_() {
+      if (!metadataValues) {
+        if (!dataRange) {
+          throw new Error("Parameter dataRange wajib diisi untuk membaca metadata columnID.");
+        }
+        if (!Number.isInteger(columnIDRow) || columnIDRow < 1) {
+          throw new Error("columnIDRow tidak valid.");
+        }
+        rangeInfo = parseRangeInfo(
+          dataRange,
+          sheet.getLastRow(),
+          sheet.getMaxColumns()
+        );
+        if (!rangeInfo.success) {
+          throw new Error("dataRange tidak valid: " + dataRange);
+        }
+        metadataValues = sheet.getRange(
+          columnIDRow,
+          rangeInfo.startCol,
+          1,
+          rangeInfo.endCol - rangeInfo.startCol + 1
+        ).getDisplayValues()[0];
+      }
+      return { values: metadataValues, info: rangeInfo };
+    }
+
     // 6. Tentukan Kolom Main ID berdasarkan Column ID
     var mainIDColumnNumber = 0;
-
-    var mainIDColumnID = String(
-      body.mainIDColumnID || ""
-    ).trim();
+    var mainIDColumnID = String(body.mainIDColumnID || "").trim();
 
     if (mainIDColumnID !== "") {
-
-      var columnIDRow = Number(body.columnIDRow || 1);
-      var dataRange = String(body.dataRange || "").trim();
-
-      if (!dataRange) {
-        return jsonResponse_({
-          success: false,
-          message: "Parameter dataRange wajib diisi untuk mencari mainIDColumnID."
-        });
-      }
-
-      if (
-        !Number.isInteger(columnIDRow) ||
-        columnIDRow < 1
-      ) {
-        return jsonResponse_({
-          success: false,
-          message: "columnIDRow tidak valid."
-        });
-      }
-
-      // Parse dataRange untuk mengetahui batas kolom metadata
-      var rangeInfo = parseRangeInfo(
-        dataRange,
-        sheet.getLastRow(),
-        sheet.getLastColumn()
-      );
-
-      if (!rangeInfo.success) {
-        return jsonResponse_({
-          success: false,
-          message: "dataRange tidak valid: " + dataRange
-        });
-      }
-
-      // Ambil metadata Column ID
-      var metadataValues = sheet.getRange(
-        columnIDRow,
-        rangeInfo.startCol,
-        1,
-        rangeInfo.endCol - rangeInfo.startCol + 1
-      ).getDisplayValues()[0];
-
+      var meta = getMetadata_();
       var matchedColumns = [];
 
-      for (var m = 0; m < metadataValues.length; m++) {
-        var currentColumnID = String(
-          metadataValues[m] || ""
-        ).trim();
-
+      for (var m = 0; m < meta.values.length; m++) {
+        var currentColumnID = String(meta.values[m] || "").trim();
         if (currentColumnID === mainIDColumnID) {
-          matchedColumns.push(rangeInfo.startCol + m);
+          matchedColumns.push(meta.info.startCol + m);
         }
       }
 
@@ -1979,16 +1964,10 @@ function handleAddNewRow_(body) {
       mainIDColumnNumber = matchedColumns[0];
 
     } else {
-
-      // Fallback: tetap mendukung parameter MainIDColumn berupa huruf kolom
-      var mainIDColumnLetter = String(
-        body.MainIDColumn || ""
-      ).trim();
-
+      // Fallback: huruf kolom MainIDColumn
+      var mainIDColumnLetter = String(body.MainIDColumn || "").trim();
       if (mainIDColumnLetter !== "") {
-        mainIDColumnNumber = columnLetterToNumber_(
-          mainIDColumnLetter
-        );
+        mainIDColumnNumber = columnLetterToNumber_(mainIDColumnLetter);
       }
     }
 
@@ -2002,7 +1981,39 @@ function handleAddNewRow_(body) {
       });
     }
 
-    // 7. Gunakan LockService untuk Mencegah Race Condition / Nomor Duplikat
+    // 7. Proses Mapping Foreign Key (jika diinputkan)
+    var foreignKeyWrites = []; // Simpan pasangan {colIndex, value}
+
+    if (body.foreignKey && typeof body.foreignKey === "object") {
+      var metaFK = getMetadata_();
+
+      for (var fkColumnID in body.foreignKey) {
+        if (Object.prototype.hasOwnProperty.call(body.foreignKey, fkColumnID)) {
+          var fkValue = body.foreignKey[fkColumnID];
+          var targetColID = String(fkColumnID).trim();
+          var fkColNumber = 0;
+
+          for (var k = 0; k < metaFK.values.length; k++) {
+            var colID = String(metaFK.values[k] || "").trim();
+            if (colID === targetColID) {
+              fkColNumber = metaFK.info.startCol + k;
+              break;
+            }
+          }
+
+          if (fkColNumber > 0) {
+            foreignKeyWrites.push({
+              colIndex: fkColNumber,
+              value: fkValue
+            });
+          } else {
+            console.warn("ForeignKey columnID tidak ditemukan pada metadata header:", targetColID);
+          }
+        }
+      }
+    }
+
+    // 8. Gunakan LockService untuk Mencegah Race Condition
     var lock = LockService.getScriptLock();
 
     if (!lock.tryLock(10000)) {
@@ -2017,13 +2028,11 @@ function handleAddNewRow_(body) {
     var targetRowIndex = 0;
 
     try {
-
       // Generate UUID v4
       newRowID = Utilities.getUuid();
-
       targetRowIndex = sheet.getLastRow() + 1;
 
-      // 8. Auto-Increment Main ID
+      // 9. Auto-Increment Main ID
       if (
         mainIDColumnNumber >= 1 &&
         mainIDColumnNumber <= sheet.getMaxColumns()
@@ -2031,22 +2040,16 @@ function handleAddNewRow_(body) {
 
         var startDataRow = Number(body.startRow || 5);
 
-        if (
-          !Number.isInteger(startDataRow) ||
-          startDataRow < 1
-        ) {
+        if (!Number.isInteger(startDataRow) || startDataRow < 1) {
           throw new Error("startRow tidak valid.");
         }
 
         var totalRows = targetRowIndex - startDataRow;
-
         var maxSeq = 0;
         var detectedPrefix = "";
         var numDigits = 5;
 
         if (totalRows > 0) {
-
-          // Ambil Main ID dan Project ID dari seluruh baris data
           var mainIDValues = sheet.getRange(
             startDataRow,
             mainIDColumnNumber,
@@ -2061,80 +2064,51 @@ function handleAddNewRow_(body) {
             1
           ).getDisplayValues();
 
-          // Prefix + optional hyphen + angka + optional suffix huruf
           var pattern = /^(.*?)(-?)(\d+)([A-Za-z]*)$/;
 
           for (var r = 0; r < totalRows; r++) {
+            var rowProjectCode = String(projectIDValues[r][0] || "").trim();
 
-            var rowProjectCode = String(
-              projectIDValues[r][0] || ""
-            ).trim();
-
-            // Hanya periksa baris dengan Project ID sesuai session
             if (rowProjectCode !== authenticatedProjectCode) {
               continue;
             }
 
-            var val = String(
-              mainIDValues[r][0] || ""
-            ).trim();
-
+            var val = String(mainIDValues[r][0] || "").trim();
             if (!val) continue;
 
             var match = val.match(pattern);
 
             if (match) {
-
               var prefixPart = match[1] + match[2];
               var numberPartStr = match[3];
               var seqNum = parseInt(numberPartStr, 10);
 
               if (seqNum > maxSeq) {
-
                 maxSeq = seqNum;
                 detectedPrefix = prefixPart;
-
-                // Mengikuti jumlah digit Main ID existing
                 numDigits = numberPartStr.length;
               }
             }
           }
         }
 
-        // Generate nomor berikutnya
         var nextSeq = maxSeq + 1;
-
-        var formattedNumber = String(nextSeq).padStart(
-          numDigits,
-          "0"
-        );
-
+        var formattedNumber = String(nextSeq).padStart(numDigits, "0");
         newMainIDValue = detectedPrefix + formattedNumber;
 
-        console.log("Project Code:", authenticatedProjectCode);
-        console.log("MainIDColumn:", mainIDColumnNumber);
-        console.log("mainIDColumnID:", mainIDColumnID);
-        console.log("Detected Prefix:", detectedPrefix);
-        console.log("Max Sequence:", maxSeq);
-        console.log("New Main ID:", newMainIDValue);
-
         // Tulis Main ID baru
-        sheet.getRange(
-          targetRowIndex,
-          mainIDColumnNumber
-        ).setValue(newMainIDValue);
+        sheet.getRange(targetRowIndex, mainIDColumnNumber).setValue(newMainIDValue);
       }
 
-      // 9. Tulis UUID dan ProjectCode pada baris baru
-      sheet.getRange(
-        targetRowIndex,
-        rowIDColumnNumber
-      ).setValue(newRowID);
+      // 10. Tulis UUID dan ProjectCode pada baris baru
+      sheet.getRange(targetRowIndex, rowIDColumnNumber).setValue(newRowID);
+      sheet.getRange(targetRowIndex, projectIDColumnNumber).setValue(authenticatedProjectCode);
 
-      sheet.getRange(
-        targetRowIndex,
-        projectIDColumnNumber
-      ).setValue(authenticatedProjectCode);
+      // 11. Tulis Nilai Foreign Key (jika ada)
+      for (var f = 0; f < foreignKeyWrites.length; f++) {
+        var fk = foreignKeyWrites[f];
+        sheet.getRange(targetRowIndex, fk.colIndex).setValue(fk.value);
+      }
 
       SpreadsheetApp.flush();
 
@@ -2142,7 +2116,7 @@ function handleAddNewRow_(body) {
       lock.releaseLock();
     }
 
-    // 10. Kembalikan Response Berhasil
+    // 12. Kembalikan Response Berhasil
     return jsonResponse_({
       success: true,
       message: "Baris baru berhasil ditambahkan.",
@@ -2150,22 +2124,27 @@ function handleAddNewRow_(body) {
       newMainIDValue: newMainIDValue,
       rowIndex: targetRowIndex,
       projectCode: authenticatedProjectCode,
-      mainIDColumnID: mainIDColumnID
-
+      mainIDColumnID: mainIDColumnID,
+      foreignKeyWritten: foreignKeyWrites.length
     });
 
   } catch (error) {
-
     console.error("handleAddNewRow_ error:", error);
 
     return jsonResponse_({
       success: false,
-      message: "Gagal menambah baris baru: " +
-        (error.message || String(error))
+      message: "Gagal menambah baris baru: " + (error.message || String(error))
     });
   }
-
 }
+
+
+
+
+
+
+
+
 
 /**
  * ============================================================================
@@ -2221,13 +2200,14 @@ function testDoPostAddNewRow() {
     action: "addNewRow",
     token: token,
     GSheetID: "1QnTPM7t8dgnboekqkwq1su1ycyRS7BbW1uVj83qrtEo", // Ganti dengan GSheetID Anda
-    sheetName: "Data",                              // Ganti dengan nama sheet target
+    sheetName: "RSR",                              // Ganti dengan nama sheet target
     RowIDColumn: "A",                                       // Kolom tempat UUID disimpan
     ProjectIDColumn: "B",                                   // Kolom tempat ProjectCode disimpan
-    mainIDColumnID: "2",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
+    mainIDColumnID: "SerialNo",                                      // Kolom tempat Nomor Shipment/Main ID disimpan
     columnIDRow: 1,
     dataRange: "B5:BY",
-    startRow: 5                                             // Baris pertama data dimulai (opsional, default: 5)
+    startRow: 5,                                             // Baris pertama data dimulai (opsional, default: 5)
+    foreignKey : {"ShipmentRowID":"401"}
   };
 
   const e = {

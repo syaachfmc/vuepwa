@@ -111,10 +111,6 @@ async function getSelectedDataGSheet(rowID) {
 async function handleRowSelected(payload) {
     selectedData.value = payload?.value ?? '';
     selectedRowID.value = payload?.rowID ?? '';
-
-
-    // await getSelectedDataGSheet(selectedRowID.value);
-    // console.log("selectedDataGSheet", selectedDataGSheet.value);
 }
 
 async function addAndSelectRow(rowID, mainIDColumnID, newMainIDValue) {
