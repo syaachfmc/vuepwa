@@ -6,6 +6,8 @@ export const globalDropdownisLoading = ref(false);
 export const globalDropdownisLoaded = ref(false);
 const authProject = JSON.parse(sessionStorage.getItem("authProject") || "{}");
 
+
+
 const dropdownConfig = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
 
@@ -20,6 +22,8 @@ const dropdownConfig = {
   ProjectID: 'any',
   ProjectIDColumn: 'B'
 };
+
+console.log("authProject.DropdownsGsheetID || ''",authProject.DropdownsGsheetID )
 
 export async function globalDropdownLoadList(force = false) {
 
@@ -46,7 +50,7 @@ export async function globalDropdownLoadList(force = false) {
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
     )
-console.log("result",result)
+console.log("result",result.error, result.status)
     if (result.status === 'success') {
       const map = {}
 

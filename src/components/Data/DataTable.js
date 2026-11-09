@@ -37,7 +37,8 @@ export async function fetchGSheetData(
 
   try {
     authUser = JSON.parse(sessionStorage.getItem('authUser') || '{}');
-  } catch {
+  } catch (err) {
+    console.log("err",err)
     authUser = {};
   }
 
@@ -89,6 +90,8 @@ export async function fetchGSheetData(
       });
     }
 
+    console.log("rawResult",rawResult)
+
     return attachClientWrapper(rawResult);
 
   } catch (err) {
@@ -103,6 +106,9 @@ export async function fetchGSheetData(
  * Menambahkan method .get(rowIndex, colIndex) secara non-enumerable pada objek client-side.
  */
 function attachClientWrapper(obj) {
+  console.log("OBJ", obj)
+  console.log("obj.error", obj.error)
+  console.log("obj.status", obj.status)
   const safeObj = {
     status: obj && obj.status ? obj.status : "error",
     error: obj && obj.error !== undefined ? obj.error : "Unknown client error",
