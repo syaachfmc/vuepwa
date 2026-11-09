@@ -9,7 +9,7 @@ const authProject = JSON.parse(sessionStorage.getItem("authProject") || "{}");
 const dropdownConfig = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
 
-  gsheetID:  authProject.DropdownsGsheetID || '',
+  gsheetID: authProject.DropdownsGsheetID || '',
   sheetName: 'Dropdowns',
   columnIDRow: 1,
   columnTitleRow: 2,
@@ -22,7 +22,7 @@ const dropdownConfig = {
 };
 
 export async function globalDropdownLoadList(force = false) {
-  
+
 
   // Jika sudah pernah load, hentikan hanya jika bukan force reload
   if (!force && globalDropdownisLoaded.value) return
@@ -46,7 +46,7 @@ export async function globalDropdownLoadList(force = false) {
       dropdownConfig.ProjectID,
       dropdownConfig.ProjectIDColumn
     )
-
+console.log("result",result)
     if (result.status === 'success') {
       const map = {}
 
@@ -55,32 +55,32 @@ export async function globalDropdownLoadList(force = false) {
         map[key] = []
       })
 
-      ;(result.data || []).forEach(row => {
-        result.columnIDs.forEach((colID, colIndex) => {
-          const key = String(colID).trim()
-          const val = row[colIndex]
+        ; (result.data || []).forEach(row => {
+          result.columnIDs.forEach((colID, colIndex) => {
+            const key = String(colID).trim()
+            const val = row[colIndex]
 
-          if (
-            val !== undefined &&
-            val !== null &&
-            String(val).trim() !== ''
-          ) {
-            map[key].push(String(val).trim())
-          }
+            if (
+              val !== undefined &&
+              val !== null &&
+              String(val).trim() !== ''
+            ) {
+              map[key].push(String(val).trim())
+            }
+          })
         })
-      })
 
       globalDropdownDataMap.value = map
       globalDropdownisLoaded.value = true
 
- 
+
     } else {
-      
+       
       throw result.error;
     }
 
-  } catch (err) {   
-    
+  } catch (err) {
+  
     throw err;
   } finally {
     globalDropdownisLoading.value = false

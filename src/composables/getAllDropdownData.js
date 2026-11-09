@@ -31,10 +31,10 @@ import {
 export async function reloadDropdownData() {
   try {
     await Promise.all([
-      globalDropdownLoadList(true),
-      PODropdownLoadList(true),
-      PlacesDropdownLoadList(true),
-      CompaniesDropdownLoadList(true)
+       globalDropdownLoadList(true),
+      // PODropdownLoadList(true),
+      // PlacesDropdownLoadList(true),
+      // CompaniesDropdownLoadList(true)
     ])
 
     return { status: 'success' }
