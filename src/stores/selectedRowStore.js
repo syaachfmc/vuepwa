@@ -12,3 +12,8 @@ export const RSR_SelectedRowStore = {
   tooltips :ref([])
 }
 
+export const PackingList_SelectedRowStore = {
+  columns: ref([]),
+  selectedRow: ref({}),
+  tooltips :ref([])
+}

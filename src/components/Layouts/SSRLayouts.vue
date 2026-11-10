@@ -146,6 +146,7 @@ import RSRLayouts from '../../components/Layouts/SSRPages/RSR.vue'
 import { SelectedRowStore } from '../../stores/selectedRowStore.js'
 import Shipment from '../../components/Layouts/SSRPages/Shipment.vue'
 import Dates from '../../components/Layouts/SSRPages/Dates.vue'
+import PackingList from '../../components/Layouts/SSRPages/PackingList.vue'
 import { logout } from '../../api/auth.js'
 import { pageSidebarWidth } from '../../stores/constStore.js'
 import AppIcon from './../AppIcon.vue';
@@ -214,6 +215,7 @@ const tabs = ref([
     { id: 1, label: 'Shipment', component: markRaw(Shipment) },
     { id: 2, label: 'RSR', component: markRaw(RSRLayouts) },
     { id: 3, label: 'Dates', component: markRaw(Dates) },
+    { id: 4, label: 'Packing List', component: markRaw(PackingList) },
 
 ])
 

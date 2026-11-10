@@ -39,5 +39,23 @@ export const RSRConfig = ref({
   tableDateFormat: 'dd MMM yy',
   mainIDColumnID: 'SerialNo',
   shipmentNoPrefix: JSON.parse(sessionStorage.getItem("authProject") || "{}").shipmentNoPrefix || '', 
-  foreignKey :{'ShipmentRowID' : 'x'}
+  foreignKey :{'ShipmentRowID' : ''}
 })
+
+export const PackingListConfig = ref({
+  webAppUrl: 'https://script.google.com/macros/s/AKfycbw4ARc71H-V0lIBwp1ijTUiuzZnts0bzBXh30pcy-iaIqa-rYrLW7xsb9hlnpuqDPUI/exec',
+  gsheetID: JSON.parse(sessionStorage.getItem("authProject") || "{}").ShipmentDataGSheetID || '', 
+  sheetName: 'PackingList',
+  columnIDRow: 1,
+  columnTitleRow: 2,
+  columnTitleDescriptionRow: 3,
+  columnTypeRow: 4,
+  dataRange: 'B5:Z',
+  RowIDColumn: 'A',
+  ProjectID: '',
+  ProjectIDColumn: 'B',
+  FrozenColumnIndex: ['2'],
+  tableDateFormat: 'dd MMM yy',
+  mainIDColumnID: 'PackingListNo',
+  foreignKey :{'ShipmentRowID' : ''}
+});
